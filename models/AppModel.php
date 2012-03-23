@@ -20,7 +20,7 @@
 
 class Challenge_AppModel extends MIDASModel
 {
-
+  public $moduleName = 'challenge';
 
 }
 ?>

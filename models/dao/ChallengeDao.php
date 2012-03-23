@@ -9,21 +9,10 @@ This software is distributed WITHOUT ANY WARRANTY; without even
 the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
+/** Challenge_ChallengeDao */
+class Challenge_ChallengeDao extends AppDao {
 
-require_once BASE_PATH . '/modules/api/library/APIEnabledNotification.php';
+  public $_model = 'Challenge';
+  public $_module = 'challenge';
 
-class Challenge_Notification extends ApiEnabled_Notification
-  {
-  public $moduleName = 'challenge';
-  public $_moduleComponents=array('Api');
-  public $_models=array();
-
-  /** init notification process*/
-  public function init()
-    {
-    $this->enableWebAPI($this->moduleName);
-    }//end init
-
-  } //end class
-  
-?>
+}
