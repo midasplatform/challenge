@@ -62,7 +62,7 @@ class ChallengeModelTest extends DatabaseTestCase
     $challenge1 = $this->challengeModel->createChallenge($communityModerator1, $challenge1Community, "challenge1", "challenge1 description");
 
     // test the three folders of this challenge for permissions
-    $challenge1Dashboard = $this->dashboardModel->load($challenge1->getValidationDashboardId());
+    $challenge1Dashboard = $challenge1->getDashboard();
     $challenge1Testing = $challenge1Dashboard->getTesting();
     $challenge1Training = $challenge1Dashboard->getTraining();
     $challenge1Truth = $challenge1Dashboard->getTruth();

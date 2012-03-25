@@ -25,7 +25,17 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $this->_mainData = array(
       'challenge_id' => array('type' => MIDAS_DATA),
       'validation_dashboard_id' => array('type' => MIDAS_DATA),
-      'community_id' => array('type' => MIDAS_DATA)
+      'community_id' => array('type' => MIDAS_DATA),
+      'dashboard' =>  array('type' => MIDAS_MANY_TO_ONE,
+                        'module' => 'validation',
+                        'model' => 'Dashboard',
+                        'parent_column' => 'validation_dashboard_id',
+                        'child_column' => 'dashboard_id'),
+      'community' =>  array('type' => MIDAS_MANY_TO_ONE,
+                        'model' => 'Community',
+                        'parent_column' => 'community_id',
+                        'child_column' => 'community_id')
+
        );
     $this->initialize(); // required
     }
