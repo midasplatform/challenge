@@ -32,7 +32,7 @@ class Challenge_IndexController extends Challenge_AppController
 
   /** index action*/
   function indexAction()
-    {  
+    {
     }
 
 }//end class

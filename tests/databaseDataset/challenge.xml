@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dataset>
+
+
+  <user user_id="1111" firstname="noncommunitymember" lastname="user"
+    email="user1111@user.com" password="35fd8ba86ba403ffcc00feac5355ad20" creation="2011-01-27 12:09:02"
+    folder_id="1000" publicfolder_id="1001" privatefolder_id="1002" admin="0" />
+
+  <user user_id="1112" firstname="competitor1" lastname="user"
+    email="user1112@user.com" password="35fd8ba86ba403ffcc00feac5355ad20" creation="2011-01-27 12:09:02"
+    folder_id="1003" publicfolder_id="1004" privatefolder_id="1005" admin="0" />
+
+  <folder folder_id="1005" name="competitor1 private folder"  uuid='4e311fdf82007c245b07d8d6c4fcb4205f2621eb72760'
+    description="competitor1 private folder" parent_id="1003" privacy_status="2" left_indice="0" right_indice="0"/>
+  
+  <user user_id="1113" firstname="competitor2" lastname="user"
+    email="user1113@user.com" password="35fd8ba86ba403ffcc00feac5355ad20" creation="2011-01-27 12:09:02"
+    folder_id="1006" publicfolder_id="1007" privatefolder_id="1008" admin="0" />
+
+  <folder folder_id="1008" name="competitor2 private folder"  uuid='4e311fdf82007c245b07d8d6c4fcb4205f2621eb72760'
+    description="competitor1 private folder" parent_id="1006" privacy_status="2" left_indice="0" right_indice="0" />
+
+  <user user_id="1114" firstname="community" lastname="moderator1"
+    email="user1114@user.com" password="35fd8ba86ba403ffcc00feac5355ad20" creation="2011-01-27 12:09:02"
+    folder_id="1009" publicfolder_id="1010" privatefolder_id="1011" admin="0" />
+
+  <user user_id="1115" firstname="community" lastname="moderator2"
+    email="user1115@user.com" password="35fd8ba86ba403ffcc00feac5355ad20" creation="2011-01-27 12:09:02"
+    admin="0" />
+
+
+  <community community_id="2222" name="Challenge1"
+    description="Challenge 1 Community" creation="2011-01-27 12:09:02"
+    privacy="0" folder_id="1012" publicfolder_id="1013" privatefolder_id="1014"
+    admingroup_id="2224" moderatorgroup_id="2223" membergroup_id="2222"
+    uuid='4e311fdf82107d245f0798d654fc24205f2621eb72777' />
+
+  <folder folder_id="1012" name="challenge 1 top folder"  uuid='4e311fdf82007c245b07d8d6c4fcb4205f2621eb72760'
+    description="challenge1 top folder" parent_id="-2" privacy_status="1"  left_indice="0" right_indice="0"/>
+
+  <group group_id="2222" community_id="2222" name="Challenge 1 Community Member" />
+  <group group_id="2223" community_id="2222" name="Challenge 1 Community Moderator" />
+  <group group_id="2224" community_id="2222" name="Challenge 1 Community Admin" />
+
+  <!-- competitor1 and competitor2 are members of Challenge 1 Community -->
+  <user2group group_id="2222" user_id="1112" />
+  <user2group group_id="2222" user_id="1113" />
+  <!-- community moderators are moderator of Challenge 1 Community -->
+  <user2group group_id="2223" user_id="1114" />
+  <user2group group_id="2223" user_id="1115" />
+
+
+  <community community_id="3333" name="Challenge2"
+    description="Challenge 2 Community" creation="2011-01-27 12:09:02"
+    privacy="0" folder_id="1015" publicfolder_id="1016" privatefolder_id="1017"
+    admingroup_id="3335" moderatorgroup_id="3334" membergroup_id="3333"
+    uuid='4e311fdf82107d245f0798d654fc24205f2621eb72777' />
+
+  <group group_id="3333" community_id="3333" name="Challenge 2 Community Member" />
+  <group group_id="3334" community_id="3333" name="Challenge 2 Community Moderator" />
+  <group group_id="3335" community_id="3333" name="Challenge 2 Community Admin" />
+
+  <!-- competitor1 and competitor2 are members of Challenge 2 Community -->
+  <user2group group_id="3333" user_id="1112" />
+  <user2group group_id="3333" user_id="1113" />
+  <!-- community moderators are moderator of Challenge 2 Community -->
+  <user2group group_id="3334" user_id="1114" />
+  <user2group group_id="3334" user_id="1115" />
+
+  <folder folder_id="1015" name="challenge 2 top folder"  uuid='4e311fdf82007c245b07d8d6c4fcb4205f2621eb72760'
+    description="challenge2 top folder" parent_id="-2" privacy_status="1"  left_indice="0" right_indice="0"/>
+
+
+
+
+  
+
+</dataset>
