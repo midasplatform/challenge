@@ -48,7 +48,7 @@ class Challenge_ApiComponent extends AppComponent
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
       {
-      throw new Exception('You must be logged in to create a challenge');
+      throw new Zend_Exception('You must be logged in to create a challenge');
       }
 
     $communityId = $args['communityId'];
@@ -66,7 +66,22 @@ class Challenge_ApiComponent extends AppComponent
     return $challengeDao->getKey();
     }
 
-
+  /**
+   * helper function to generate the names of expected results items based on
+   * testing folder items.
+   * @param type $testingItems
+   * @return string
+   */
+  protected function getExpectedResultsItems($testingItems)
+    {
+    $testingResults = array();
+    foreach($testingItems as $item)
+      {
+      $name = $item->getName();
+      $testingResults[$name] = "result_" . $name;
+      }
+    return $testingResults;
+    }
 
 
 
@@ -75,39 +90,59 @@ class Challenge_ApiComponent extends AppComponent
    * @param challengeId the id of the challenge to display testing inputs for
    * @return a list of item names and expected result names for the challenge
    */
-  public function displayTestingInputs($value)
+  public function displayTestingInputs($args)
     {
-    $this->_checkKeys(array('challengeId'), $value);
+    $this->_checkKeys(array('challengeId'), $args);
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
-    $userDao = $authComponent->getUser($value,
+    $args['useSession'] = 'useSession';
+    $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
       {
-      throw new Exception('You must be logged in to see the testing inputs');
+      throw new Zend_Exception('You must be logged in to view a challenge');
       }
 
-    // get the challenge, check that the challenge is valid
-    // get the community from the challenge, check that they are a member of the community
+    $challengeId = $args['challengeId'];
 
-    // get the testing folder from the community
-    // get the listing of items from the testing folder
-    // create the pairings of items names with expected results names
-    // return the items listing
-    }
-/*
     $modelLoad = new MIDAS_ModelLoader();
-    $model = $modelLoad->loadModel('Dashboard', 'validation');
-    $model->loadDaoClass('DashboardDao', 'validation');
-    $dao = new Validation_DashboardDao();
-    $dao->setName($value['name']);
-    $dao->setDescription($value['description']);
-    $model->save($dao);
+    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $communityModel = $modelLoad->loadModel('Community');
+    $groupModel = $modelLoad->loadModel('Group');
+    $dashboardModel = $modelLoad->loadModel('Dashboard', 'validation');
+    $folderModel = $modelLoad->loadModel('Folder');
 
-    return array('dashboard_id' => $dao->getKey());
+    $challengeDao = $challengeModel->load($challengeId);
+    if(!$challengeDao)
+      {
+      throw new Zend_Exception('You must be enter a valid challenge.');
+      }
+    // TODO: any checking for properties of the challenge
+
+    // check that the community is valid and the user is a member
+    $communityDao = $challengeDao->getCommunity();
+    if(!$communityDao)
+      {
+      throw new Zend_Exception('This challenge does not have a valid community');
+      }
+    $memberGroup = $communityDao->getMemberGroup();
+    if(!$groupModel->userInGroup($userDao, $memberGroup))
+      {
+      throw new Zend_Exception('You must join this community to view the challenge');
+      }
+
+    // get all the items in the Testing folder
+    $dashboardDao = $challengeDao->getDashboard();
+    $testingFolderDao = $dashboardDao->getTesting();
+    $testingItems = $folderModel->getItemsFiltered($testingFolderDao, $userDao, MIDAS_POLICY_READ);
+
+    // create an expected result filename pairing
+    $testingResults = $this->getExpectedResultsItems($testingItems);
+    return $testingResults;
     }
-*/
+
+
 
 
     // method for validating a training folder or the training folder?  on the 2nd pass
