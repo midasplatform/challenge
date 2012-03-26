@@ -43,12 +43,11 @@ class Challenge_ApiComponent extends AppComponent
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
-    $args['useSession'] = 'useSession';
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
       {
-      throw new Exception('You must be logged in to create a challenge');
+      throw new Zend_Exception('You must be logged in to create a challenge');
       }
 
     $communityId = $args['communityId'];
@@ -66,7 +65,53 @@ class Challenge_ApiComponent extends AppComponent
     return $challengeDao->getKey();
     }
 
-
+  /**
+   * helper function to generate the names of expected results items based on
+   * testing folder items.
+   * @param type $testingItems
+   * @return string
+   */
+  protected function getExpectedResultsItems($testingItems, $resultsItems = null)
+    {
+    $testingResults = array();
+    foreach($testingItems as $item)
+      {
+      $name = $item->getName();
+      $testingResults[$name] = "result_" . $name;
+      }
+    if($resultsItems === null)
+      {
+      return $testingResults;
+      }
+    else
+      {
+      $resultsItemNames = array();
+      $resultsWithoutTesting = array();
+      foreach($resultsItems as $item)
+        {
+        $resultsItemName = $item->getName();
+        $resultsItemNames[$resultsItemName] = $resultsItemName;
+        if(!in_array($resultsItemName, $testingResults))
+          {
+          $resultsWithoutTesting[] = $resultsItemName;
+          }
+        }
+      $testingWithoutResults = array();
+      $matchedTestingResults = array();
+      foreach($testingResults as $testItem => $resultItem)
+        {
+        if(in_array($resultItem, $resultsItemNames))
+          {
+          $matchedTestingResults[$testItem] = $resultItem;
+          }
+        else
+          {
+          $testingWithoutResults[$testItem] = $resultItem;
+          }
+        }
+      return array('resultsWithoutTesting' => $resultsWithoutTesting, 'testingWithoutResults' => $testingWithoutResults, 'matchedTestingResults' => $matchedTestingResults);
+      }
+    }
 
 
 
@@ -75,39 +120,58 @@ class Challenge_ApiComponent extends AppComponent
    * @param challengeId the id of the challenge to display testing inputs for
    * @return a list of item names and expected result names for the challenge
    */
-  public function displayTestingInputs($value)
+  public function displayTestingInputs($args)
     {
-    $this->_checkKeys(array('challengeId'), $value);
+    $this->_checkKeys(array('challengeId'), $args);
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
-    $userDao = $authComponent->getUser($value,
+    $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
       {
-      throw new Exception('You must be logged in to see the testing inputs');
+      throw new Zend_Exception('You must be logged in to view a challenge');
       }
 
-    // get the challenge, check that the challenge is valid
-    // get the community from the challenge, check that they are a member of the community
+    $challengeId = $args['challengeId'];
 
-    // get the testing folder from the community
-    // get the listing of items from the testing folder
-    // create the pairings of items names with expected results names
-    // return the items listing
-    }
-/*
     $modelLoad = new MIDAS_ModelLoader();
-    $model = $modelLoad->loadModel('Dashboard', 'validation');
-    $model->loadDaoClass('DashboardDao', 'validation');
-    $dao = new Validation_DashboardDao();
-    $dao->setName($value['name']);
-    $dao->setDescription($value['description']);
-    $model->save($dao);
+    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $communityModel = $modelLoad->loadModel('Community');
+    $groupModel = $modelLoad->loadModel('Group');
+    $dashboardModel = $modelLoad->loadModel('Dashboard', 'validation');
+    $folderModel = $modelLoad->loadModel('Folder');
 
-    return array('dashboard_id' => $dao->getKey());
+    $challengeDao = $challengeModel->load($challengeId);
+    if(!$challengeDao)
+      {
+      throw new Zend_Exception('You must enter a valid challenge.');
+      }
+    // TODO: any checking for properties of the challenge
+
+    // check that the community is valid and the user is a member
+    $communityDao = $challengeDao->getCommunity();
+    if(!$communityDao)
+      {
+      throw new Zend_Exception('This challenge does not have a valid community');
+      }
+    $memberGroup = $communityDao->getMemberGroup();
+    if(!$groupModel->userInGroup($userDao, $memberGroup))
+      {
+      throw new Zend_Exception('You must join this community to view the challenge');
+      }
+
+    // get all the items in the Testing folder
+    $dashboardDao = $challengeDao->getDashboard();
+    $testingFolderDao = $dashboardDao->getTesting();
+    $testingItems = $folderModel->getItemsFiltered($testingFolderDao, $userDao, MIDAS_POLICY_READ);
+
+    // create an expected result filename pairing
+    $testingResults = $this->getExpectedResultsItems($testingItems);
+    return $testingResults;
     }
-*/
+
+
 
 
     // method for validating a training folder or the training folder?  on the 2nd pass
@@ -122,35 +186,93 @@ class Challenge_ApiComponent extends AppComponent
    * @return a list of pairings b/w the testing folder of the community and
    * this user's result's folder
    */
-  public function validateResultsFolder($value)
+  public function validateResultsFolder($args)
     {
-    $this->_checkKeys(array('challengeId', 'folderId'), $value);
-
+    $this->_checkKeys(array('challengeId', 'folderId'), $args);
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
-    $userDao = $authComponent->getUser($value,
+    $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
       {
-      throw new Exception('You must be logged in to see the testing inputs');
+      throw new Zend_Exception('You must be logged in to validate a results folder');
       }
 
-    // get the challenge, check that the challenge is valid
-    // get the community from the challenge, check that they are a member of the community
+    $challengeId = $args['challengeId'];
+    $folderId = $args['folderId'];
 
-    // get the folder, check their ownership permissions
-    // check that the folder is private, if not it is an error
-    // add the group permissions so that the folder is viewable by the contest moderator or admin, if not, error
-    // TODO be sure that we announce on UI that running this will make this folder viewable to contest mod/admin
-    //
-    // get the items in this folder
-    // get the testing folder from the challenge community
-    // calculate the matchups b/w this folder and those in testing (3 parts, same, left +, right+)
-    // return the matchup listing
-    //
-    // the intention here is to display "here is what would be run" here is what you have and we don,t and vice versa
-    //
-    // return the items listing
+    $modelLoad = new MIDAS_ModelLoader();
+    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $communityModel = $modelLoad->loadModel('Community');
+    $groupModel = $modelLoad->loadModel('Group');
+    $dashboardModel = $modelLoad->loadModel('Dashboard', 'validation');
+    $folderModel = $modelLoad->loadModel('Folder');
+    $folderpolicyuserModel = $modelLoad->loadModel('Folderpolicyuser');
+    $folderpolicygroupModel = $modelLoad->loadModel('Folderpolicygroup');
+
+    $challengeDao = $challengeModel->load($challengeId);
+    if(!$challengeDao)
+      {
+      throw new Zend_Exception('You must enter a valid challenge.');
+      }
+    // TODO: any checking for properties of the challenge? open/closed or other
+
+    // check that the community is valid and the user is a member
+    $communityDao = $challengeDao->getCommunity();
+    if(!$communityDao)
+      {
+      throw new Zend_Exception('This challenge does not have a valid community');
+      }
+    $memberGroup = $communityDao->getMemberGroup();
+    if(!$groupModel->userInGroup($userDao, $memberGroup))
+      {
+      throw new Zend_Exception('You must join this community to submit results to the challenge');
+      }
+
+    // get the results folder
+    $resultsFolder = $folderModel->load($folderId);
+
+    // ensure user has ownership/admin
+    $folderpolicyuserDao = $folderpolicyuserModel->getPolicy($userDao, $resultsFolder);
+    if($folderpolicyuserDao->getPolicy() != MIDAS_POLICY_ADMIN)
+      {
+      throw new Zend_Exception('You must have admin rights to this folder to submit it as a results folder.');
+      }
+
+    // ensure that anonymous users cannot access the folder
+    $anonymousgroupDao = $groupModel->load(MIDAS_GROUP_ANONYMOUS_KEY);
+    $anonymousfolderpolicygroupDao = $folderpolicygroupModel->getPolicy($anonymousgroupDao, $resultsFolder);
+    if($anonymousfolderpolicygroupDao)
+      {
+      throw new Zend_Exception('You must remove anonymous access to this results folder');
+      }
+
+    // ensure that community members cannot access the folder
+    $membersfolderpolicygroupDao = $folderpolicygroupModel->getPolicy($memberGroup, $resultsFolder);
+    if($membersfolderpolicygroupDao)
+      {
+      throw new Zend_Exception('You must remove challenge community members access to this results folder');
+      }
+
+    // add read access to challenge community moderators for the folder
+    $moderatorGroup = $communityDao->getModeratorGroup();
+    $moderatorReadPolicy = $folderpolicygroupModel->createPolicy($moderatorGroup, $resultsFolder, MIDAS_POLICY_READ);
+    if(!$moderatorReadPolicy)
+      {
+      throw new Zend_Exception('Cannot add read access to challenge moderators to your results folder.');
+      }
+
+    // get all the items in the Testing folder
+    $dashboardDao = $challengeDao->getDashboard();
+    $testingFolderDao = $dashboardDao->getTesting();
+    $testingItems = $folderModel->getItemsFiltered($testingFolderDao, $userDao, MIDAS_POLICY_READ);
+
+    // get all items in Results folder
+    $resultsItems = $folderModel->getItemsFiltered($resultsFolder, $userDao, MIDAS_POLICY_READ);
+
+    // create a listing of paired item names, along with any mismatches
+    $testingResults = $this->getExpectedResultsItems($testingItems, $resultsItems);
+    return $testingResults;
     }
 
 
@@ -192,7 +314,7 @@ class Challenge_ApiComponent extends AppComponent
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
       {
-      throw new Exception('You must be logged in to see the testing inputs');
+      throw new Zend_Exception('You must be logged in to see the testing inputs');
       }
 
 //abs1    // get the challenge, check that the challenge is valid
