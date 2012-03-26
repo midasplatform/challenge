@@ -43,7 +43,6 @@ class Challenge_ApiComponent extends AppComponent
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
-    $args['useSession'] = 'useSession';
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -127,7 +126,6 @@ class Challenge_ApiComponent extends AppComponent
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
-    $args['useSession'] = 'useSession';
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -191,7 +189,6 @@ class Challenge_ApiComponent extends AppComponent
   public function validateResultsFolder($args)
     {
     $this->_checkKeys(array('challengeId', 'folderId'), $args);
-    $args['useSession'] = 'useSession';
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
@@ -315,7 +312,6 @@ class Challenge_ApiComponent extends AppComponent
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($value,
                                        Zend_Registry::get('userSession')->Dao);
-    $args['useSession'] = 'useSession';
     if(!$userDao)
       {
       throw new Zend_Exception('You must be logged in to see the testing inputs');
