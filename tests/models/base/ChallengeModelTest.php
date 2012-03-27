@@ -51,15 +51,17 @@ class ChallengeModelTest extends DatabaseTestCase
   public function testCreateChallenge()
     {
     $this->setupDatabase(array('challenge'), 'challenge'); // module dataset
-    list($noncommunityMember, $competitor1, $competitor2, $communityModerator1, $communityModerator2) = $this->loadData('User', 'challenge', '', 'challenge');
+    list($noncommunityMember, $competitor1, $competitor2, $communityModerator1, $communityModerator2, $communityAdmin) = $this->loadData('User', 'challenge', '', 'challenge');
     list($challenge1Community, $challenge2Community) = $this->loadData('Community', 'challenge', '', 'challenge');
 
     // try to create a challenge with a non-community member
     $this->createChallengeErrorCase($noncommunityMember, $challenge1Community, "challenge1", "challenge1 description");
     // try to create a challenge with a community member
     $this->createChallengeErrorCase($competitor1, $challenge1Community, "challenge1", "challenge1 description");
-    // create a challenge with a community moderator
-    $challenge1 = $this->challengeModel->createChallenge($communityModerator1, $challenge1Community, "challenge1", "challenge1 description");
+    // try to create a challenge with a community moderator
+    $this->createChallengeErrorCase($communityModerator1, $challenge1Community, "challenge1", "challenge1 description");
+    // create a challenge with a community admin
+    $challenge1 = $this->challengeModel->createChallenge($communityAdmin, $challenge1Community, "challenge1", "challenge1 description");
 
     // test the three folders of this challenge for permissions
     $challenge1Dashboard = $challenge1->getDashboard();
