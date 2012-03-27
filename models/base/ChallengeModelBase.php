@@ -9,8 +9,11 @@ This software is distributed WITHOUT ANY WARRANTY; without even
 the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
+include_once BASE_PATH . '/modules/challenge/constant/module.php';
 /** ChallengeModel Base class */
 abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
+
+
 
   /**
    * constructor
@@ -26,6 +29,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       'challenge_id' => array('type' => MIDAS_DATA),
       'validation_dashboard_id' => array('type' => MIDAS_DATA),
       'community_id' => array('type' => MIDAS_DATA),
+      'status' => array('type' => MIDAS_DATA),
       'dashboard' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'validation',
                         'model' => 'Dashboard',
@@ -40,6 +44,45 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $this->initialize(); // required
     }
 
+  abstract function findAvailableChallenges($userDao, $status);
+
+  /**
+   * checks whether the user is a moderator of the challenge
+   */
+  function isChallengeModerator($userDao, $challengeDao)
+    {
+    if(!$userDao)
+      {
+      throw new Exception('You must be logged in.');
+      }
+    if(!$userDao instanceof UserDao)
+      {
+      throw new Zend_Exception("userDao should be a valid instance.");
+      }
+    if(!$challengeDao)
+      {
+      throw new Exception('Invalid instance of a challenge.');
+      }
+    if(!$challengeDao instanceof Challenge_ChallengeDao)
+      {
+      throw new Exception('Invalid instance of a challenge.');
+      }
+
+    $modelLoad = new MIDAS_ModelLoader();
+    $communityModel = $modelLoad->loadModel('Community');
+
+    $communityDao = $communityModel->load($challengeDao->getCommunityId());
+    if(!$communityDao)
+      {
+      throw new Exception('Challenge is not linked with a valid community.');
+      }
+    if(!$communityDao instanceof CommunityDao)
+      {
+      throw new Exception('Challenge is not linked with a valid community.');
+      }
+
+    return $communityModel->policyCheck($communityDao, $userDao, MIDAS_POLICY_WRITE);
+    }
 
   /** Create a challenge
    * @return ChallengeDao */
@@ -48,6 +91,10 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     if(!$userDao)
       {
       throw new Exception('You must be logged in to create a challenge');
+      }
+    if(!$userDao instanceof UserDao)
+      {
+      throw new Zend_Exception("userDao should be a valid instance.");
       }
 
     if(!$communityDao instanceof CommunityDao)
@@ -64,9 +111,9 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $folderModel = $modelLoad->loadModel('Folder');
     $folderpolicyggroupModel = $modelLoad->loadModel('Folderpolicygroup');
 
-    if(!$communityModel->policyCheck($communityDao, $userDao, MIDAS_POLICY_WRITE))
+    if(!$communityModel->policyCheck($communityDao, $userDao, MIDAS_POLICY_ADMIN))
       {
-      throw new Zend_Exception('You must be a moderator of this community to create a challenge');
+      throw new Zend_Exception('You must be an administrator of this community to create a challenge');
       }
 
     // create a new dashboard
@@ -80,6 +127,8 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $challengeDao = new Challenge_ChallengeDao();
     $challengeDao->setValidationDashboardId($dashboardDao->getDashboardId());
     $challengeDao->setCommunityId($communityDao->getCommunityId());
+    // closed by default
+    $challengeDao->setStatus(MIDAS_CHALLENGE_STATUS_CLOSED);
     $challengeModel->save($challengeDao);
 
     // create 3 folders in the community, Truth, Testing, Training
@@ -110,5 +159,37 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
 
     return $challengeDao;
     }  // createChallenge
+
+  /**
+   * Open a challenge
+   **/
+  function openChallenge($userDao, $challengeId)
+    {
+    $challengeDao = $this->load($challengeId);
+    if(!$this->isChallengeModerator($userDao, $challengeDao))
+      {
+      throw new Zend_Exception("You must be a moderator of this challenge.");
+      }
+
+    $challengeDao->setStatus(MIDAS_CHALLENGE_STATUS_OPEN);
+    $this->save($challengeDao);
+    }
+
+  /**
+   * Close a challenge
+   **/
+  function closeChallenge($userDao, $challengeId)
+    {
+    $challengeDao = $this->load($challengeId);
+    if(!$this->isChallengeModerator($userDao, $challengeDao))
+      {
+      throw new Zend_Exception("You must be a moderator of this challenge.");
+      }
+
+    $challengeDao->setStatus(MIDAS_CHALLENGE_STATUS_CLOSED);
+    $this->save($challengeDao);
+    }
+
+
 
 }  // end class Challenge_ChallengeModelBase
