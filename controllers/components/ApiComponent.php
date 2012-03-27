@@ -37,7 +37,7 @@ class Challenge_ApiComponent extends AppComponent
    * @param challengeDescription
    * @return id of the newly created challenge
    */
-  public function createChallenge($args)
+  public function adminCreateChallenge($args)
     {
     $this->_checkKeys(array('communityId', 'challengeName', 'challengeDescription'), $args);
 
@@ -64,6 +64,94 @@ class Challenge_ApiComponent extends AppComponent
     // return the challengeId
     return $challengeDao->getKey();
     }
+
+  /**
+   * Open a challenge, requires challenge moderator status.
+   * @param challengeId
+   * @return true on success
+   */
+  public function adminOpenChallenge($args)
+    {
+    $this->_checkKeys(array('challengeId'), $args);
+
+    $componentLoader = new MIDAS_ComponentLoader();
+    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $userDao = $authComponent->getUser($args,
+                                       Zend_Registry::get('userSession')->Dao);
+    if(!$userDao)
+      {
+      throw new Zend_Exception('You must be logged in to open a challenge');
+      }
+
+    $challengeId = $args['challengeId'];
+
+    $modelLoad = new MIDAS_ModelLoader();
+    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $challengeModel->openChallenge($userDao, $challengeId);
+    return true;
+    }
+
+  /**
+   * Close a challenge, requires challenge moderator status.
+   * @param challengeId
+   * @return true on success
+   */
+  public function adminCloseChallenge($args)
+    {
+    $this->_checkKeys(array('challengeId'), $args);
+
+    $componentLoader = new MIDAS_ComponentLoader();
+    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $userDao = $authComponent->getUser($args,
+                                       Zend_Registry::get('userSession')->Dao);
+    if(!$userDao)
+      {
+      throw new Zend_Exception('You must be logged in to open a challenge');
+      }
+
+    $challengeId = $args['challengeId'];
+
+    $modelLoad = new MIDAS_ModelLoader();
+    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $challengeModel->closeChallenge($userDao, $challengeId);
+    return true;
+    }
+
+  /**
+   * Add a metric to a challenge
+   * no implementation, stub
+   * @param challengeId
+   * @param metricId ??
+   */
+  public function adminAddMetric($args)
+    {
+    }
+
+
+  /**
+   * List the open challenges a user is a competitor for, based on which
+   * communities the user is a member of and are associated with challenges.
+   * @return an array of challenge ids as keys, with an array of
+   * challenge name and description as the value for each key.
+   */
+  public function competitorListOpenChallenges($args)
+    {
+    $componentLoader = new MIDAS_ComponentLoader();
+    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $userDao = $authComponent->getUser($args,
+                                       Zend_Registry::get('userSession')->Dao);
+    if(!$userDao)
+      {
+      throw new Zend_Exception('You must be logged in to list available challenges');
+      }
+
+    $modelLoad = new MIDAS_ModelLoader();
+    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $availableChallenges = $challengeModel->findAvailableChallenges($userDao, MIDAS_CHALLENGE_STATUS_OPEN);
+    return $availableChallenges;
+    }
+
+
 
   /**
    * helper function to generate the names of expected results items based on
@@ -116,11 +204,12 @@ class Challenge_ApiComponent extends AppComponent
 
 
   /**
-   * Create a dashboard with the given name and description
+   * Display the testing data along with expected results filenames for
+   * the given challenge.
    * @param challengeId the id of the challenge to display testing inputs for
    * @return a list of item names and expected result names for the challenge
    */
-  public function displayTestingInputs($args)
+  public function competitorDisplayTestingInputs($args)
     {
     $this->_checkKeys(array('challengeId'), $args);
 
@@ -186,7 +275,7 @@ class Challenge_ApiComponent extends AppComponent
    * @return a list of pairings b/w the testing folder of the community and
    * this user's result's folder
    */
-  public function validateResultsFolder($args)
+  public function competitorValidateResultsFolder($args)
     {
     $this->_checkKeys(array('challengeId', 'folderId'), $args);
     $componentLoader = new MIDAS_ComponentLoader();
@@ -304,7 +393,7 @@ class Challenge_ApiComponent extends AppComponent
    * @param folderId the id of the folder owned by the user and containing results
    * @return some notion of success or error, to be determined
    */
-  public function scoreResultsFolder($value)
+  public function competitorScoreResultsFolder($value)
     {
     $this->_checkKeys(array('challengeId', 'folderId'), $value);
 
@@ -316,6 +405,8 @@ class Challenge_ApiComponent extends AppComponent
       {
       throw new Zend_Exception('You must be logged in to see the testing inputs');
       }
+
+    // TODO: want to call addResult on the results folder
 
 //abs1    // get the challenge, check that the challenge is valid
 //abs1    // get the community from the challenge, check that they are a member of the community

@@ -28,6 +28,9 @@
     email="user1115@user.com" password="35fd8ba86ba403ffcc00feac5355ad20" creation="2011-01-27 12:09:02"
     admin="0" />
 
+  <user user_id="1116" firstname="community" lastname="admin"
+    email="user1116@user.com" password="35fd8ba86ba403ffcc00feac5355ad20" creation="2011-01-27 12:09:02"
+    admin="0" />
 
   <community community_id="2222" name="Challenge1"
     description="Challenge 1 Community" creation="2011-01-27 12:09:02"
@@ -48,7 +51,9 @@
   <!-- community moderators are moderator of Challenge 1 Community -->
   <user2group group_id="2223" user_id="1114" />
   <user2group group_id="2223" user_id="1115" />
-
+  <!-- community admin -->
+  <user2group group_id="2224" user_id="1116" />
+  
 
   <community community_id="3333" name="Challenge2"
     description="Challenge 2 Community" creation="2011-01-27 12:09:02"
@@ -66,6 +71,8 @@
   <!-- community moderators are moderator of Challenge 2 Community -->
   <user2group group_id="3334" user_id="1114" />
   <user2group group_id="3334" user_id="1115" />
+  <!-- community admin -->
+  <user2group group_id="3334" user_id="1116" />
 
   <folder folder_id="1015" name="challenge 2 top folder"  uuid='4e311fdf82007c245b07d8d6c4fcb4205f2621eb72760'
     description="challenge2 top folder" parent_id="-2" privacy_status="1"  left_indice="0" right_indice="0"/>
