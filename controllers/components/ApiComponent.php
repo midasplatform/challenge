@@ -30,8 +30,8 @@ class Challenge_ApiComponent extends AppComponent
 
 
   /**
-   * Create a challenge with the given name and description, in the community.
-   * Will create three folders in the community, truth, training, and testing.
+   * Create a closed challenge with given name and description, in the community,
+   * will create three folders in the community, truth, training, and testing.
    * @param communityId the id of the community to associate with this challenge
    * @param challengeName
    * @param challengeDescription
@@ -390,12 +390,15 @@ class Challenge_ApiComponent extends AppComponent
   /**
    * Score a competitor folder to be used as a results folder.
    * @param challengeId the id of the challenge to display testing inputs for
-   * @param folderId the id of the folder owned by the user and containing results
+   * @param resultsFolderId id of folder owned by the user and containing results
+   * @param outputFolderId id of folder owned by the user, will be the parent
+   * directory for a newly created directory that will contain any outputs
+   * created by the scoring process
    * @return some notion of success or error, to be determined
    */
   public function competitorScoreResultsFolder($value)
     {
-    $this->_checkKeys(array('challengeId', 'folderId'), $value);
+    $this->_checkKeys(array('challengeId', 'resultsFolderId', 'outputFolderId'), $value);
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
@@ -422,6 +425,40 @@ class Challenge_ApiComponent extends AppComponent
     //
     // based on the listing of matchups, create jobs, start the jobs running
     // return a notion of success
+    }
+
+  /**
+   * Get the results for a competitor for a challenge.
+   * @param challengeId the id of the challenge to display testing inputs for
+   * @return find the most recent (TBD???) set of results for a competitor for
+   * the challenge, a set of rows with values
+   * (testing item name and id,
+   * results item name and id,
+   * metric name,score,
+   * output item name and id if one exists)
+   */
+  public function competitorListResults($value)
+    {
+    $this->_checkKeys(array('challengeId'), $value);
+    // TODO implementation
+    // TODO figure out what happens if no results or more than one set of results
+    }
+
+  /**
+   * Get the dashboard of results for an entire challenge.
+   * @param challengeId the id of the challenge to display testing inputs for
+   * @return find the most recent (TBD???) set of results for each competitor for
+   * the challenge, a set of rows, one row per competitor who has at least one
+   * result folder scored
+   * (anonymized id of competitor,
+   * for every testing item a column with the competitors score on that item,
+   * aggregated competitor score)
+   */
+  public function competitorListDashboard($value)
+    {
+    $this->_checkKeys(array('challengeId'), $value);
+    // TODO implementation
+    // TODO figure out what happens if no results or more than one set of results
     }
 
 
