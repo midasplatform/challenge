@@ -1,0 +1,136 @@
+<?php
+/*=========================================================================
+MIDAS Server
+Copyright (c) Kitware SAS. 20 rue de la Villette. All rights reserved.
+69328 Lyon, FRANCE.
+
+See Copyright.txt for details.
+This software is distributed WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the above copyright notices for more information.
+=========================================================================*/
+$this->headScript()->appendFile($this->coreWebroot . '/public/js/jquery/jquery.form.js');
+$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.init.js');
+$this->headScript()->appendFile($this->coreWebroot . '/public/js/jquery/jquery.smartWizard-2.0.js');
+$this->headScript()->appendFile($this->apiWebroot.'/public/js/common/common.ajaxapi.js');
+?>
+<link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.init.css" />
+<link type="text/css" rel="stylesheet" href="<?php echo $this->coreWebroot?>/public/css/jquery/jquery.smartWizard-2.0.css" />
+
+
+<?php
+$processSteps = array();
+$processSteps[1] = array('title'=>'Challenge', 'subtitle'=>'participate in a challenge');
+$processSteps[2] = array('title'=>'Results Folder', 'subtitle'=>'select results folder');
+$processSteps[3] = array('title'=>'Output Folder', 'subtitle'=>'select output folder');
+?>
+
+<div id="wizard" class="swMain">
+  <ul>
+<?php
+  foreach($processSteps as $i => $processStep)
+    {
+    echo '<li>';
+    echo '  <a href="#step-'.$i.'">';
+    echo '    <span class="stepDesc">';
+    echo '      '.$i.') '.$processStep["title"].'<br/>';
+    echo '      <small>'.$processStep["subtitle"].'</small>';
+    echo '    </span>';
+    echo '  </a>';
+    echo '</li>';
+    }
+?>
+  </ul>
+
+    
+  <div id="step-1">
+      <h2 class="StepTitle">Target Challenge</h2>
+      <?php
+      if(!empty($this->challenges))
+        {
+         echo "
+         <form class='genericForm' id='configForm' method='{$this->configForm['method']}'  action='{$this->configForm['action']}'>
+         <h3>Please select a challenge to paticipate in:</h3>
+            <div >
+              {$this->configForm['challengeList']}
+              {$this->configForm['submitSelect']}
+            </div>
+        </form>";
+        }
+      ?>
+  
+      <?php 
+      if(empty($this->challenges))
+        {    
+        echo "<h4>{$this->t("No challenge is available")}.</h4>";
+        }
+       ?>
+      <br/>
+      <b>Selected Challenge:</b> <span id="midas_challenge_competitor_selectedChallenge"><?php echo (isset($this->targetChallengeName))? $this->targetChallengeName:''?></span>
+      <input type="hidden" id="midas_challenge_competitor_selectedChallengeId" value="<?php echo (isset($this->targetChallengeId))? $this->targetChallengeId:''?>"/>
+
+  </div>
+
+  <div id="step-2">
+      <h2 class="StepTitle">Results folder</h2>
+      <br/><b>Please specify the Midas folder where the results are uploaded.</b>
+      <br/>
+      <br/>
+      
+
+      <?php
+        echo '<div id="midas_challenge_competitor_browseResultsFolder" class="genericBigButton ">';
+          echo "<a  ><img  alt='' src='{$this->coreWebroot}/public/images/FileTree/directory.png'/>";
+          echo 'Browse';
+          echo "</a>";
+        echo '</div>';
+        ?>
+
+      <br/>
+      <br/>
+      <b>Selected Results Folder:</b> <span id="midas_challenge_competitor_selectedResultsFolder"></span>
+      <input type="hidden" id="midas_challenge_competitor_selectedResultsFolderId" value=""/>
+      
+      <br/>
+      <br/>
+      <?php
+        echo '<div id="midas_challenge_competitor_checkResultsFolder" class="genericBigButton ">';
+          echo "<a  ><img  alt='' src='{$this->coreWebroot}/public/images/FileTree/directory.png'/>";
+          echo 'Validate';
+          echo "</a>";
+        echo '</div>';
+        ?>
+
+      <br/>
+      <br/>
+      <b>Results Folder Validation:</b> <span id="midas_challenge_competitor_validatedResultsFolder"></span>
+      <div id="midas_challenge_competitor_validatedResultsFolder_Info"> </div>
+  </div>
+      
+  <div id="step-3">
+      <h2 class="StepTitle">Output folder</h2>
+      <br/><b>Please specify the Midas folder where the output files will be stored.</b>
+      <br/>
+      <br/>
+
+      <?php
+        echo '<div id="midas_challenge_competitor_browseOutputFolder" class="genericBigButton ">';
+          echo "<a  ><img  alt='' src='{$this->coreWebroot}/public/images/FileTree/directory.png'/>";
+          echo 'Browse';
+          echo "</a>";
+        echo '</div>';
+        ?>
+
+      <br/>
+      <br/>
+      <b>Selected Output Folder:</b> <span id="midas_challenge_competitor_selectedOutputFolder"></span>
+      <input type="hidden" id="midas_challenge_competitor_selectedOutputFolderId" value=""/>
+  </div>    
+    
+
+</div>
+
+
+
+
+

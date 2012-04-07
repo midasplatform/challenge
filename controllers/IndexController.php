@@ -20,7 +20,8 @@
 /** demo controller*/
 class Challenge_IndexController extends Challenge_AppController
 {
-
+  public $_models = array('User');
+  public $_daos = array('Item');
   /**
    * @method initAction()
    *  Index Action (first action when we access the application)

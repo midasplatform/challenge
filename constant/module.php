@@ -22,5 +22,7 @@
 
 define("MIDAS_CHALLENGE_STATUS_CLOSED", "closed");
 define("MIDAS_CHALLENGE_STATUS_OPEN", "open");
+
+define("MIDAS_CHALLENGE_MODULE", "challenge");
   
 ?>
