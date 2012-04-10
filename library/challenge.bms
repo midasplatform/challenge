@@ -1,0 +1,42 @@
+Include(challenge.config.bms)
+
+SetApp(php @PHP)
+SetAppOption(php.script --version)
+CondorPostScript(php ${cfg_exe} ${cfg_condordagpostscript} ${cfg_output_directory} ${cfg_taskID} challenge)
+Run(output ${php})
+
+
+
+# Loop through the sequence of job indices
+ForEach(jobInd ${cfg_jobInds})
+
+
+
+  # get each of the param values for this particular job
+  GetParam(testImage ${cfg_testItems} ${jobInd})
+  GetParam(resultImage ${cfg_resultItems} ${jobInd})
+  
+  # define the output filenames
+  # TODO fix the output name once we figure it out
+#  GetFilename(outputImage ${resultImage} NAME)
+  # clean off trailing commas
+#  RegEx(outputImageClean ${outputImage} '[^,]*' MATCH)
+
+  # Set the Application Properties to be passed to the condor scripts
+  #SetApp(metric @example)
+  #SetAppOption(metric.TestImage.TestImage ${testImage})
+  #SetAppOption(metric.ResultImage.ResultImage ${resultImage})
+  #SetAppOption(metric.OutputImage.OutputImage ${outputImage})
+  #CondorPostScript(seg ${cfg_exe} ${cfg_condorpostscript} ${cfg_output_directory} ${cfg_taskID} LesionSegmentationQIBench ${cfg_runID} ${cfg_outputFolderID} ${runItemID} ${itemName} ${outputAIM} ${outputImage} ${outputMesh})
+  #Run(output ${metric})
+
+  # HACK for now PHP
+  SetApp(php @PHP)
+  SetAppOption(php.script --version)
+  CondorPostScript(php ${cfg_exe} ${cfg_condorpostscript} ${cfg_output_directory} ${cfg_taskID} ${cfg_dashboardID} ${cfg_resultsrunID} ${cfg_resultsFolderID} ${cfg_challengeID} challenge ${testImage} ${resultImage} ${cfg_outputFolderID})
+  Run(output ${php})
+
+
+EndForEach()
+
+Exit()
