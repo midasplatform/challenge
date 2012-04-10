@@ -190,6 +190,159 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $this->save($challengeDao);
     }
 
+  /**
+   * ensure the challenge is valid and the user is a member.
+   * return an array of challengeDao, communityDao and memberGroupDao if all
+   * conditions are valid,
+   * otherwise throws an exception relevant to the condition violated.  
+   */
+  function validateChallengeUser($userDao, $challengeId)
+    {
+    $modelLoad = new MIDAS_ModelLoader();
+    $groupModel = $modelLoad->loadModel('Group');
+    
+    $challengeDao = $this->load($challengeId);
+    if(!$challengeDao)
+      {
+      throw new Zend_Exception('You must enter a valid challenge.');
+      }
+
+    // check that the community is valid and the user is a member
+    $communityDao = $challengeDao->getCommunity();
+    if(!$communityDao)
+      {
+      throw new Zend_Exception('This challenge does not have a valid community');
+      }
+      
+    $memberGroupDao = $communityDao->getMemberGroup();
+    if(!$groupModel->userInGroup($userDao, $memberGroupDao))
+      {
+      throw new Zend_Exception('You must join this community to view the challenge');
+      }
+    
+    return array($challengeDao, $communityDao, $memberGroupDao);
+    }
+    
+    
+  /**
+   * validates that a user has the right permissions for a results folder,
+   * adds read permissions on the folder for community moderators.
+   * 
+   * Will return the resultsFolderDao or else throw an exception describing
+   * the condition violated.
+   */    
+  function validateChallengeUserFolder($userDao, $communityDao, $folderId)
+    {
+    $modelLoad = new MIDAS_ModelLoader();
+    $groupModel = $modelLoad->loadModel('Group');
+    $folderModel = $modelLoad->loadModel('Folder');
+    $folderpolicyuserModel = $modelLoad->loadModel('Folderpolicyuser');
+    $folderpolicygroupModel = $modelLoad->loadModel('Folderpolicygroup');
+    
+    // get the results folder
+    $folderDao = $folderModel->load($folderId);
+
+    // ensure user has ownership/admin
+    $folderpolicyuserDao = $folderpolicyuserModel->getPolicy($userDao, $folderDao);
+    if($folderpolicyuserDao->getPolicy() != MIDAS_POLICY_ADMIN)
+      {
+      throw new Zend_Exception('You must have admin rights to this folder to submit it as a results folder.');
+      }
+
+    // ensure that anonymous users cannot access the folder
+    $anonymousgroupDao = $groupModel->load(MIDAS_GROUP_ANONYMOUS_KEY);
+    $anonymousfolderpolicygroupDao = $folderpolicygroupModel->getPolicy($anonymousgroupDao, $folderDao);
+    if($anonymousfolderpolicygroupDao)
+      {
+      throw new Zend_Exception('You must remove anonymous access to this results folder');
+      }
+
+    // ensure that community members cannot access the folder
+    $memberGroup = $communityDao->getMemberGroup();
+    $membersfolderpolicygroupDao = $folderpolicygroupModel->getPolicy($memberGroup, $folderDao);
+    if($membersfolderpolicygroupDao)
+      {
+      throw new Zend_Exception('You must remove challenge community members access to this results folder');
+      }
+
+    // add read access to challenge community moderators for the folder
+    $moderatorGroup = $communityDao->getModeratorGroup();
+    $moderatorReadPolicy = $folderpolicygroupModel->createPolicy($moderatorGroup, $folderDao, MIDAS_POLICY_READ);
+    if(!$moderatorReadPolicy)
+      {
+      throw new Zend_Exception('Cannot add read access to challenge moderators to your results folder.');
+      }
+  
+    return $folderDao;
+    }
+        
+  /**
+   * generate the names of expected results items based on testing folder items.
+   * @param type $testingItems
+   * @return string
+   */
+  function getExpectedResultsItems($userDao, $challengeDao, $resultFolderId = null) //$testingItems, $resultsItems = null)
+    {
+    $modelLoad = new MIDAS_ModelLoader();
+    //$challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    //$communityModel = $modelLoad->loadModel('Community');
+    //$groupModel = $modelLoad->loadModel('Group');
+    //$dashboardModel = $modelLoad->loadModel('Dashboard', 'validation');
+    $folderModel = $modelLoad->loadModel('Folder');
+
+      
+    // get all the items in the Testing folder
+    $dashboardDao = $challengeDao->getDashboard();
+    $testingFolderDao = $dashboardDao->getTesting();
+    $testingItems = $folderModel->getItemsFiltered($testingFolderDao, $userDao, MIDAS_POLICY_READ);
+    $testingResults = array();
+    foreach($testingItems as $item)
+      {
+      $name = $item->getName();
+      $testingResults[$name] = "result_" . $name;
+      }
+
+    if($resultFolderId === null) 
+      {
+      return $testingResults;
+      }
+    else
+      {
+      // get all items in Results folder
+      $resultsFolder = $folderModel->load($resultFolderId);
+      if(!$resultsFolder)
+        {
+        throw new Zend_Exception("The results folder is invalid");  
+        }
+      $resultsItems = $folderModel->getItemsFiltered($resultsFolder, $userDao, MIDAS_POLICY_READ);
+      $resultsItemNames = array();
+      $resultsWithoutTesting = array();
+      foreach($resultsItems as $item)
+        {
+        $resultsItemName = $item->getName();
+        $resultsItemNames[$resultsItemName] = $resultsItemName;
+        if(!in_array($resultsItemName, $testingResults))
+          {
+          $resultsWithoutTesting[] = $resultsItemName;
+          }
+        }
+      $testingWithoutResults = array();
+      $matchedTestingResults = array();
+      foreach($testingResults as $testItem => $resultItem)
+        {
+        if(in_array($resultItem, $resultsItemNames))
+          {
+          $matchedTestingResults[$testItem] = $resultItem;
+          }
+        else
+          {
+          $testingWithoutResults[$testItem] = $resultItem;
+          }
+        }
+      return array('resultsWithoutTesting' => $resultsWithoutTesting, 'testingWithoutResults' => $testingWithoutResults, 'matchedTestingResults' => $matchedTestingResults);
+      }
+    }
+
 
 
 }  // end class Challenge_ChallengeModelBase
