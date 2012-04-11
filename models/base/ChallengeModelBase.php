@@ -44,6 +44,9 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $this->initialize(); // required
     }
 
+ /** Returns challenge(s) by a communityId */
+  abstract function getByCommunityId($communityId);
+  
   abstract function findAvailableChallenges($userDao, $status);
 
   /**

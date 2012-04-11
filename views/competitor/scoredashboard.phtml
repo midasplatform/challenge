@@ -1,0 +1,36 @@
+<?php
+/*=========================================================================
+MIDAS Server
+Copyright (c) Kitware SAS. 20 rue de la Villette. All rights reserved.
+69328 Lyon, FRANCE.
+
+See Copyright.txt for details.
+This software is distributed WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the above copyright notices for more information.
+=========================================================================*/
+$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
+$this->headScript()->appendFile($this->apiWebroot.'/public/js/common/common.ajaxapi.js');
+?>
+<link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
+<div class="scoredashbaord">
+  <br/> <b>Score dashboard </b> 
+  <br/>
+  <div> <span> Competitor Id  </span> </div>
+  <table id="scoredashboard" border="1" width="80%" cellpadding="1" cellspacing="0">
+    <tr> 
+      <th align="center"><span>Testing item</span></th> 
+      <th align="center"><span>Score</span></th>
+    </tr> 
+    <tr>
+      <td align="center"> <span></span> </td>
+      <td align="center"> </td> 
+    </tr>    
+  </table>
+  <div> <span> Aggregated score <span> </div>
+</div>
+
+
+
+
+

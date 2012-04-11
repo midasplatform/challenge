@@ -1,0 +1,11 @@
+
+div#selectedChallengeInfo span#midas_challenge_competitor_selectedChallengeName{
+  padding-left: 5px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+div#selectedChallengeInfo span#midas_challenge_competitor_selectedChallengeDesc{
+  padding-left: 10px;
+}
+

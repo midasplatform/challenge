@@ -20,7 +20,6 @@
 /** competitor controller*/
 class Challenge_CompetitorController extends Challenge_AppController
 {
-  public $_models = array('Item', 'Folder', 'User', 'Community');
   public $_components = array('Date');
   public $_moduleComponents = array('Api');
   public $_moduleModels = array('Challenge');
@@ -48,11 +47,11 @@ class Challenge_CompetitorController extends Challenge_AppController
       $this->haveToBeLogged();
       return false;
       }
-
-    $args = array();
+            
     $args['useSession'] = true;
+    $args['status'] = MIDAS_CHALLENGE_STATUS_OPEN;
     $this->view->user = $this->userSession->Dao;
-    $challenges = $this->ModuleComponent->Api->competitorListOpenChallenges($args);
+    $challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
     $this->view->challenges = $challenges;
     foreach($challenges as $challengdId => $challengeDetails)
       {
@@ -65,13 +64,12 @@ class Challenge_CompetitorController extends Challenge_AppController
 
     if($this->_request->isPost())
       {
-      //$this->_helper->layout->disableLayout();
-      //$this->_helper->viewRenderer->setNoRender();
       $submitSelect = $this->_getParam('submitSelect');
       if(isset($submitSelect))
         {
         $this->view->targetChallengeId = $this->_getParam('challengeList');
         $this->view->targetChallengeName = $selectOptions[$this->_getParam('challengeList')];
+        $this->view->targetChallengeDesc = $challenges[$this->_getParam('challengeList')]['description'];
         }
 
       }
@@ -158,5 +156,32 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->score = $this->ModuleComponent->Api->competitorScoreResultsFolder($args);
     */
     }
+    
+  public function showscoreAction()
+    {
+    //$this->disableLayout();
+    //$this->disableView();
+    /* TODO
+    $args = array();
+    $args['useSession'] = true;
+    $args['challengeId'] = $this->_getParam("challengeId");
+    $args['outputFolderId'] = $this->_getParam("outputFolderId");
+    $args['resultsFolderId'] = $this->_getParam("resultsFolderId");
+
+    $this->view->args = $args();
+    $this->view->score = $this->ModuleComponent->Api->competitorScoreResultsFolder($args);
+    */
+    }
+    
+   public function showscoreAction()
+    {
+    //  TODO: use api to get scores for individual competitor
+    } 
+   
+    
+   public function scoredashboardAction()
+    {
+    //  TODO: use api to get scores for a community
+    } 
 
 }//end class

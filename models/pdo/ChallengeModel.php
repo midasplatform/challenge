@@ -14,6 +14,24 @@ require_once BASE_PATH . '/modules/challenge/models/base/ChallengeModelBase.php'
 
 /** Challenge_ChallengeModel */
 class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
+  
+  /**
+   * Returns challenge(s) by a communityId
+   * @param type $communityId
+   * @return type
+   */
+  
+  function getByCommunityId($communityId)
+    {
+    $rowset = $this->database->fetchAll($this->database->select()->where('community_id=?', $communityId));
+    foreach($rowset as $row)
+      {
+      $challengeId = $row['challenge_id'];
+      $status = $row['status'];
+      $return[$challengeId] = $status;
+      }
+    return $return;
+  }
 
   /**
    * lists the set of challenges for a user, based on which communities

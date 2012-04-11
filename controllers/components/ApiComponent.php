@@ -129,12 +129,13 @@ class Challenge_ApiComponent extends AppComponent
 
 
   /**
-   * List the open challenges a user is a competitor for, based on which
+   * List all the challenges a user is a competitor for, based on which
    * communities the user is a member of and are associated with challenges.
+   * @param status
    * @return an array of challenge ids as keys, with an array of
    * challenge name and description as the value for each key.
    */
-  public function competitorListOpenChallenges($args)
+  public function competitorListChallenges($args)
     {
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
@@ -147,12 +148,36 @@ class Challenge_ApiComponent extends AppComponent
 
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $availableChallenges = $challengeModel->findAvailableChallenges($userDao, MIDAS_CHALLENGE_STATUS_OPEN);
+    $availableChallenges = $challengeModel->findAvailableChallenges($userDao, isset($args['status'])?$args['status']:null);
     return $availableChallenges;
     }
-
-
-
+    
+ 
+  /**
+   * Check if a community has one or more challenge(s)
+   * @param communityId
+   * @return an array of challenge ids as keys, with challenge status as the value for each key.
+   */
+  public function checkCommunity($args)
+    {
+    $this->_checkKeys(array('communityId'), $args);
+    
+    $componentLoader = new MIDAS_ComponentLoader();
+    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $userDao = $authComponent->getUser($args,
+                                       Zend_Registry::get('userSession')->Dao);
+    if(!$userDao)
+      {
+      throw new Zend_Exception('You must be logged in to list available challenges');
+      }
+    
+    $communityId = $args['communityId'];  
+      
+    $modelLoad = new MIDAS_ModelLoader();
+    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $hasChallenges = $challengeModel->getByCommunityId($communityId);
+    return $hasChallenges;
+    }
 
     
   /**
