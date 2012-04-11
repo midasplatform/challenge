@@ -76,34 +76,34 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
     $resultsrunDao->setResultsFolderId($resultsFolderId);
 
     $this->save($resultsrunDao);
-    
+
     // now that we have saved, we can get the results run id
-    
+
     // create a new child folder of the output folder, this is where any outputs
     // will live.
-    $challengeDao = $challengeModel->load($challengeId);    
+    $challengeDao = $challengeModel->load($challengeId);
     $communityDao = $challengeDao->getCommunity();
     $outputFolderParentDao = $folderModel->load($outputFolderId);
     $outputFolderDao = $folderModel->createFolder("Results Output " . $resultsrunDao->getChallengeResultsRunId(), "Output folder from running results", $outputFolderParentDao);
 
     // give user ownership rights
     $folderpolicyuserModel->createPolicy($userDao, $outputFolderDao, MIDAS_POLICY_ADMIN);
-    
+
     // give community moderators read access
     $moderatorGroup = $communityDao->getModeratorGroup();
     $outputFolderModeratorsReadPolicy = $folderpolicyggroupModel->createPolicy($moderatorGroup, $outputFolderDao, MIDAS_POLICY_READ);
-    
+
     $resultsrunDao->setOutputFolderId($outputFolderDao->getFolderId());
     $this->save($resultsrunDao);
 
     return $resultsrunDao;
     }
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 
 }  // end class Challenge_ResultsRunModelBase

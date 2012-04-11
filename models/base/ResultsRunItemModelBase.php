@@ -58,9 +58,9 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
        );
     $this->initialize(); // required
     }
-    
-  
-    
+
+
+
   /** Create a ResultsRunItem
    * @return ResultsRunItemDao */
   function createResultsItemRun($challengeResultsRunId, $testItemId, $resultsItemId, $outputItemId, $condorDagJobId, $scalarResultId)
@@ -80,8 +80,8 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
     $this->save($resultsrunItemDao);
     return $resultsrunItemDao;
     }
-    
-        
-    
-    
+
+
+
+
 }  // end class Challenge_ResultsRunItemModelBase

@@ -47,7 +47,7 @@ class Challenge_CompetitorController extends Challenge_AppController
       $this->haveToBeLogged();
       return false;
       }
-            
+
     $args['useSession'] = true;
     $args['status'] = MIDAS_CHALLENGE_STATUS_OPEN;
     $this->view->user = $this->userSession->Dao;
@@ -156,9 +156,11 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->score = $this->ModuleComponent->Api->competitorScoreResultsFolder($args);
     */
     }
-    
+
+  /** show score */
   public function showscoreAction()
     {
+    $this->disableLayout();
     //$this->disableLayout();
     //$this->disableView();
     /* TODO
@@ -172,16 +174,12 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->score = $this->ModuleComponent->Api->competitorScoreResultsFolder($args);
     */
     }
-    
-   public function showscoreAction()
+
+  /** score dashboard */
+  public function scoredashboardAction()
     {
-    //  TODO: use api to get scores for individual competitor
-    } 
-   
-    
-   public function scoredashboardAction()
-    {
+    $this->disableLayout();
     //  TODO: use api to get scores for a community
-    } 
+    }
 
 }//end class
