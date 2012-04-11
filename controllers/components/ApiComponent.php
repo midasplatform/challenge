@@ -511,18 +511,87 @@ class Challenge_ApiComponent extends AppComponent
    * Get the results for a competitor for a challenge.
    * @param challengeId the id of the challenge to display testing inputs for
    * @return find the most recent (TBD???) set of results for a competitor for
-   * the challenge, a set of rows with values
-   * (testing item name and id,
-   * results item name and id,
-   * metric name,score,
-   * output item name and id if one exists)
+   * the challenge.
+   *
+   * return value is an array:
+   * processing_complete => true/false
+   * results_rows => array of rows having keys:
+   * test_item_name
+   * test_item_id
+   * result_item_name
+   * result_item_id
+   * output_item_name
+   * output_item_id
+   * metric_item_name
+   * metric_item_id
+   * score
    */
-  public function competitorListResults($value)
+  public function competitorListResults($args)
     {
-    $this->_checkKeys(array('challengeId'), $value);
+    $this->_checkKeys(array('challengeId'), $args);
     // TODO implementation
     // TODO figure out what happens if no results or more than one set of results
+
+    $componentLoader = new MIDAS_ComponentLoader();
+    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $userDao = $authComponent->getUser($args,
+                                       Zend_Registry::get('userSession')->Dao);
+    if(!$userDao)
+      {
+      throw new Zend_Exception('You must be logged in to view results.');
+      }
+
+    $challengeId = $args['challengeId'];
+
+    $modelLoad = new MIDAS_ModelLoader();
+    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+
+    list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
+
+
+    // TODO this is fake data, remove it with real implementation
+    $rows = array();
+    $row1 = array('test_item_name' => 'test1', 'test_item_id' => '1',
+                  'result_item_name' => 'result1', 'result_item_id' => '2',
+                  'output_item_name' => 'output1', 'output_item_id' => '8',
+                  'metric_item_name' => 'metric1', 'metric_item_id' => '3',
+                  'score' => '0.77');
+    $row2 = array('test_item_name' => 'test2', 'test_item_id' => '4',
+                  'result_item_name' => 'result2', 'result_item_id' => '5',
+                  'output_item_name' => 'output2', 'output_item_id' => '9',
+                  'metric_item_name' => 'metric1', 'metric_item_id' => '3',
+                  'score' => '0.65');
+    $row3 = array('test_item_name' => 'test3', 'test_item_id' => '6',
+                  'result_item_name' => 'result3', 'result_item_id' => '7',
+                  'output_item_name' => 'output3', 'output_item_id' => '10',
+                  'metric_item_name' => 'metric1', 'metric_item_id' => '3',
+                  'score' => '0.84');
+
+    // some randomization to pretend like processing is happening
+    $processingComplete = 'false';
+    $randVal = rand(1,3);
+    if($randVal === 1)
+      {
+      $rows[] = $row1;
+      }
+    else if($randVal === 2)
+      {
+      $rows[] = $row1;
+      $rows[] = $row2;
+          }
+    else if($randVal === 3)
+      {
+      $rows[] = $row1;
+      $rows[] = $row2;
+      $rows[] = $row3;
+      $processingComplete = 'true';
+      }
+
+    $responseData = array('results_rows' => $rows, 'processing_complete' => $processingComplete);
+    return $responseData;
     }
+
+
 
   /**
    * Get the dashboard of results for an entire challenge.
@@ -533,12 +602,49 @@ class Challenge_ApiComponent extends AppComponent
    * (anonymized id of competitor,
    * for every testing item a column with the competitors score on that item,
    * aggregated competitor score)
+   *
+   * FOR NOW, probably will change
+   *
+   * returns value is an array, with each row having:
+   * competitor_id : a randomized id
+   * test_items: an array with keys being the test item id and values of score
+   *
    */
-  public function competitorListDashboard($value)
+  public function competitorListDashboard($args)
     {
-    $this->_checkKeys(array('challengeId'), $value);
+    $this->_checkKeys(array('challengeId'), $args);
     // TODO implementation
     // TODO figure out what happens if no results or more than one set of results
+
+    $componentLoader = new MIDAS_ComponentLoader();
+    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $userDao = $authComponent->getUser($args,
+                                       Zend_Registry::get('userSession')->Dao);
+    if(!$userDao)
+      {
+      throw new Zend_Exception('You must be logged in to view results.');
+      }
+
+    $challengeId = $args['challengeId'];
+
+    $modelLoad = new MIDAS_ModelLoader();
+    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+
+    list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
+
+    // TODO this is fake data, remove it with real implementation
+    $rows = array();
+    $row1 = array('competitor_id' => '1',
+                  'test_items' => array('1' => '0.77', '2' => '0.65', '3' => '0.84'));
+    $row2 = array('competitor_id' => '2',
+                  'test_items' => array('1' => '0.54', '2' => '0.43', '3' => '0.72'));
+    $row3 = array('competitor_id' => '3',
+                  'test_items' => array('1' => '0.98', '2' => '0.86'));
+    $rows[] = $row1;
+    $rows[] = $row2;
+    $rows[] = $row3;
+
+    return $rows;
     }
 
 
