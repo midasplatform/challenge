@@ -129,12 +129,13 @@ class Challenge_ApiComponent extends AppComponent
 
 
   /**
-   * List the open challenges a user is a competitor for, based on which
+   * List all the challenges a user is a competitor for, based on which
    * communities the user is a member of and are associated with challenges.
+   * @param status
    * @return an array of challenge ids as keys, with an array of
    * challenge name and description as the value for each key.
    */
-  public function competitorListOpenChallenges($args)
+  public function competitorListChallenges($args)
     {
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
@@ -147,14 +148,38 @@ class Challenge_ApiComponent extends AppComponent
 
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $availableChallenges = $challengeModel->findAvailableChallenges($userDao, MIDAS_CHALLENGE_STATUS_OPEN);
+    $availableChallenges = $challengeModel->findAvailableChallenges($userDao, isset($args['status']) ? $args['status'] : null);
     return $availableChallenges;
     }
 
 
+  /**
+   * Check if a community has one or more challenge(s)
+   * @param communityId
+   * @return an array of challenge ids as keys, with challenge status as the value for each key.
+   */
+  public function checkCommunity($args)
+    {
+    $this->_checkKeys(array('communityId'), $args);
+
+    $componentLoader = new MIDAS_ComponentLoader();
+    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $userDao = $authComponent->getUser($args,
+                                       Zend_Registry::get('userSession')->Dao);
+    if(!$userDao)
+      {
+      throw new Zend_Exception('You must be logged in to list available challenges');
+      }
+
+    $communityId = $args['communityId'];
+
+    $modelLoad = new MIDAS_ModelLoader();
+    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $hasChallenges = $challengeModel->getByCommunityId($communityId);
+    return $hasChallenges;
+    }
 
 
-    
   /**
    * Display the testing data along with expected results filenames for
    * the given challenge.
@@ -211,9 +236,9 @@ class Challenge_ApiComponent extends AppComponent
     $resultsRunItemDao = $resultsRunItemModel->createResultsItemRun($challengeResultsRunId, $testItemId, $resultsItemId, $outputItemId, $condorDagJobId, $scalarResultId);
     return $resultsRunItemDao;
     }
-    
-    
-    
+
+
+
   /**
    * helper function to ensure that the user is part of the challenge, the
    * challenge is valid, and the user has proper permissions set on both
@@ -231,18 +256,18 @@ class Challenge_ApiComponent extends AppComponent
 
     list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
 
-    
+
     if($outputFolderId !== null)
       {
-      $outputFolder = $challengeModel->validateChallengeUserFolder($userDao, $communityDao, $outputFolderId); 
+      $outputFolder = $challengeModel->validateChallengeUserFolder($userDao, $communityDao, $outputFolderId);
       }
 
     if($resultsFolderId !== null)
       {
-      $resultsFolder = $challengeModel->validateChallengeUserFolder($userDao, $communityDao, $resultsFolderId); 
+      $resultsFolder = $challengeModel->validateChallengeUserFolder($userDao, $communityDao, $resultsFolderId);
       return $challengeModel->getExpectedResultsItems($userDao, $challengeDao, $resultsFolderId);
       }
-    
+
     }
 
 
@@ -298,22 +323,22 @@ class Challenge_ApiComponent extends AppComponent
     // TODO better exception handling/return value
     return array("valid" => "true");
     }
-    
-    
-    
+
+
+
   protected function generateMatchedResultsItemIds($userDao, $matchedResults, $resultsFolderId, $challengeId)
     {
     $modelLoad = new MIDAS_ModelLoader();
     $folderModel = $modelLoad->loadModel('Folder');
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    
+
     $itemsForExport = array();
-    
+
     // get the list of matched results items
     $resultsFolder = $folderModel->load($resultsFolderId);
     if(!$resultsFolder)
       {
-      throw new Zend_Exception("The results folder is invalid");  
+      throw new Zend_Exception("The results folder is invalid");
       }
     $resultsItems = $folderModel->getItemsFiltered($resultsFolder, $userDao, MIDAS_POLICY_READ);
     foreach($resultsItems as $item)
@@ -324,7 +349,7 @@ class Challenge_ApiComponent extends AppComponent
         $itemsForExport[$resultsItemName] = $item->getItemId();
         }
       }
-      
+
     // get the list of matched testing items
     $challengeDao = $challengeModel->load($challengeId);
     $dashboardDao = $challengeDao->getDashboard();
@@ -338,10 +363,10 @@ class Challenge_ApiComponent extends AppComponent
         $itemsForExport[$testingItemName] = $item->getItemId();
         }
       }
-    
+
     return $itemsForExport;
     }
-    
+
   protected function generateJobsConfig($matchedResults, $itemsPaths)
     {
     $jobConfigParams = array();
@@ -361,12 +386,12 @@ class Challenge_ApiComponent extends AppComponent
       $jobConfigParams['cfg_testItems'][] = $itemsPaths[$testName];
       $jobConfigParams['cfg_resultItems'][] = $itemsPaths[$resultName];
       }
-      
+
     return $jobConfigParams;
     }
-    
-    
-    
+
+
+
   /**
    * Score a competitor folder to be used as a results folder.
    * @param challengeId the id of the challenge to display testing inputs for
@@ -397,7 +422,7 @@ class Challenge_ApiComponent extends AppComponent
     $matchedResults = $allResults['matchedTestingResults'];
 
     set_time_limit(0);
-    
+
     // add the results folder to the dashboard
     $modelLoad = new MIDAS_ModelLoader();
     $dashboardModel = $modelLoad->loadModel('Dashboard', 'validation');
@@ -408,67 +433,67 @@ class Challenge_ApiComponent extends AppComponent
     $dashboardDao = $challengeDao->getDashboard();
     $dashboardModel->addResult($dashboardDao, $resultsFolderDao);
 
-    
-    
+
+
     $executeComponent = $componentLoader->loadComponent('Execute', 'batchmake');
     $kwbatchmakeComponent = $componentLoader->loadComponent('KWBatchmake', 'batchmake');
-   
+
     // create a task
     $taskDao = $kwbatchmakeComponent->createTask($userDao);
-    
-    
+
+
     // TODO what is exe and params?
     $executableName = "TODO";
     $params = "TODO";
-    
-    
+
+
     // create a resultsrun
     $resultsrunModel = $modelLoad->loadModel('ResultsRun', 'challenge');
     $resultsrunDao = $resultsrunModel->createResultsRun($userDao, $challengeId, $executableName, $params, $taskDao->getBatchmakeTaskId(), $resultsFolderId, $outputFolderId);
-    
-    
-    
+
+
+
     $itemsForExport = $this->generateMatchedResultsItemIds($userDao, $matchedResults, $resultsFolderId, $challengeId);
     $itemsPaths = $executeComponent->exportSingleBitstreamItemsToWorkDataDir($userDao, $taskDao, $itemsForExport);
-    
+
     // generate definitions of jobs
     $jobsConfig = $this->generateJobsConfig($matchedResults, $itemsPaths);
-    
+
     $appTaskConfigProperties = array();
     $condorPostScriptPath = BASE_PATH . "/modules/challenge/library/challenge_condor_postscript.py";
     $condorDagPostScriptPath = BASE_PATH . "/modules/challenge/library/challenge_condor_dag_postscript.py";
 
-    
+
     $configScriptStem = "challenge";
-    
+
     // add the challenge id and results run id
     $jobsConfig['cfg_challengeID'] = $challengeId;
     $jobsConfig['cfg_resultsFolderID'] = $resultsFolderId;
     $jobsConfig['cfg_resultsrunID'] = $resultsrunDao->getChallengeResultsRunId();
     $jobsConfig['cfg_outputFolderID'] = $resultsrunDao->getOutputFolderId();
     $jobsConfig['cfg_dashboardID'] = $dashboardDao->getDashboardId();
-    
+
     $executeComponent->generateBatchmakeConfig($taskDao, $jobsConfig, $condorPostScriptPath, $condorDagPostScriptPath, $configScriptStem);
-    
+
     // export the connection params
     // TODO: right thing to do here?
     // we need to add certain values back as the admin, so export a config
     // file as admin, get user id 1 for this
-    
+
     if($userDao->isAdmin())
       {
-      $executeComponent->generatePythonConfigParams($taskDao, $userDao, "user");    
-      $executeComponent->generatePythonConfigParams($taskDao, $userDao, "admin");    
+      $executeComponent->generatePythonConfigParams($taskDao, $userDao, "user");
+      $executeComponent->generatePythonConfigParams($taskDao, $userDao, "admin");
       }
-    else 
+    else
       {
       $userModel = $modelLoad->loadModel('User');
       $adminUserDao = $userModel->load(1);
-      $executeComponent->generatePythonConfigParams($taskDao, $userDao, "user");    
-      $executeComponent->generatePythonConfigParams($taskDao, $adminUserDao, "admin");    
+      $executeComponent->generatePythonConfigParams($taskDao, $userDao, "user");
+      $executeComponent->generatePythonConfigParams($taskDao, $adminUserDao, "admin");
       }
-      
-      
+
+
     // export the batchmake scripts
     $bmScript = "challenge.bms";
     $kwbatchmakeComponent->preparePipelineScripts($taskDao->getWorkDir(), $bmScript);

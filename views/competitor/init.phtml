@@ -66,7 +66,12 @@ $processSteps[3] = array('title'=>'Output Folder', 'subtitle'=>'select output fo
         }
        ?>
       <br/>
-      <b>Selected Challenge:</b> <span id="midas_challenge_competitor_selectedChallenge"><?php echo (isset($this->targetChallengeName))? $this->targetChallengeName:''?></span>
+      <b>Selected Challenge:</b>
+      <br/>
+      <div id="selectedChallengeInfo">
+      <br/> <span id="midas_challenge_competitor_selectedChallengeName"><?php echo (isset($this->targetChallengeName))? $this->targetChallengeName:''?></span>
+      <br/> <span id="midas_challenge_competitor_selectedChallengeDesc"><?php echo (isset($this->targetChallengeDesc))? ('Description: ' . $this->targetChallengeDesc):''?></span>
+      </div>
       <input type="hidden" id="midas_challenge_competitor_selectedChallengeId" value="<?php echo (isset($this->targetChallengeId))? $this->targetChallengeId:''?>"/>
 
   </div>
@@ -93,16 +98,6 @@ $processSteps[3] = array('title'=>'Output Folder', 'subtitle'=>'select output fo
       
       <br/>
       <br/>
-      <?php
-        echo '<div id="midas_challenge_competitor_checkResultsFolder" class="genericBigButton ">';
-          echo "<a  ><img  alt='' src='{$this->coreWebroot}/public/images/FileTree/directory.png'/>";
-          echo 'Validate';
-          echo "</a>";
-        echo '</div>';
-        ?>
-
-      <br/>
-      <br/>
       <b>Results Folder Validation:</b> <span id="midas_challenge_competitor_validatedResultsFolder"></span>
       <div id="midas_challenge_competitor_validatedResultsFolder_Info"> </div>
   </div>
@@ -125,6 +120,11 @@ $processSteps[3] = array('title'=>'Output Folder', 'subtitle'=>'select output fo
       <br/>
       <b>Selected Output Folder:</b> <span id="midas_challenge_competitor_selectedOutputFolder"></span>
       <input type="hidden" id="midas_challenge_competitor_selectedOutputFolderId" value=""/>
+
+      <br/>
+      <br/>
+      <b>Output Folder Validation:</b> <span id="midas_challenge_competitor_validatedOutputFolder"></span>
+      <div id="midas_challenge_competitor_validatedOutputFolder_Info"> </div>
   </div>    
     
 
