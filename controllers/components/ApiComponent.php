@@ -528,6 +528,7 @@ class Challenge_ApiComponent extends AppComponent
    */
   public function competitorListResults($args)
     {
+    // TODO be smarter about joins, see dashboard method
     $this->_checkKeys(array('challengeId'), $args);
     // TODO implementation
     // TODO figure out what happens if no results or more than one set of results
@@ -551,7 +552,7 @@ class Challenge_ApiComponent extends AppComponent
 
     list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
 
-    $resultsRun = $resultsrunModel->loadLatestResultsRun($userDao, $challengeDao);
+    $resultsRun = $resultsrunModel->loadLatestResultsRun($userDao->getUserId(), $challengeId);
     //$resultsRunItems = $resultsRunItemModel->findBy('challenge_results_run_id', $resultsRun->getChallengeResultsRunId());
     $resultsRunItemsValues = $resultsRunItemModel->loadResultsItemsValues($resultsRun->getChallengeResultsRunId());
     $returnRows = array();
@@ -560,18 +561,18 @@ class Challenge_ApiComponent extends AppComponent
       $test_item_id = $resultsRunItemsValue['test_item_id'];
       $output_item_id = $resultsRunItemsValue['output_item_id'];
       $result_item_id = $resultsRunItemsValue['result_item_id'];
-      $testItem = $itemModel->load($test_item_id);  
-      $outputItem = $itemModel->load($output_item_id);  
-      $resultItem = $itemModel->load($result_item_id);  
+      $testItem = $itemModel->load($test_item_id);
+      $outputItem = $itemModel->load($output_item_id);
+      $resultItem = $itemModel->load($result_item_id);
       $resultsRunItemsValue['result_item_name'] = $resultItem->getName();
       $resultsRunItemsValue['output_item_name'] = $outputItem->getName();
       $resultsRunItemsValue['test_item_name'] = $testItem->getName();
       $returnRows[] = $resultsRunItemsValue;
       }
-    
+
     // TODO don't yet have a notion of finished
     $processingComplete = 'true';
-      
+
       /*
     // TODO this is fake data, remove it with real implementation
     $rows = array();
@@ -635,68 +636,90 @@ class Challenge_ApiComponent extends AppComponent
    * test_items: an array with keys being the test item id and values of score
    *
    */
-  public function competitorListDashboard($args)
+  public function anonymousListDashboard($args)
     {
     $this->_checkKeys(array('challengeId'), $args);
     // TODO implementation
     // TODO figure out what happens if no results or more than one set of results
 
     $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
-    $userDao = $authComponent->getUser($args,
-                                       Zend_Registry::get('userSession')->Dao);
-    if(!$userDao)
-      {
-      throw new Zend_Exception('You must be logged in to view results.');
-      }
+//    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+//    $userDao = $authComponent->getUser($args,
+//                                       Zend_Registry::get('userSession')->Dao);
+//    if(!$userDao)
+//      {
+//      throw new Zend_Exception('You must be logged in to view results.');
+//      }
 
     $challengeId = $args['challengeId'];
 
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
     $folderModel = $modelLoad->loadModel('Folder');
+    $userModel = $modelLoad->loadModel('User');
     $resultsrunModel = $modelLoad->loadModel('ResultsRun', 'challenge');
     $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
     $dashboardModel = $modelLoad->loadModel('Dashboard', 'validation');
 
-    list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
 
-    $competitors = $challengeModel->getUsersWithSubmittedResults($challengeId);
-    
-    // need a list of all result item ids for the challenge
-    $testingFolder = $challengeDao->getDashboard()->getTesting();
-    $testingItems = $folderModel->getItemsFiltered($testingFolder, $userDao, MIDAS_POLICY_READ);
-
-    $testItemIds = array();
-    foreach($testingItems as $testingItem) 
+    $challengeDao = $challengeModel->load($challengeId);
+    if(!$challengeDao)
       {
-      $testItemIds[] = $testingItem->getItemId();  
+      throw new Zend_Exception('You must enter a valid challenge.');
       }
-    $resultsPerCompetitor = array();
-    
-    
-    //  for each user, get the latest resultsRun, and all items
-    foreach($competitors as $competitor) 
+
+    // check that the community is valid and the user is a member
+    $communityDao = $challengeDao->getCommunity();
+    if(!$communityDao)
       {
-      $resultsRun = $resultsrunModel->loadLatestResultsRun($userDao->getUserId(), $challengeId);
+      throw new Zend_Exception('This challenge does not have a valid community');
+      }
+
+
+    //list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
+
+    $competitorIds = $challengeModel->getUsersWithSubmittedResults($challengeId);
+
+
+
+    $resultsPerCompetitor = array();
+    //  for each user, get the latest resultsRun, and all items
+    foreach($competitorIds as $competitorId)
+      {
+      $resultsRun = $resultsrunModel->loadLatestResultsRun($competitorId, $challengeId);
       $resultsRunItemsValues = $resultsRunItemModel->loadResultsItemsValues($resultsRun->getChallengeResultsRunId());
       $competitorResults = array();
       foreach($resultsRunItemsValues as $resultsRunItemsValue)
         {
-        $competitorResults[$resultsRunItemsValue['test_item_id']] = $resultsRunItemsValue['score'];
+        $competitorResults[$resultsRunItemsValue['test_item_id']] = array('name'=> $resultsRunItemsValue['test_item_name'], 'score'=>$resultsRunItemsValue['score']);
         }
-      $resultsPerCompetitor[$competitor] = $competitorResults;   
+      $resultsPerCompetitor[$competitorId] = $competitorResults;
       }
-    
+
+
+    // need a list of all result item ids for the challenge
+    $testingFolder = $challengeDao->getDashboard()->getTesting();
+    // the results should be public, but there is no user login required for this method
+    // so use user id of the latest competitor
+    $userDao = $userModel->load($competitorId);
+    $testingItems = $folderModel->getItemsFiltered($testingFolder, $userDao, MIDAS_POLICY_READ);
+
+    $testItemIds = array();
+    foreach($testingItems as $testingItem)
+      {
+      $testItems[$testingItem->getItemId()] = $testingItem->getName();
+      }
+
     // get all the users with results for this challenge
 //    select user_id from challenge_results_run, batchmake_task where batchmake_task.batchmake_task_id=challenge_results_run.batchmake_task_id group by user_id;
 
-      
-    $returnVal = array('test_item_ids' => $testItemIds, 'competitor_scores' => $resultsPerCompetitor);  
 
-    
+    $returnVal = array('test_items' => $testItems, 'competitor_scores' => $resultsPerCompetitor);
 
-    
+  /*
+select test_item_id, results_item_id, output_item_id, i1.name as test_item_name, i2.name as results_item_name, i3.name as output_item_name, value from validation_scalarresult as vs, challenge_results_run_item as crri INNER JOIN item as i1 on crri.test_item_id=i1.item_id INNER JOIN item as i2 on crri.results_item_id=i2.item_id INNER JOIN item as i3 on crri.output_item_id=i3.item_id where challenge_results_run_id = 19 and crri.validation_scalarresult_id=vs.scalarresult_id;
+*/
+
     /*
     // TODO this is fake data, remove it with real implementation
     $rows = array();
