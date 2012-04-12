@@ -545,10 +545,34 @@ class Challenge_ApiComponent extends AppComponent
 
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $itemModel = $modelLoad->loadModel('Item');
+    $resultsrunModel = $modelLoad->loadModel('ResultsRun', 'challenge');
+    $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
 
     list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
 
-
+    $resultsRun = $resultsrunModel->loadLatestResultsRun($userDao, $challengeDao);
+    //$resultsRunItems = $resultsRunItemModel->findBy('challenge_results_run_id', $resultsRun->getChallengeResultsRunId());
+    $resultsRunItemsValues = $resultsRunItemModel->loadResultsItemsValues($resultsRun->getChallengeResultsRunId());
+    $returnRows = array();
+    foreach($resultsRunItemsValues as $resultsRunItemsValue)
+      {
+      $test_item_id = $resultsRunItemsValue['test_item_id'];
+      $output_item_id = $resultsRunItemsValue['output_item_id'];
+      $result_item_id = $resultsRunItemsValue['result_item_id'];
+      $testItem = $itemModel->load($test_item_id);  
+      $outputItem = $itemModel->load($output_item_id);  
+      $resultItem = $itemModel->load($result_item_id);  
+      $resultsRunItemsValue['result_item_name'] = $resultItem->getName();
+      $resultsRunItemsValue['output_item_name'] = $outputItem->getName();
+      $resultsRunItemsValue['test_item_name'] = $testItem->getName();
+      $returnRows[] = $resultsRunItemsValue;
+      }
+    
+    // TODO don't yet have a notion of finished
+    $processingComplete = 'true';
+      
+      /*
     // TODO this is fake data, remove it with real implementation
     $rows = array();
     $row1 = array('test_item_name' => 'test1', 'test_item_id' => '1',
@@ -586,8 +610,9 @@ class Challenge_ApiComponent extends AppComponent
       $rows[] = $row3;
       $processingComplete = 'true';
       }
-
     $responseData = array('results_rows' => $rows, 'processing_complete' => $processingComplete);
+*/
+    $responseData = array('results_rows' => $returnRows, 'processing_complete' => $processingComplete);
     return $responseData;
     }
 
@@ -629,9 +654,46 @@ class Challenge_ApiComponent extends AppComponent
 
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $folderModel = $modelLoad->loadModel('Folder');
+    $resultsrunModel = $modelLoad->loadModel('ResultsRun', 'challenge');
+    $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
+    $dashboardModel = $modelLoad->loadModel('Dashboard', 'validation');
 
     list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
 
+    $competitors = $challengeModel->getUsersWithSubmittedResults($challengeId);
+    
+    // need a list of all result item ids for the challenge
+    $testingFolder = $challengeDao->getDashboard()->getTesting();
+    $testingItems = $folderModel->getItemsFiltered($testingFolder, $userDao, MIDAS_POLICY_READ);
+
+    $testItemIds = array();
+    foreach($testingItems as $testingItem) 
+      {
+      $testItemIds[] = $testingItem->getItemId();  
+      }
+    $resultsPerCompetitor = array();
+    
+    
+    //  for each user, get the latest resultsRun, and all items
+    foreach($competitors as $competitor) 
+      {
+      $resultsRun = $resultsrunModel->loadLatestResultsRun($userDao->getUserId(), $challengeId);
+      $resultsRunItemsValues = $resultsRunItemModel->loadResultsItemsValues($resultsRun->getChallengeResultsRunId());
+      $competitorResults = array();
+      foreach($resultsRunItemsValues as $resultsRunItemsValue)
+        {
+        $competitorResults[$resultsRunItemsValue['test_item_id']] = $resultsRunItemsValue['score'];
+        }
+      $resultsPerCompetitor[$competitor] = $competitorResults;   
+      }
+    
+    // get all the users with results for this challenge
+//    select user_id from challenge_results_run, batchmake_task where batchmake_task.batchmake_task_id=challenge_results_run.batchmake_task_id group by user_id;
+
+      
+    $returnVal = array('test_item_ids' => $testItemIds, 'competitor_scores' => $resultsPerCompetitor);  
+      /*
     // TODO this is fake data, remove it with real implementation
     $rows = array();
     $row1 = array('competitor_id' => '1',
@@ -643,8 +705,11 @@ class Challenge_ApiComponent extends AppComponent
     $rows[] = $row1;
     $rows[] = $row2;
     $rows[] = $row3;
-
     return $rows;
+       */
+//select test_item_id, value from challenge_results_run_item, validation_scalarresult where challenge_results_run_id = 15 and validation_scalarresult.scalarresult_id = challenge_results_run_item.validation_scalarresult_id;
+
+    return $returnVal;
     }
 
 

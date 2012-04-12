@@ -77,6 +77,22 @@ class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
     return $return;
     }
 
-
-
+  function getUsersWithSubmittedResults($challengeId)
+    {
+    // TODO distinct not working
+    $sql = $this->database->select('user_id')->distinct()->setIntegrityCheck(false);
+    $sql->from(array('crr' => 'challenge_results_run'));
+    $sql->join(array('bt' => 'batchmake_task'), 'crr.batchmake_task_id=bt.batchmake_task_id');
+    $sql->where('crr.challenge_id=?', $challengeId);
+    
+    $rowset = $this->database->fetchAll($sql);
+    $rows = array();
+    foreach($rowset as $row)
+      {
+      // TODO distinct not working, so using set/hash to do it
+      $rows[$row['user_id']] = $row['user_id'];  
+      }
+   //    select user_id from challenge_results_run, batchmake_task where batchmake_task.batchmake_task_id=challenge_results_run.batchmake_task_id group by user_id;
+    return $rows;
+    }
 }
