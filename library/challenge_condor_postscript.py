@@ -35,7 +35,7 @@ def parseVolumeMeasurement(filepath):
 
 
 if __name__ == "__main__":
-  (scriptName, workDir, taskId, dashboardId, resultsrunId, resultsFolderId, challengeId, dagjobname, testImage, resultImage, outputFolderId, jobname, jobid, returncode) = sys.argv
+  (scriptName, workDir, taskId, dashboardId, resultsrunId, resultsFolderId, challengeId, dagjobname, testImage, resultImage, outputFolderId, outputParseFile, jobname, jobid, returncode) = sys.argv
   jobidNum = jobname[3:]
   cfgParams = loadConfig('userconfig.cfg')
 
@@ -90,7 +90,6 @@ if __name__ == "__main__":
   log.write("\n\nGot uploadResponse:"+str(uploadResponse)+" for filename "+itemName+"\n\n")
 
 
-  # for now we have no parsing of the scalar value, so just upload 42
 
   # have to upload the scalar value as an admin
 
@@ -98,8 +97,17 @@ if __name__ == "__main__":
   interfaceMidas = core.Communicator (cfgParams['url'])
   token = interfaceMidas.login_with_api_key(cfgParams['email'], cfgParams['apikey'])
 
-  scalarvalue = 42
-  
+  # parse output and upload value
+  lines = open(outputParseFile,'r')
+  for line in lines:
+    cols = line.split()
+    val = cols[-1]
+    break
+  lines.close()
+  scalarvalue = val
+
+
+ 
   parameters = {}
   parameters['dashboard_id'] = dashboardId
   parameters['folder_id'] = resultsFolderId

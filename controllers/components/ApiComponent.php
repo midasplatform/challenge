@@ -495,7 +495,7 @@ class Challenge_ApiComponent extends AppComponent
 
 
     // export the batchmake scripts
-    $bmScript = "challenge.bms";
+    $bmScript = "challenge_dice.bms";
     $kwbatchmakeComponent->preparePipelineScripts($taskDao->getWorkDir(), $bmScript);
     $kwbatchmakeComponent->preparePipelineBmms($taskDao->getWorkDir(), array($bmScript));
 
@@ -693,7 +693,11 @@ class Challenge_ApiComponent extends AppComponent
 
       
     $returnVal = array('test_item_ids' => $testItemIds, 'competitor_scores' => $resultsPerCompetitor);  
-      /*
+
+    
+
+    
+    /*
     // TODO this is fake data, remove it with real implementation
     $rows = array();
     $row1 = array('competitor_id' => '1',
