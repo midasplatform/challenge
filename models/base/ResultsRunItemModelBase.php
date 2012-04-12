@@ -81,6 +81,8 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
     return $resultsrunItemDao;
     }
 
+  abstract function loadResultsItemsValues($challengeResultsRunId);
+
 
 
 

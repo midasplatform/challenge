@@ -48,6 +48,10 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
   abstract function getByCommunityId($communityId);
 
   abstract function findAvailableChallenges($userDao, $status);
+  
+  abstract function getUsersWithSubmittedResults($challengeId);
+  
+
 
   /**
    * checks whether the user is a moderator of the challenge
