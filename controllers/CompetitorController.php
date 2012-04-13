@@ -25,19 +25,6 @@ class Challenge_CompetitorController extends Challenge_AppController
   public $_moduleModels = array('Challenge');
   public $_moduleForms = array('Config');
 
-  /*
-  Used by debugging only
-  function _createTestingdata()
-    {
-    $args = array();
-    $args['useSession'] = true;
-    $args['communityId'] = 38;
-    $args['challengeName'] = 'Demo Challenge';
-    $args['challengeDescription'] = 'challenge for Demo';
-    $this->ModuleComponent->Api->adminCreateChallenge($args);
-    }
-   */
-
   /** init a job*/
   function initAction()
     {
@@ -71,7 +58,6 @@ class Challenge_CompetitorController extends Challenge_AppController
         $this->view->targetChallengeName = $selectOptions[$this->_getParam('challengeList')];
         $this->view->targetChallengeDesc = $challenges[$this->_getParam('challengeList')]['description'];
         }
-
       }
     }
 
@@ -160,26 +146,82 @@ class Challenge_CompetitorController extends Challenge_AppController
   /** show score */
   public function showscoreAction()
     {
-    $this->disableLayout();
-    //$this->disableLayout();
-    //$this->disableView();
-    /* TODO
-    $args = array();
-    $args['useSession'] = true;
-    $args['challengeId'] = $this->_getParam("challengeId");
-    $args['outputFolderId'] = $this->_getParam("outputFolderId");
-    $args['resultsFolderId'] = $this->_getParam("resultsFolderId");
+    $challengeId = $this->_getParam("challengeId");
+    $challenges = array();
+    if(!isset($challengeId))
+      {
+      $this->disableLayout();
+      $args['useSession'] = true;
+      $challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
+      }
+    else
+      {
+      $dashboardDao = $this->Challenge_Challenge->load($challengeId)->getDashboard();
+      $challenges = array($challengeId => array('name' => $dashboardDao->getName(), 'description' => $dashboardDao->getDescription() ) );
+      }
+    // hack for now
+    //$challenges = array('1' => array('name' => 'Demo Challenge', 'description' => 'challenge for Demo'));
+    $tableData = array();
+    foreach($challenges as $challengeId => $challengeDetails)
+      {
+      $apiargs = array();
+      $apiargs['useSession'] = true;
+      $apiargs['challengeId'] = $challengeId;
+      $tableData[$challengeDetails['name']] = $this->ModuleComponent->Api->competitorListResults($apiargs);
+      }
+    $this->view->tableData = $tableData;
+    $this->view->user = $this->userSession->Dao;
+    $this->view->tableHeaders = array('testing item', 'result item', 'metric', 'score', 'output item');
+    $this->view->tableData_resultsColumns = array('test_item_name', 'result_item_name', 'metric_item_name', 'score', 'output_item_name');
 
-    $this->view->args = $args();
-    $this->view->score = $this->ModuleComponent->Api->competitorScoreResultsFolder($args);
-    */
     }
 
-  /** score dashboard */
-  public function scoredashboardAction()
+  /** Challenge dashboard */
+  public function dashboardAction()
     {
     $this->disableLayout();
-    //  TODO: use api to get scores for a community
+    $args['communityId'] = $this->_getParam("communityId");
+    $challenges = $this->ModuleComponent->Api->anonymousGetChallenge($args);
+    $tableHeaders = array();
+    $tableData = array();
+    foreach($challenges as $challengeId => $status)
+      {
+      $dashboardDao = $this->Challenge_Challenge->load($challengeId)->getDashboard();
+      $challengeName = $dashboardDao->getName();
+      $challengeDesc = $dashboardDao->getDescription();
+      $challengeInfo[$challengeId] = array('name' => $challengeName, 'description' => $challengeDesc);
+
+      $apiargs = array();
+      $apiargs['useSession'] = true;
+      $apiargs['challengeId'] = $challengeId;
+      $apiResults = array();
+      $apiResults = $this->ModuleComponent->Api->anonymousListDashboard($apiargs);
+
+      $testItemCount = count($apiResults['test_items']);
+      if(count($apiResults['competitor_scores']) > 0) // has scores from at least one competitor
+        {
+        $tableHeaders[$challengeId] = array('competitor id', 'aggregated score');
+        foreach($apiResults['test_items'] as $testItemId => $testItemName)
+          {
+          $tableHeaders[$challengeId][] = $testItemName;
+          }
+
+        foreach($apiResults['competitor_scores'] as $competitorId => $scores)
+          {
+          $tableData[$challengeId][$competitorId] = array_fill(0, $testItemCount + 1, 0.0);
+          $aggregated_score = 0.0;
+          foreach($scores as $testItemId => $testScore)
+            {
+            $tableData[$challengeId][$competitorId][array_search($testItemId,array_keys($apiResults['test_items'])) + 1 ] = floatval($testScore['score']);
+            $aggregated_score += floatval($testScore['score']);
+            }
+          $tableData[$challengeId][$competitorId][0] = $aggregated_score;
+          }
+        }
+      }
+    $this->view->challengeInfo = $challengeInfo;
+    $this->view->tableData = $tableData;
+    $this->view->tableHeaders = $tableHeaders;
     }
 
 }//end class

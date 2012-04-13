@@ -154,29 +154,18 @@ class Challenge_ApiComponent extends AppComponent
 
 
   /**
-   * Check if a community has one or more challenge(s)
+   * Check if a community has challenge(s)
    * @param communityId
    * @return an array of challenge ids as keys, with challenge status as the value for each key.
    */
-  public function checkCommunity($args)
+  public function anonymousGetChallenge($args)
     {
     $this->_checkKeys(array('communityId'), $args);
-
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
-    $userDao = $authComponent->getUser($args,
-                                       Zend_Registry::get('userSession')->Dao);
-    if(!$userDao)
-      {
-      throw new Zend_Exception('You must be logged in to list available challenges');
-      }
-
     $communityId = $args['communityId'];
-
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $hasChallenges = $challengeModel->getByCommunityId($communityId);
-    return $hasChallenges;
+    $includedChallenges = $challengeModel->getByCommunityId($communityId);
+    return $includedChallenges;
     }
 
 
@@ -574,7 +563,7 @@ class Challenge_ApiComponent extends AppComponent
     $processingComplete = 'true';
     $responseData = array('results_rows' => $returnRows, 'processing_complete' => $processingComplete);
 
-      
+
     // TODO this is fake data, uncomment if no condor setup
     $rows = array();
     $row1 = array('test_item_name' => 'test1', 'test_item_id' => '1',
@@ -721,7 +710,7 @@ class Challenge_ApiComponent extends AppComponent
 
     $returnVal = array('test_items' => $testItems, 'competitor_scores' => $resultsPerCompetitor);
 
-    
+
     // TODO this is fake data, uncomment if no condor setup
     $testItems = array("294" => "test1.mha","295" => "test2.mha");
     
@@ -730,8 +719,8 @@ class Challenge_ApiComponent extends AppComponent
                   '2' => array("294" => array("name" => "test1.mha", "score" => "0.8764"),
                                "295" => array("name" => "test2.mha", "score" => "0.67864")));
     $returnVal = array('test_items' => $testItems, 'competitor_scores' => $resultsPerCompetitor);
-    
-    
+   
+ 
     return $returnVal;
     }
 

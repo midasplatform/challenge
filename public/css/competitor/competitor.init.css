@@ -9,3 +9,23 @@ div#selectedChallengeInfo span#midas_challenge_competitor_selectedChallengeDesc{
   padding-left: 10px;
 }
 
+span#validateResultsFolder_Pass{
+  font-weight: bold;
+  color: #009900;
+}
+
+span#validateOutputFolder_Pass{
+  font-weight: bold;
+  color: #009900;
+}
+
+
+span#validateResultsFolder_Fail{
+  font-weight: bold;
+  color: #C80000;
+}
+
+span#validateOutputFolder_Fail{
+  font-weight: bold;
+  color: #C80000;
+}
