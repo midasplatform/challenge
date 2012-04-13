@@ -572,9 +572,10 @@ class Challenge_ApiComponent extends AppComponent
 
     // TODO don't yet have a notion of finished
     $processingComplete = 'true';
+    $responseData = array('results_rows' => $returnRows, 'processing_complete' => $processingComplete);
 
-      /*
-    // TODO this is fake data, remove it with real implementation
+      
+    // TODO this is fake data, uncomment if no condor setup
     $rows = array();
     $row1 = array('test_item_name' => 'test1', 'test_item_id' => '1',
                   'result_item_name' => 'result1', 'result_item_id' => '2',
@@ -612,8 +613,7 @@ class Challenge_ApiComponent extends AppComponent
       $processingComplete = 'true';
       }
     $responseData = array('results_rows' => $rows, 'processing_complete' => $processingComplete);
-*/
-    $responseData = array('results_rows' => $returnRows, 'processing_complete' => $processingComplete);
+
     return $responseData;
     }
 
@@ -677,24 +677,30 @@ class Challenge_ApiComponent extends AppComponent
 
 
     //list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
-
+// TODO check this for when no users
     $competitorIds = $challengeModel->getUsersWithSubmittedResults($challengeId);
 
-
-
     $resultsPerCompetitor = array();
-    //  for each user, get the latest resultsRun, and all items
-    foreach($competitorIds as $competitorId)
+    if(!isset($competitorIds) || sizeof($competitorIds) !== 0)
       {
-      $resultsRun = $resultsrunModel->loadLatestResultsRun($competitorId, $challengeId);
-      $resultsRunItemsValues = $resultsRunItemModel->loadResultsItemsValues($resultsRun->getChallengeResultsRunId());
-      $competitorResults = array();
-      foreach($resultsRunItemsValues as $resultsRunItemsValue)
+      //  for each user, get the latest resultsRun, and all items
+      foreach($competitorIds as $competitorId)
         {
-        $competitorResults[$resultsRunItemsValue['test_item_id']] = array('name'=> $resultsRunItemsValue['test_item_name'], 'score'=>$resultsRunItemsValue['score']);
+        $resultsRun = $resultsrunModel->loadLatestResultsRun($competitorId, $challengeId);
+        $resultsRunItemsValues = $resultsRunItemModel->loadResultsItemsValues($resultsRun->getChallengeResultsRunId());
+        $competitorResults = array();
+        foreach($resultsRunItemsValues as $resultsRunItemsValue)
+          {
+          $competitorResults[$resultsRunItemsValue['test_item_id']] = array('name'=> $resultsRunItemsValue['test_item_name'], 'score'=>$resultsRunItemsValue['score']);
+          }
+        $resultsPerCompetitor[$competitorId] = $competitorResults;
         }
-      $resultsPerCompetitor[$competitorId] = $competitorResults;
       }
+    else
+      {
+      $competitorId = 1;
+      }
+      
 
 
     // need a list of all result item ids for the challenge
@@ -711,31 +717,21 @@ class Challenge_ApiComponent extends AppComponent
       }
 
     // get all the users with results for this challenge
-//    select user_id from challenge_results_run, batchmake_task where batchmake_task.batchmake_task_id=challenge_results_run.batchmake_task_id group by user_id;
 
 
     $returnVal = array('test_items' => $testItems, 'competitor_scores' => $resultsPerCompetitor);
 
-  /*
-select test_item_id, results_item_id, output_item_id, i1.name as test_item_name, i2.name as results_item_name, i3.name as output_item_name, value from validation_scalarresult as vs, challenge_results_run_item as crri INNER JOIN item as i1 on crri.test_item_id=i1.item_id INNER JOIN item as i2 on crri.results_item_id=i2.item_id INNER JOIN item as i3 on crri.output_item_id=i3.item_id where challenge_results_run_id = 19 and crri.validation_scalarresult_id=vs.scalarresult_id;
-*/
-
-    /*
-    // TODO this is fake data, remove it with real implementation
-    $rows = array();
-    $row1 = array('competitor_id' => '1',
-                  'test_items' => array('1' => '0.77', '2' => '0.65', '3' => '0.84'));
-    $row2 = array('competitor_id' => '2',
-                  'test_items' => array('1' => '0.54', '2' => '0.43', '3' => '0.72'));
-    $row3 = array('competitor_id' => '3',
-                  'test_items' => array('1' => '0.98', '2' => '0.86'));
-    $rows[] = $row1;
-    $rows[] = $row2;
-    $rows[] = $row3;
-    return $rows;
-       */
-//select test_item_id, value from challenge_results_run_item, validation_scalarresult where challenge_results_run_id = 15 and validation_scalarresult.scalarresult_id = challenge_results_run_item.validation_scalarresult_id;
-
+    
+    // TODO this is fake data, uncomment if no condor setup
+    $testItems = array("294" => "test1.mha","295" => "test2.mha");
+    
+    $resultsPerCompetitor = array('1' => array("294" => array("name" => "test1.mha", "score" => "0.666667"),
+                               "295" => array("name" => "test2.mha", "score" => "0.563667")),
+                  '2' => array("294" => array("name" => "test1.mha", "score" => "0.8764"),
+                               "295" => array("name" => "test2.mha", "score" => "0.67864")));
+    $returnVal = array('test_items' => $testItems, 'competitor_scores' => $resultsPerCompetitor);
+    
+    
     return $returnVal;
     }
 
