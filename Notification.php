@@ -25,7 +25,7 @@ class Challenge_Notification extends ApiEnabled_Notification
     $this->addCallBack('CALLBACK_CORE_GET_LEFT_LINKS', 'getLeftLink');
     $this->addCallBack('CALLBACK_CORE_GET_USER_ACTIONS', 'getUserAction');
     $this->addCallBack('CALLBACK_CORE_GET_USER_TABS', 'getUserTab');
-    $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_TABS', 'getCommunityViewTab');
+    $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_ANONYMOUS_VIEW_TABS', 'getCommunityViewTab');
     }//end init
     
   /**
@@ -101,25 +101,17 @@ class Challenge_Notification extends ApiEnabled_Notification
    */
   public function getCommunityViewTab($args)
     {
-    if(!isset($this->userSession->Dao))
+    $apiargs['communityId'] = $args['community']->getKey();
+    $challenges = $this->ModuleComponent->Api->anonymousGetChallenge($apiargs);
+    if(!empty($challenges))
       {
-      return array();
+      $fc = Zend_Controller_Front::getInstance();
+      $moduleWebroot = $fc->getBaseUrl().'/challenge';
+      return array('Challenge dashboard' => $moduleWebroot.'/competitor/dashboard?communityId='.$apiargs['communityId']);
       }
     else
       {
-      $apiargs['useSession'] = true;
-      $apiargs['communityId'] = $args['community']->getKey();
-      $challenges = $this->ModuleComponent->Api->checkCommunity($apiargs);
-      if(!empty($challenges))
-        {
-        $fc = Zend_Controller_Front::getInstance();
-        $moduleWebroot = $fc->getBaseUrl().'/challenge';
-        return array('Score dashboard' => $moduleWebroot.'/competitor/scoredashboard');
-        }
-      else
-        {
-        return array();
-        }
+      return array();
       }
     }
     

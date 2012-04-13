@@ -51,13 +51,17 @@ function onFinishCallback()
       args: 'challengeId=' + challengeId + '&resultsFolderId=' + resultsFolderId + '&outputFolderId=' + outputFolderId,
       success: function(results) 
         {
-        createNotice("TO DO: score result dashboard!", 4000); 
+        window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?challengeId=' + challengeId); 
+        },
+      error: function(x)
+        {  
+        window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?challengeId=' + challengeId); 
         }
       })
     }
   else
     {
-   // createNotice("There are some errors.", 4000, 'error');
+   // midas.createNotice("There are some errors.", 4000, 'error');
     }
   }
 
@@ -78,12 +82,12 @@ function validateSteps(stepnumber)
     {
     if($('#midas_challenge_competitor_selectedResultsFolderId').val() == '')
       {
-      createNotice("Please select the Midas folder where the results files are uploaded", 4000, 'error');
+      midas.createNotice("Please select the Midas folder where the results files are uploaded", 4000, 'error');
       isStepValid = false;
       }
     else if($('#midas_challenge_competitor_validatedResultsFolder').html() == 'Failed')
       {
-      createNotice("The selected results folder doesn't contain all the required items. Please select another folder or fix the current one!", 5000, 'error');
+      midas.createNotice("The selected results folder doesn't contain all the required items. Please select another folder or fix the current one!", 5000, 'error');
       isStepValid = false;
       }
     }
@@ -92,12 +96,12 @@ function validateSteps(stepnumber)
     {
     if($('#midas_challenge_competitor_selectedOutputFolderId').val() == '')
       {
-      createNotice("Please select the Midas folder where output files will be stored", 4000, 'error');
+      midas.createNotice("Please select the Midas folder where output files will be stored", 4000, 'error');
       isStepValid = false;
       }
     else if($('#midas_challenge_competitor_validatedOutputFolder').html() == 'Failed')
       {
-      createNotice("The selected output folder is not valid. Please select another folder or fix the current one!", 5000, 'error');
+      midas.createNotice("The selected output folder is not valid. Please select another folder or fix the current one!", 5000, 'error');
       isStepValid = false;
       }
     }
@@ -126,8 +130,8 @@ function onShowStepCallback(obj)
   if(step_num == 2)
     {
     $('#midas_challenge_competitor_browseResultsFolder').click(function(){
-      loadDialog("selectfolder_resultsfolder","/challenge/competitor/selectresultsfolder");
-      showDialog('Browse Results Folder');
+      midas.loadDialog("selectfolder_resultsfolder","/challenge/competitor/selectresultsfolder");
+      midas.showDialog('Browse Results Folder');
       currentBrowser = 'folderresults';
       });
     }
@@ -135,8 +139,8 @@ function onShowStepCallback(obj)
   if(step_num == 3)
     {
     $('#midas_challenge_competitor_browseOutputFolder').click(function(){
-      loadDialog("selectfolder_outputfolder","/challenge/competitor/selectoutputfolder");
-      showDialog('Browse Output Folder');
+      midas.loadDialog("selectfolder_outputfolder","/challenge/competitor/selectoutputfolder");
+      midas.showDialog('Browse Output Folder');
       currentBrowser = 'folderoutput';
       });
     } 
@@ -149,17 +153,17 @@ function _validateResultsFolder(challengeId, resultsFolderId)
     method: 'midas.challenge.competitor.validate.results',  
     args: 'challengeId=' + challengeId + '&resultsFolderId=' + resultsFolderId ,
     success: function(results) {
-      var validationInfo = '';     
+      var validationInfo = '';
       if( results.data.testingWithoutResults.length < 1 )
         {
-        createNotice("The selected results folder is valid!", 4000);
-        $('#midas_challenge_competitor_validatedResultsFolder').html('Passed');  
+        midas.createNotice("The selected results folder is valid!", 4000);  
+        $('#validateResultsFolder_Pass').show();   
         }
       else 
         {
-        createNotice("Sorry, the selected results folder is not valid! ", 4000, 'error');
-        $('#midas_challenge_competitor_validatedResultsFolder').html('Failed');
-        validationInfo = '<br/> <b>The mismatched items: </b> <br/> </br>';
+        midas.createNotice("Sorry, the selected results folder is not valid! ", 4000, 'error');
+        $('#validateResultsFolder_Fail').show();
+        validationInfo = '<br/> <b>Reason: mismatched items: </b> <br/> </br>';
         validationInfo += '<table id="validationInfo" border="1" width="75%" cellpadding="1" cellspacing="0">';
         validationInfo += '<tr> <th align="center">What are required by the challenge</th> <th align="center">What are in your results folder</th></tr> <tr>';
         for (var idx in results.data.testingWithoutResults)
@@ -176,8 +180,11 @@ function _validateResultsFolder(challengeId, resultsFolderId)
         }
         $('div#midas_challenge_competitor_validatedResultsFolder_Info').html(validationInfo);
       },
-    error: function(){
-      $('#midas_challenge_competitor_validatedResultsFolder').html('Failed');
+    error: function(XMLHttpRequest, textStatus, errorThrown){
+      $('#validateResultsFolder_Fail').show();
+      var validationInfo = '';
+      validationInfo = '<br/> <b>Reason: </b>' + XMLHttpRequest.message + '<br/> </br>';
+      $('div#midas_challenge_competitor_validatedResultsFolder_Info').html(validationInfo);
       }  
     });
     return;
@@ -192,18 +199,22 @@ function _validateOutputFolder(challengeId, outputFolderId)
     success: function(results) {     
       if( results.data.valid === "true" )
         {
-        createNotice("The selected output folder is valid!", 4000);
-        $('#midas_challenge_competitor_validatedOutputFolder').html('Passed');  
+        midas.createNotice("The selected output folder is valid!", 4000);
+        $('#validateOutputFolder_Pass').show();  
         }
       else 
         {
-        createNotice("Sorry, the selected output folder is not valid! ", 4000, 'error');
-        $('#midas_challenge_competitor_validatedOutputFolder').html('Failed');
+        midas.createNotice("Sorry, the selected output folder is not valid! ", 4000, 'error');
+        $('#validateOutputFolder_Fail').show();
         }
       },
-    error: function(){
-      $('#midas_challenge_competitor_validatedOutputFolder').html('Failed');  
-      }
+    error: function(XMLHttpRequest, textStatus, errorThrown){
+      $('#validateOutputFolder_Fail').show();
+      var validationInfo = '';
+      validationInfo = '<br/> <b>Reason: </b>' + XMLHttpRequest.message + '<br/> </br>';
+      $('div#midas_challenge_competitor_validatedResultsFolder_Info').html(validationInfo);
+      }      
+      
     });
     return;
   }  
@@ -214,7 +225,9 @@ function folderSelectionCallback(name, id)
   if(currentBrowser == 'folderresults')
     {
     $('#midas_challenge_competitor_selectedResultsFolder').html(name);
-    $('#midas_challenge_competitor_selectedResultsFolderId').val(id);   
+    $('#midas_challenge_competitor_selectedResultsFolderId').val(id);
+    $('#validateResultsFolder_Pass').hide();
+    $('#validateResultsFolder_Fail').hide();
     if(challengeId != '' && id != '')
       {
       _validateResultsFolder(challengeId, id);
@@ -225,6 +238,8 @@ function folderSelectionCallback(name, id)
     {
     $('#midas_challenge_competitor_selectedOutputFolder').html(name);
     $('#midas_challenge_competitor_selectedOutputFolderId').val(id);
+    $('#validateOutputFolder_Pass').hide();
+    $('#validateOutputFolder_Fail').hide();
     if(challengeId != '' && id != '')
       {
       _validateOutputFolder(challengeId, id);

@@ -11,23 +11,24 @@ PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
 echo '<script type="text/javascript" src="' . $this->apiWebroot . '/public/js/common/common.ajaxapi.js"></script>';
 echo '<script type="text/javascript" src="' . $this->coreWebroot . '/public/js/jquery/jquery.dataTable.js"></script>';
-echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js/competitor/competitor.showscore.js"></script>';
 ?>
 
 <link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
       
 <div id="showscores" >
   <?php
-    foreach($this->tableData as $challengeName => $challengeScores)
+    foreach($this->tableHeaders as $challengeId => $headers)
       {
-      echo "<h4>".$challengeName."<h4>";
+      if(!empty($headers))
+      {   
+      echo "<h4>".$this->challengeInfo[$challengeId]['name']."<h4>";
       //echo '<input type="button" onclick="displayResult("'.$challengeName.'")" value="diaplay scores" />';
-      echo '<table id="'.$challengeName.'" style="display:table" class="display">';
+      echo '<table id="'.$challengeId.'" style="display:table" class="display">';
   ?>
         <thead>
         <tr class="header">
         <?php
-        foreach($this->tableHeaders as $header)
+        foreach($headers as $header)
           {
           echo "<th>".ucfirst($header)."</th>";
           }
@@ -37,11 +38,13 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
         <tbody>
         <tr>
           <?php       
-            foreach($challengeScores['results_rows'] as $row)
+            foreach($this->tableData[$challengeId] as $competitorId => $scores)
               {
-              echo "<tr>";
-              foreach($this->tableData_resultsColumns as $column)
-              echo "<td>".$row[$column]."</td>";
+              echo "<tr> <td>".$competitorId."</td>";
+              foreach($scores as $column)
+                {
+                echo "<td>".$column."</td>";
+                }
               echo "</tr>";
               }
           ?> 
@@ -49,6 +52,7 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
       </tbody>
     </table>
   <?php
+      }
     }
   ?>
 </div>

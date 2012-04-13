@@ -1,0 +1,34 @@
+div.viewWrapper {
+  padding-right: 40px !important;
+}
+
+table.displays{
+  margin: 0 auto;
+	clear: both;
+	width: 100%;
+
+}
+
+.dataTables_wrapper{
+  border: 1px solid grey;
+  border: #354856 1px solid;
+  -moz-border-radius: 6px;
+  -webkit-border-radius: 6px;
+  -khtml-border-radius: 6px;
+  border-radius: 6px;
+  -webkit-box-shadow: #666 0 0 5px;
+  box-shadow: #666 0 0 5px;
+  -moz-box-shadow: 0px 0px 5px #666;
+  padding: 5px 10px 25px 10px;
+}
+
+table.display thead th {
+	padding: 3px 18px 3px 10px;
+	border-bottom: 1px solid black;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+table.display td{
+  border-bottom: 1px solid grey;
+}
