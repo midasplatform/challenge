@@ -138,10 +138,11 @@ class Challenge_CompetitorController extends Challenge_AppController
       $challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
       }
     else
-      {
+      { // show scores for an individual challenge
       $showAllChallenges = false;
       $dashboardDao = $this->Challenge_Challenge->load($challengeId)->getDashboard();
       $challenges = array($challengeId => array('name' => $dashboardDao->getName(), 'description' => $dashboardDao->getDescription() ) );
+      $this->view->json['challengeId'] = $challengeId;
       }
     $tableData = array();
     foreach($challenges as $challengeId => $challengeDetails)
@@ -150,6 +151,7 @@ class Challenge_CompetitorController extends Challenge_AppController
       $apiargs['useSession'] = true;
       $apiargs['challengeId'] = $challengeId;
       $tableData[$challengeDetails['name']] = $this->ModuleComponent->Api->competitorListResults($apiargs);
+      $this->view->json['processingComplete'] = $tableData[$challengeDetails['name']]['processing_complete'];
       }
 
     $this->view->showAllChallenges = $showAllChallenges;
