@@ -16,8 +16,20 @@ $(document).ready(function()
       "aaSorting": [ [3,'desc'], [0,'asc'] ]
       }
     ); 
-    
+        
     $(".scoreContent").show();
+    
+    if(json.challengeId)
+      {
+      if(json.processingComplete !== 'true') 
+        { 
+        $('div#midas_challenge_competitor_listScoreStatus').html("Calculation status: not complete.");
+        }
+      else
+        {
+        $('div#midas_challenge_competitor_listScoreStatus').html("Calculation status: complete.");  
+        }
+      }
       
     $(".scoreHeading").click(function(){
     $(this).next(".scoreContent").slideToggle(100);
