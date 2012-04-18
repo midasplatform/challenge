@@ -10,33 +10,33 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
 echo '<script type="text/javascript" src="' . $this->apiWebroot . '/public/js/common/common.ajaxapi.js"></script>';
-echo '<script type="text/javascript" src="' . $this->coreWebroot . '/public/js/jquery/jquery.dataTable.js"></script>';
+echo '<script type="text/javascript" src="' . $this->moduleWebroot. '/public/js/jquery.dataTables.js"></script>';
+echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js/competitor/competitor.dashboard.js"></script>';
 ?>
 
-<link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
+<link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/jquery.dataTables.css" />
+<link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.dashboard.css" />
       
-<div id="showscores" >
+<div id="dashboard" >
   <?php
     foreach($this->tableHeaders as $challengeId => $headers)
       {
       if(!empty($headers))
-      {   
-      echo "<h4>".$this->challengeInfo[$challengeId]['name']."<h4>";
-      //echo '<input type="button" onclick="displayResult("'.$challengeName.'")" value="diaplay scores" />';
-      echo '<table id="'.$challengeId.'" style="display:table" class="display">';
+      {
+      echo "<div class='dashboardHeading'> <span>+</span> ".$this->challengeInfo[$challengeId]['name']."</div>";  
+      echo '<div class="dashboardContent"> <table id="'.$this->challengeInfo[$challengeId]['name'].'" style="display:table" class="dashboardDisplay">';
   ?>
         <thead>
-        <tr class="header">
-        <?php
-        foreach($headers as $header)
-          {
-          echo "<th>".ucfirst($header)."</th>";
-          }
-        ?>
-        </tr>
+          <tr class="header">
+          <?php
+          foreach($headers as $header)
+            {
+            echo "<th>".ucfirst($header)."</th>";
+            }
+          ?>
+          </tr>
         </thead>
         <tbody>
-        <tr>
           <?php       
             foreach($this->tableData[$challengeId] as $competitorId => $scores)
               {
@@ -48,9 +48,10 @@ echo '<script type="text/javascript" src="' . $this->coreWebroot . '/public/js/j
               echo "</tr>";
               }
           ?> 
-        </tr>
-      </tbody>
+        </tbody>
     </table>
+    <br/>
+    </div>
   <?php
       }
     }

@@ -4,8 +4,7 @@ midas.challenge.competitor = midas.challenge.competitor || {};
 
 $(document).ready(function() 
   { 
-    
-    $("table.scoreDisplay").dataTable(
+    $("table.dashboardDisplay").dataTable(
       {
       "bPaginate": true,
       "bLengthChange": true,
@@ -13,26 +12,27 @@ $(document).ready(function()
       "bSort": true,
       "bInfo": true,
       "bAutoWidth": false,
-      "aaSorting": [ [3,'desc'], [0,'asc'] ]
+      "aaSorting": [ [1,'desc'], [0,'asc'] ]
       }
     ); 
     
-    $(".scoreContent").show();
+    $(".dashboardContent").hide();
       
-    $(".scoreHeading").click(function(){
-    $(this).next(".scoreContent").slideToggle(100);
+    $(".dashboardHeading").click(function(){
+    $(this).next(".dashboardContent").slideToggle(100);
      })
      
     .toggle(
       function() 
         {
-        $(this).children("span").text("+");
+        $(this).children("span").text("-");
         }, 
       function()
         {
-        $(this).children("span").text("-");
+        $(this).children("span").text("+");
         }
-     );      
+     );  
 
   });
  
+

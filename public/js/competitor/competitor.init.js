@@ -49,12 +49,13 @@ function onFinishCallback()
       {
       method: 'midas.challenge.competitor.score.results',  
       args: 'challengeId=' + challengeId + '&resultsFolderId=' + resultsFolderId + '&outputFolderId=' + outputFolderId,
-      success: function(results) 
+      success: function() 
         {
         window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?challengeId=' + challengeId); 
         },
-      error: function(x)
-        {  
+      error: function()
+        {
+        // hack for now, TODO: comment out this line for the instance with batchmake configured.
         window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?challengeId=' + challengeId); 
         }
       })
