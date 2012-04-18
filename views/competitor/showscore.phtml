@@ -9,20 +9,33 @@ This software is distributed WITHOUT ANY WARRANTY; without even
 the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
+if($this->showAllChallenges)
+  {
+  echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js/jquery.dataTables.js"></script>';
+  echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js/competitor/competitor.showscore.js"></script>';
+  }
+else
+  {
+  echo '<script type="text/javascript" src="' . $this->coreWebroot . '/public/js/layout/jquery.js"></script>';
+  $this->headScript()->appendFile($this->moduleWebroot . '/public/js/jquery.dataTables.js');
+  $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
+  $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.updatescore.js');
+  }
 echo '<script type="text/javascript" src="' . $this->apiWebroot . '/public/js/common/common.ajaxapi.js"></script>';
-echo '<script type="text/javascript" src="' . $this->coreWebroot . '/public/js/jquery/jquery.dataTable.js"></script>';
-echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js/competitor/competitor.showscore.js"></script>';
+
 ?>
 
+<link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/jquery.dataTables.css" />
 <link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
+
       
 <div id="showscores" >
   <?php
     foreach($this->tableData as $challengeName => $challengeScores)
       {
-      echo "<h4>".$challengeName."<h4>";
-      //echo '<input type="button" onclick="displayResult("'.$challengeName.'")" value="diaplay scores" />';
-      echo '<table id="'.$challengeName.'" style="display:table" class="display">';
+      echo '<img style="display: none" class="resultsLoading" alt="Loading..." src="'.$this->coreWebroot.'/public/images/icons/loading.gif" />';
+      echo "<div class='scoreHeading'> <span>-</span> $challengeName <div id='midas_challenge_competitor_listScoreStatus'></div></div>";
+      echo '<div class="scoreContent"><table id="'.$challengeName.'" style="display:table" class="scoreDisplay">';
   ?>
         <thead>
         <tr class="header">
@@ -35,19 +48,21 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
         </tr>
         </thead>
         <tbody>
-        <tr>
           <?php       
             foreach($challengeScores['results_rows'] as $row)
               {
-              echo "<tr>";
+              echo "<tr class='resultsRow'>";
               foreach($this->tableData_resultsColumns as $column)
-              echo "<td>".$row[$column]."</td>";
+                {
+                echo "<td>".$row[$column]."</td>";
+                }
               echo "</tr>";
               }
           ?> 
-        </tr>
       </tbody>
     </table>
+    <br/>
+    </div>
   <?php
     }
   ?>

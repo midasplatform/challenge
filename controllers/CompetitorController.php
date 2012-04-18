@@ -66,7 +66,6 @@ class Challenge_CompetitorController extends Challenge_AppController
     {
     $this->requireAjaxRequest();
     $this->disableLayout();
-    //$policy = $this->_getParam("policy");
     if(isset($policy) && $policy == 'read')
       {
       $policy = MIDAS_POLICY_READ;
@@ -126,28 +125,12 @@ class Challenge_CompetitorController extends Challenge_AppController
     echo JsonComponent::encode($jsonContent);
     }
 
-  /** start a get score job */
-  public function getscoreAction()
-    {
-    $this->disableLayout();
-    //$this->disableView();
-    /* TODO
-    $args = array();
-    $args['useSession'] = true;
-    $args['challengeId'] = $this->_getParam("challengeId");
-    $args['outputFolderId'] = $this->_getParam("outputFolderId");
-    $args['resultsFolderId'] = $this->_getParam("resultsFolderId");
-
-    $this->view->args = $args();
-    $this->view->score = $this->ModuleComponent->Api->competitorScoreResultsFolder($args);
-    */
-    }
-
   /** show score */
   public function showscoreAction()
     {
     $challengeId = $this->_getParam("challengeId");
     $challenges = array();
+    $showAllChallenges = true;
     if(!isset($challengeId))
       {
       $this->disableLayout();
@@ -156,11 +139,10 @@ class Challenge_CompetitorController extends Challenge_AppController
       }
     else
       {
+      $showAllChallenges = false;
       $dashboardDao = $this->Challenge_Challenge->load($challengeId)->getDashboard();
       $challenges = array($challengeId => array('name' => $dashboardDao->getName(), 'description' => $dashboardDao->getDescription() ) );
       }
-    // hack for now
-    //$challenges = array('1' => array('name' => 'Demo Challenge', 'description' => 'challenge for Demo'));
     $tableData = array();
     foreach($challenges as $challengeId => $challengeDetails)
       {
@@ -169,6 +151,8 @@ class Challenge_CompetitorController extends Challenge_AppController
       $apiargs['challengeId'] = $challengeId;
       $tableData[$challengeDetails['name']] = $this->ModuleComponent->Api->competitorListResults($apiargs);
       }
+
+    $this->view->showAllChallenges = $showAllChallenges;
     $this->view->tableData = $tableData;
     $this->view->user = $this->userSession->Dao;
     $this->view->tableHeaders = array('testing item', 'result item', 'metric', 'score', 'output item');
@@ -212,7 +196,7 @@ class Challenge_CompetitorController extends Challenge_AppController
           $aggregated_score = 0.0;
           foreach($scores as $testItemId => $testScore)
             {
-            $tableData[$challengeId][$competitorId][array_search($testItemId,array_keys($apiResults['test_items'])) + 1 ] = floatval($testScore['score']);
+            $tableData[$challengeId][$competitorId][array_search($testItemId, array_keys($apiResults['test_items'])) + 1 ] = floatval($testScore['score']);
             $aggregated_score += floatval($testScore['score']);
             }
           $tableData[$challengeId][$competitorId][0] = $aggregated_score;

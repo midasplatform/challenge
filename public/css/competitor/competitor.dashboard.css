@@ -1,4 +1,4 @@
-div.scoreHeading {
+div.dashboardHeading {
   display: block;
   -webkit-margin-before: 20px;
   -webkit-margin-after: 5px;
@@ -11,15 +11,9 @@ div.scoreHeading {
   cursor: pointer;
 }
 
-div#midas_challenge_competitor_listScoreStatus {
-  font-weight: normal;
-  padding-left: 10px;
-	font-size: 12px;
-}
-
-div.scoreHeading:hover{
+div.dashboardHeading:hover{
   background-color: #e5e5e5;
 }
 
-div.scoreContent{
+div.dashboardContent{
 }
