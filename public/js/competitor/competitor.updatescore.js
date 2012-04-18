@@ -5,7 +5,7 @@ midas.challenge.competitor = midas.challenge.competitor || {};
 
 var delayMillis = 10000;
 
-var updateResults = function()
+midas.challenge.competitor.updateResults = function()
   {
   ajaxWebApi.ajax(
     {
@@ -15,15 +15,18 @@ var updateResults = function()
       {
       var processingComplete = results.data.processing_complete;
       var resultsRows = results.data.results_rows;
-      updateResultsTable(resultsRows);
+      midas.challenge.competitor.updateResultsTable(resultsRows);
+      var aniSpeed = 2000;
       if(processingComplete !== 'true') 
         { 
-        $('div#midas_challenge_competitor_listScoreStatus').html("Calculation status: not complete.");
-        var t = setTimeout(updateResults, delayMillis);
+        $('div#midas_challenge_competitor_listScoreStatus').html("Calculation status: not complete. It will be automatically updated shortly.");
+        $('div#midas_challenge_competitor_listScoreStatus').animate( { color: 'red' }, aniSpeed);
+        var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
         }
       else
         {
-        $('div#midas_challenge_competitor_listScoreStatus').html("Calculation status: complete.");  
+        $('div#midas_challenge_competitor_listScoreStatus').html("Calculation status: complete.");
+        $('div#midas_challenge_competitor_listScoreStatus').animate( { color: 'green' }, aniSpeed);
         }
       },
       error: function() {}
@@ -32,13 +35,13 @@ var updateResults = function()
 
 $(document).ready(function() {
     // check for new results after a delay
-    var t = setTimeout(updateResults, delayMillis);
+    var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
 });
 
 
 
 // Fill the results table with any data
-function updateResultsTable(jsonResults)  {
+midas.challenge.competitor.updateResultsTable = function(jsonResults)  {
     $('table.scoreDisplay').hide();
     $('.resultsLoading').show();
     
