@@ -25,7 +25,11 @@ class Challenge_Notification extends ApiEnabled_Notification
     $this->addCallBack('CALLBACK_CORE_GET_LEFT_LINKS', 'getLeftLink');
     $this->addCallBack('CALLBACK_CORE_GET_USER_ACTIONS', 'getUserAction');
     $this->addCallBack('CALLBACK_CORE_GET_USER_TABS', 'getUserTab');
-    $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_ANONYMOUS_VIEW_TABS', 'getCommunityViewTab');
+    $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_ANONYMOUS_TABS', 'getCommunityViewTab');
+    $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_MANAGE_TABS', 'getCommunityManageTab');
+    $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_ADMIN_ACTIONS', 'getCommunityViewAction');
+    $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_JSS', 'getCommunityViewJSs');
+    $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_MANAGE_JSS', 'getCommunityManageJSs');
     }//end init
     
   /**
@@ -114,6 +118,73 @@ class Challenge_Notification extends ApiEnabled_Notification
       return array();
       }
     }
+    
+  /**
+   * callback function to get 'edit challenge' tab
+   *
+   * @return array
+   */
+  public function getCommunityManageTab($args)
+    {
+    $apiargs['useSession'] = true;
+    $apiargs['communityId'] = $args['community']->getKey();
+    $challenges = $this->ModuleComponent->Api->anonymousGetChallenge($apiargs);
+    if(!empty($challenges))
+      {
+      $fc = Zend_Controller_Front::getInstance();
+      $moduleWebroot = $fc->getBaseUrl().'/challenge';
+      return array('Edit Challenge' => $moduleWebroot.'/admin/edit?communityId='.$apiargs['communityId']);
+      }
+    else
+      {
+      return array();
+      }
+    }  
+ 
+  /**
+   * callback function to get 'create a challenge' action
+   *
+   * @return array
+   */
+  public function getCommunityViewAction($args)
+    {
+    $apiargs['useSession'] = true;
+    $apiargs['communityId'] = $args['community']->getKey();
+    $challenges = $this->ModuleComponent->Api->anonymousGetChallenge($apiargs);
+    if(empty($challenges))
+      {
+      $fc = Zend_Controller_Front::getInstance();
+      $moduleWebroot = $fc->getBaseUrl().'/challenge';
+      $moduleFileroot =  $fc->getBaseUrl().'/modules/'.$this->moduleName;
+      return array($this->t('Create a challenge') => 
+                   array("property" => 'onclick=midas.challenge.admin.createChallenge('.$apiargs['communityId'].');', "image" => $moduleFileroot.'/public/images/competitors.png') );
+      }
+    }
+  
+  /**
+   * callback function to get java script
+   *
+   * @return array
+   */
+  public function getCommunityViewJSs()
+    {
+    $fc = Zend_Controller_Front::getInstance();
+    $moduleUriroot = $fc->getBaseUrl().'/modules/challenge';
+    return array($moduleUriroot.'/public/js/admin/admin.create.js');
+    }
+  
+  /**
+   * callback function to get java script
+   *
+   * @return array
+   */
+  public function getCommunityManageJSs()
+    {
+    $fc = Zend_Controller_Front::getInstance();
+    $moduleUriroot = $fc->getBaseUrl().'/modules/challenge';
+    return array($moduleUriroot.'/public/js/admin/admin.edit.js');
+    }  
+      
     
   } //end class
   

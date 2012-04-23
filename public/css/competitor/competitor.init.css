@@ -29,3 +29,19 @@ span#validateOutputFolder_Fail{
   font-weight: bold;
   color: #C80000;
 }
+
+table.validation{
+  border: 1px solid black!important; 
+  width: 80%!important;
+  border-collapse: collapse!important;
+}
+
+table.validation th{
+  text-align: center;
+  border: 1px solid black;
+}
+
+table.validation td{
+  text-align: center;
+  border: 1px solid black;
+}

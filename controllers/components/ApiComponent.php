@@ -39,7 +39,7 @@ class Challenge_ApiComponent extends AppComponent
    */
   public function adminCreateChallenge($args)
     {
-    $this->_checkKeys(array('communityId', 'challengeName', 'challengeDescription'), $args);
+    $this->_checkKeys(array('communityId', 'challengeName', 'challengeDescription', 'challengeStatus'), $args);
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
@@ -53,6 +53,7 @@ class Challenge_ApiComponent extends AppComponent
     $communityId = $args['communityId'];
     $challengeName = $args['challengeName'];
     $challengeDescription = $args['challengeDescription'];
+    $challengeStatus = $args['challengeStatus'];
 
     // must be a moderator of the community
     $modelLoad = new MIDAS_ModelLoader();
@@ -60,7 +61,7 @@ class Challenge_ApiComponent extends AppComponent
     $communityDao = $communityModel->load($communityId);
 
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $challengeDao = $challengeModel->createChallenge($userDao, $communityDao, $challengeName, $challengeDescription);
+    $challengeDao = $challengeModel->createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $challengeStatus);
     // return the challengeId
     return $challengeDao->getKey();
     }
@@ -154,7 +155,7 @@ class Challenge_ApiComponent extends AppComponent
 
 
   /**
-   * Check if a community has challenge(s)
+   * Check if a community has a challenge
    * @param communityId
    * @return an array of challenge ids as keys, with challenge status as the value for each key.
    */
@@ -164,8 +165,8 @@ class Challenge_ApiComponent extends AppComponent
     $communityId = $args['communityId'];
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $includedChallenges = $challengeModel->getByCommunityId($communityId);
-    return $includedChallenges;
+    $includedChallenge = $challengeModel->getByCommunityId($communityId);
+    return $includedChallenge;
     }
 
 
@@ -593,7 +594,7 @@ class Challenge_ApiComponent extends AppComponent
       {
       $rows[] = $row1;
       $rows[] = $row2;
-          }
+      }
     else if($randVal === 3)
       {
       $rows[] = $row1;
@@ -689,7 +690,7 @@ class Challenge_ApiComponent extends AppComponent
       {
       $competitorId = 1;
       }
-      
+
 
 
     // need a list of all result item ids for the challenge
@@ -713,14 +714,14 @@ class Challenge_ApiComponent extends AppComponent
 
     // TODO this is fake data, uncomment if no condor setup
     $testItems = array("294" => "test1.mha","295" => "test2.mha");
-    
+
     $resultsPerCompetitor = array('1' => array("294" => array("name" => "test1.mha", "score" => "0.666667"),
                                "295" => array("name" => "test2.mha", "score" => "0.563667")),
                   '2' => array("294" => array("name" => "test1.mha", "score" => "0.8764"),
                                "295" => array("name" => "test2.mha", "score" => "0.67864")));
     $returnVal = array('test_items' => $testItems, 'competitor_scores' => $resultsPerCompetitor);
-   
- 
+
+
     return $returnVal;
     }
 

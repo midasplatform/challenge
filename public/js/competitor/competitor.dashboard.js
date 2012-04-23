@@ -21,11 +21,11 @@ midas.challenge.competitor.dashboardSetup = function (){
     .toggle(
       function() 
         {
-        $(this).children("span").text("-");
+        $(this).children("span").text("+");
         }, 
       function()
         {
-        $(this).children("span").text("+");
+        $(this).children("span").text("-");
         }
      );  
 }
@@ -44,7 +44,7 @@ $(document).ready(function()
       }
     ); 
     
-    $(".dashboardContent").hide();
+    $(".dashboardContent").show();
     
     midas.challenge.competitor.dashboardSetup();  
   });

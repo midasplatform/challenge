@@ -16,16 +16,16 @@ require_once BASE_PATH . '/modules/challenge/models/base/ChallengeModelBase.php'
 class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
 
   /**
-   * Returns challenge(s) by a communityId
+   * Returns challenge by a communityId
    * @param type $communityId
    * @return type
    */
 
   function getByCommunityId($communityId)
     {
-    $rowset = $this->database->fetchAll($this->database->select()->where('community_id=?', $communityId));
+    $row = $this->database->fetchrow($this->database->select()->where('community_id=?', $communityId));
     $return = array();
-    foreach($rowset as $row)
+    if(!empty($row))
       {
       $challengeId = $row['challenge_id'];
       $status = $row['status'];
@@ -85,13 +85,13 @@ class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
     $sql->from(array('crr' => 'challenge_results_run'));
     $sql->join(array('bt' => 'batchmake_task'), 'crr.batchmake_task_id=bt.batchmake_task_id');
     $sql->where('crr.challenge_id=?', $challengeId);
-    
+
     $rowset = $this->database->fetchAll($sql);
     $rows = array();
     foreach($rowset as $row)
       {
       // TODO distinct not working, so using set/hash to do it
-      $rows[$row['user_id']] = $row['user_id'];  
+      $rows[$row['user_id']] = $row['user_id'];
       }
    //    select user_id from challenge_results_run, batchmake_task where batchmake_task.batchmake_task_id=challenge_results_run.batchmake_task_id group by user_id;
     return $rows;

@@ -41,5 +41,35 @@ class Challenge_ConfigForm extends AppForm
     $form->addElements($formElements);
     return $form;
     }
+
+  /** create create challenge form */
+  public function createEditChallengeForm()
+    {
+    $form = new Zend_Form;
+
+    $form->setAction($this->webroot.'/challenge/admin/edit')
+          ->setMethod('post');
+
+    $name = new Zend_Form_Element_Text('name');
+    $name ->setRequired(true)
+          ->addValidator('NotEmpty', true);
+
+    $description = new Zend_Form_Element_Textarea('description');
+
+    $status = new Zend_Form_Element_Radio('status');
+    $status->addMultiOptions(array(
+                 MIDAS_CHALLENGE_STATUS_OPEN => $this->t("Open, competitors can participate in"),
+                 MIDAS_CHALLENGE_STATUS_CLOSED=> $this->t("Closed, competitors cannot participate in, but can view existing scores"),
+                  ))
+            ->setRequired(true)
+            ->setValue(MIDAS_CHALLENGE_STATUS_CLOSED);
+
+    $submit = new  Zend_Form_Element_Submit('submit');
+    $submit ->setLabel($this->t("Save"));
+
+    $form->addElements(array($name, $description, $status, $submit));
+    return $form;
+    }
+
 } // end class
 ?>
