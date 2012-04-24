@@ -1,4 +1,4 @@
-<?php
+<?php 
 /*=========================================================================
 MIDAS Server
 Copyright (c) Kitware SAS. 20 rue de la Villette. All rights reserved.
@@ -10,27 +10,23 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
 
-//$this->headScript()->appendFile($this->coreWebroot.'/public/js/jquery/jquery.form.js');
-//$this->headScript()->appendFile($this->coreWebroot.'/public/js/common/common.browser.js');
-//$this->headScript()->appendFile($this->moduleWebroot.'//public/js/admin/admin.edit.js');
+echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js/admin/admin.edit.js"></script>';
 ?>
 
 <form id="editChallengeForm" class="genericForm" method="<?php echo $this->infoForm['method']?>"  action="<?php echo $this->infoForm['action']?>">
-  <input type="hidden" name="communityId" value="<?php echo $this->communityId?>"/>  
-    <div class="createNameElement">
-      <label for="name"><?php echo $this->t('Name')?></label>
-      <?php echo $this->infoForm['name']?>
-    </div>
-    <div>
-      <label for="description"><?php echo $this->t('Description')?></label>
-      <?php echo $this->infoForm['description']?>
-    </div>
-    <div class="radioElement">
-      <h4><?php echo $this->t('Status')?></h4>
-      <?php echo $this->infoForm['status']?>
-    </div>
-    <div>
-      <?php echo $this->infoForm['submit']?>
-    </div>
+  <div class="createNameElement">
+    <label for="name"><?php echo $this->t('Name')?></label>
+    <?php echo $this->infoForm['name']?>
+  </div>
+  <div>
+    <label for="description"><?php echo $this->t('Description')?></label>
+    <?php echo $this->infoForm['description']?>
+  </div>
+  <div class="radioElement">
+    <h4><?php echo $this->t('Status')?></h4>
+    <?php echo $this->infoForm['status']?>
+  </div>
+  <div>
+    <?php echo $this->infoForm['submit']?>
+  </div>
 </form>
-

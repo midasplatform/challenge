@@ -29,7 +29,6 @@ class Challenge_Notification extends ApiEnabled_Notification
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_MANAGE_TABS', 'getCommunityManageTab');
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_ADMIN_ACTIONS', 'getCommunityViewAction');
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_JSS', 'getCommunityViewJSs');
-    $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_MANAGE_JSS', 'getCommunityManageJSs');
     }//end init
     
   /**
@@ -172,19 +171,7 @@ class Challenge_Notification extends ApiEnabled_Notification
     $moduleUriroot = $fc->getBaseUrl().'/modules/challenge';
     return array($moduleUriroot.'/public/js/admin/admin.create.js');
     }
-  
-  /**
-   * callback function to get java script
-   *
-   * @return array
-   */
-  public function getCommunityManageJSs()
-    {
-    $fc = Zend_Controller_Front::getInstance();
-    $moduleUriroot = $fc->getBaseUrl().'/modules/challenge';
-    return array($moduleUriroot.'/public/js/admin/admin.edit.js');
-    }  
-      
+ 
     
   } //end class
   

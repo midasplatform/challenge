@@ -43,11 +43,11 @@ class Challenge_ConfigForm extends AppForm
     }
 
   /** create create challenge form */
-  public function createEditChallengeForm()
+  public function createEditChallengeForm($community_id)
     {
     $form = new Zend_Form;
 
-    $form->setAction($this->webroot.'/challenge/admin/edit')
+    $form->setAction($this->webroot.'/challenge/admin/edit?communityId='.$community_id)
           ->setMethod('post');
 
     $name = new Zend_Form_Element_Text('name');
