@@ -33,8 +33,8 @@ class Challenge_AdminController extends Challenge_AppController
       }
     $community_id = $this->_getParam('communityId');
     $this->view->communityId = $community_id;
-    $form = $this->ModuleForm->Config->createEditChallengeForm();
-    $this->view->form = $this->getFormAsArray($form);
+    $action = 'create';
+    $form = $this->ModuleForm->Config->createEditChallengeForm($community_id, $action);
 
     if($this->_request->isPost() && $form->isValid($this->getRequest()->getPost()))
       {
@@ -71,11 +71,16 @@ class Challenge_AdminController extends Challenge_AppController
 
     $community_id = $this->_getParam("communityId");
     $challengeIds = array_keys($this->Challenge_Challenge->getByCommunityId($community_id));
+    if(empty($challengeIds))
+      {
+      throw new Zend_Exception("The community doesn't have a challenge with it!");
+      }
     // only allow one challenge per community now
     $challengeId = $challengeIds[0];
     $challengeDao = $this->Challenge_Challenge->load($challengeId);
     $dashboardDao = $challengeDao->getDashboard();
-    $formInfo = $this->ModuleForm->Config->createEditChallengeForm($community_id);
+    $action = 'edit';
+    $formInfo = $this->ModuleForm->Config->createEditChallengeForm($community_id, $action);
 
     //ajax posts
     if($this->_request->isPost() && $formInfo->isValid($this->getRequest()->getPost()))

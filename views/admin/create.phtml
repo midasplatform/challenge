@@ -15,8 +15,7 @@ PURPOSE.  See the above copyright notices for more information.
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-<form id="createChallengeForm" class="genericForm" method="<?php echo $this->form['method']?>"  action="<?php echo $this->webroot?>/challenge/admin/create">
-  <input type="hidden" name="communityId" value="<?php echo $this->communityId?>"/>
+<form id="createChallengeForm" class="genericForm" method="<?php echo $this->form['method']?>"  action="<?php echo $this->form['action']?>">
   <div class="createNameElement">
     <label for="name"><?php echo $this->t('Name')?></label>
     <?php echo $this->form['name']?>
