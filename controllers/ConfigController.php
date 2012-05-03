@@ -18,7 +18,7 @@
  limitations under the License.
 =========================================================================*/
 /** demo controller*/
-class Challenge_IndexController extends Challenge_AppController
+class Challenge_ConfigController extends Challenge_AppController
 {
   public $_models = array('User');
   public $_daos = array('Item');
