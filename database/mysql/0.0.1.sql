@@ -29,4 +29,10 @@ CREATE TABLE IF NOT EXISTS `challenge_results_run_item` (
   PRIMARY KEY (`challenge_results_run_item_id`)
 )   DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS `challenge_enabled_community` (
+  `challenge_enabled_community_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `community_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`challenge_enabled_community_id`)
+)   DEFAULT CHARSET=utf8;
+
             

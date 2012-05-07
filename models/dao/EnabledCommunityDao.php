@@ -9,10 +9,10 @@ This software is distributed WITHOUT ANY WARRANTY; without even
 the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
-/** Challenge_ChallengeDao */
-class Challenge_ChallengeDao extends AppDao {
+/** Challenge_CommunityDao */
+class Challenge_EnabledCommunityDao extends AppDao {
 
-  public $_model = 'Challenge';
+  public $_model = 'EnabledCommunity';
   public $_module = 'challenge';
 
 }

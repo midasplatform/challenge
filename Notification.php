@@ -25,7 +25,7 @@ class Challenge_Notification extends ApiEnabled_Notification
     $this->addCallBack('CALLBACK_CORE_GET_LEFT_LINKS', 'getLeftLink');
     $this->addCallBack('CALLBACK_CORE_GET_USER_ACTIONS', 'getUserAction');
     $this->addCallBack('CALLBACK_CORE_GET_USER_TABS', 'getUserTab');
-    $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_ANONYMOUS_TABS', 'getCommunityViewTab');
+    $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_TABS', 'getCommunityViewTab');
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_MANAGE_TABS', 'getCommunityManageTab');
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_ADMIN_ACTIONS', 'getCommunityViewAction');
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_JSS', 'getCommunityViewJSs');
@@ -46,7 +46,9 @@ class Challenge_Notification extends ApiEnabled_Notification
     else 
       {
       $args['useSession'] = true;
-      $challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
+      $challenges = array();
+      //$challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
+      //$challenges = $this->ModuleComponent->Api->competitorListChallenges();
       if(!empty($challenges))
         {
         $fc = Zend_Controller_Front::getInstance();

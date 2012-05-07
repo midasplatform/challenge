@@ -59,7 +59,7 @@ class Challenge_ConfigForm extends AppForm
     $status = new Zend_Form_Element_Radio('status');
     $status->addMultiOptions(array(
                  MIDAS_CHALLENGE_STATUS_OPEN => $this->t("Open, competitors can participate in"),
-                 MIDAS_CHALLENGE_STATUS_CLOSED=> $this->t("Closed, competitors cannot participate in, but can view existing scores"),
+                 MIDAS_CHALLENGE_STATUS_CLOSED => $this->t("Closed, competitors cannot participate in, but can view existing scores"),
                   ))
             ->setRequired(true)
             ->setValue(MIDAS_CHALLENGE_STATUS_CLOSED);

@@ -534,6 +534,8 @@ class Challenge_ApiComponent extends AppComponent
 
     $challengeId = $args['challengeId'];
 
+    /*
+
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
     $itemModel = $modelLoad->loadModel('Item');
@@ -563,7 +565,7 @@ class Challenge_ApiComponent extends AppComponent
     // TODO don't yet have a notion of finished
     $processingComplete = 'true';
     $responseData = array('results_rows' => $returnRows, 'processing_complete' => $processingComplete);
-
+*/
 
     // TODO this is fake data, uncomment if no condor setup
     $rows = array();
@@ -642,7 +644,7 @@ class Challenge_ApiComponent extends AppComponent
 //      }
 
     $challengeId = $args['challengeId'];
-
+/*
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
     $folderModel = $modelLoad->loadModel('Folder');
@@ -711,7 +713,7 @@ class Challenge_ApiComponent extends AppComponent
 
     $returnVal = array('test_items' => $testItems, 'competitor_scores' => $resultsPerCompetitor);
 
-
+   */
     // TODO this is fake data, uncomment if no condor setup
     $testItems = array("294" => "test1.mha","295" => "test2.mha");
 
