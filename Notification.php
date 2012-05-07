@@ -46,9 +46,7 @@ class Challenge_Notification extends ApiEnabled_Notification
     else 
       {
       $args['useSession'] = true;
-      $challenges = array();
-      //$challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
-      //$challenges = $this->ModuleComponent->Api->competitorListChallenges();
+      $challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
       if(!empty($challenges))
         {
         $fc = Zend_Controller_Front::getInstance();
