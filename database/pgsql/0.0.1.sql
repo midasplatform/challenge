@@ -26,4 +26,7 @@ CREATE TABLE challenge_results_run_item (
   validation_scalarresult_id bigint NOT NULL
 );
 
-           
+CREATE TABLE challenge_enabled_community (
+    challenge_enabled_community_id serial PRIMARY KEY,,
+    community_id bigint NOT NULL
+);

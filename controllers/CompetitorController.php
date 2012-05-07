@@ -20,7 +20,6 @@
 /** competitor controller*/
 class Challenge_CompetitorController extends Challenge_AppController
 {
-  public $_components = array('Date');
   public $_moduleComponents = array('Api');
   public $_moduleModels = array('Challenge');
   public $_moduleForms = array('Config');
@@ -66,17 +65,9 @@ class Challenge_CompetitorController extends Challenge_AppController
     {
     $this->requireAjaxRequest();
     $this->disableLayout();
-    if(isset($policy) && $policy == 'read')
-      {
-      $policy = MIDAS_POLICY_READ;
-      }
-    else
-      {
-      $policy = MIDAS_POLICY_WRITE;
-      }
+    $policy = MIDAS_POLICY_WRITE;
 
     $this->view->selectEnabled = true;
-    $this->view->Date = $this->Component->Date;
     $this->view->policy = $policy;
     $this->view->user = $this->userSession->Dao;
     }
@@ -86,20 +77,10 @@ class Challenge_CompetitorController extends Challenge_AppController
     {
     $this->requireAjaxRequest();
     $this->disableLayout();
-    //$policy = $this->_getParam("policy");
-    if(isset($policy) && $policy == 'read')
-      {
-      $policy = MIDAS_POLICY_READ;
-      }
-    else
-      {
-      $policy = MIDAS_POLICY_WRITE;
-      }
+    $policy = MIDAS_POLICY_WRITE;
 
     $this->view->selectEnabled = true;
-    $this->view->Date = $this->Component->Date;
     $this->view->policy = $policy;
-
     $this->view->user = $this->userSession->Dao;
 
     }
@@ -201,7 +182,7 @@ class Challenge_CompetitorController extends Challenge_AppController
             $tableData[$challengeId][$competitorId][array_search($testItemId, array_keys($apiResults['test_items'])) + 1 ] = floatval($testScore['score']);
             $aggregated_score += floatval($testScore['score']);
             }
-          $tableData[$challengeId][$competitorId][0] = $aggregated_score;
+          $tableData[$challengeId][$competitorId][0] = $aggregated_score / $testItemCount;
           }
         }
       }

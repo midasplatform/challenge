@@ -1,0 +1,13 @@
+
+table.midasTree thead th.thName{
+  padding-left: 10px;
+}
+
+table.midasTree thead th.thStatus{
+  width:25%;
+  padding-left: 10px;
+}
+
+table.midasTree td.challengeCommunityStatus{
+  text-align: center;
+}

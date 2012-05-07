@@ -53,10 +53,11 @@ function onFinishCallback()
         {
         window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?challengeId=' + challengeId); 
         },
-      error: function()
+      error: function(XMLHttpRequest, textStatus, errorThrown)
         {
-        // hack for now, TODO: comment out this line for the instance with batchmake configured.
-        window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?challengeId=' + challengeId); 
+        var validationInfo = '';
+        validationInfo = '<br/> Oops, <b>Get Score</b> action has an error: ' + XMLHttpRequest.message + '<br/> </br>';
+        $('div#midas_challenge_competitor_getScore_Info').html(validationInfo);  
         }
       })
     }
@@ -155,7 +156,8 @@ function _validateResultsFolder(challengeId, resultsFolderId)
     args: 'challengeId=' + challengeId + '&resultsFolderId=' + resultsFolderId ,
     success: function(results) {
       var validationInfo = '';
-      if( results.data.testingWithoutResults.length < 1 )
+      var matchedItemsInfo = '';
+      if( $.isArray(results.data.testingWithoutResults) ) //  it is either an empty array (initialarray), or an object collection
         {
         midas.createNotice("The selected results folder is valid!", 4000);  
         $('#validateResultsFolder_Pass').show();   
@@ -164,22 +166,36 @@ function _validateResultsFolder(challengeId, resultsFolderId)
         {
         midas.createNotice("Sorry, the selected results folder is not valid! ", 4000, 'error');
         $('#validateResultsFolder_Fail').show();
-        validationInfo = '<br/> <b>Reason: mismatched items: </b> <br/> </br>';
-        validationInfo += '<table id="validationInfo" border="1" width="75%" cellpadding="1" cellspacing="0">';
-        validationInfo += '<tr> <th align="center">What are required by the challenge</th> <th align="center">What are in your results folder</th></tr> <tr>';
+        validationInfo = '<br/> <b>Mismatched items: </b> <br/> </br>';
+        validationInfo += '<table id="validationInfo" class="validation">';
+        validationInfo += '<tr> <th>What is required by the challenge</th> <th>What is in your results folder</th></tr>';
         for (var idx in results.data.testingWithoutResults)
           {
-          validationInfo += '<tr> <td align="center"> <span>' + results.data.testingWithoutResults[idx]+ '</span> </td>';
-          validationInfo += '<td align="center"><img src="' + json.global.webroot + '/core/public/images/icons/nok.png"> </td> </tr>'; 
+          validationInfo += '<tr> <td> <span>' + results.data.testingWithoutResults[idx]+ '</span> </td>';
+          validationInfo += '<td><img src="' + json.global.webroot + '/core/public/images/icons/nok.png"> </td> </tr>'; 
           }
         for (var idx in results.data.resultsWithoutTesting)
           {
-          validationInfo += '<tr> <td align="center"><img src="' + json.global.webroot + '/core/public/images/icons/nok.png"> </td>';
-          validationInfo += '<td align="center"> <span>' + results.data.resultsWithoutTesting[idx] + '</span> </td> </tr>';
+          validationInfo += '<tr> <td><img src="' + json.global.webroot + '/core/public/images/icons/nok.png"> </td>';
+          validationInfo += '<td> <span>' + results.data.resultsWithoutTesting[idx] + '</span> </td> </tr>';
           }
         validationInfo += '</table>';
         }
-        $('div#midas_challenge_competitor_validatedResultsFolder_Info').html(validationInfo);
+      $('div#midas_challenge_competitor_validatedResultsFolder_Info').html(validationInfo);
+      
+      if( !$.isArray(results.data.matchedTestingResults) ) // it is either an empty array (initialarray), or an object collectionn
+        {
+        matchedItemsInfo = '<br/> <b>Matched items: </b> <br/> </br>';
+        matchedItemsInfo += '<table id="matchedItemsInfo" class="validation">';
+        matchedItemsInfo += '<tr> <th>What is required by the challenge</th> <th>If it is in your results folder</th></tr>';
+        for (var idx in results.data.matchedTestingResults)
+          {
+          matchedItemsInfo += '<tr> <td> <span>' + results.data.matchedTestingResults[idx]+ '</span> </td>';
+          matchedItemsInfo += '<td><img src="' + json.global.webroot + '/core/public/images/icons/ok.png"> </td> </tr>'; 
+          }
+        matchedItemsInfo += '</table>';
+        }
+        $('div#midas_challenge_competitor_matchedItems_Info').html(matchedItemsInfo);
       },
     error: function(XMLHttpRequest, textStatus, errorThrown){
       $('#validateResultsFolder_Fail').show();
@@ -213,7 +229,7 @@ function _validateOutputFolder(challengeId, outputFolderId)
       $('#validateOutputFolder_Fail').show();
       var validationInfo = '';
       validationInfo = '<br/> <b>Reason: </b>' + XMLHttpRequest.message + '<br/> </br>';
-      $('div#midas_challenge_competitor_validatedResultsFolder_Info').html(validationInfo);
+      $('div#midas_challenge_competitor_validatedOutputFolder_Info').html(validationInfo);
       }      
       
     });

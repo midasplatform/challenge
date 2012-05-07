@@ -48,9 +48,9 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
   abstract function getByCommunityId($communityId);
 
   abstract function findAvailableChallenges($userDao, $status);
-  
+
   abstract function getUsersWithSubmittedResults($challengeId);
-  
+
 
 
   /**
@@ -93,7 +93,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
 
   /** Create a challenge
    * @return ChallengeDao */
-  function createChallenge($userDao, $communityDao, $challengeName, $challengeDescription)
+  function createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $challengeStatus = MIDAS_CHALLENGE_STATUS_CLOSED)
     {
     if(!$userDao)
       {
@@ -134,8 +134,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $challengeDao = new Challenge_ChallengeDao();
     $challengeDao->setValidationDashboardId($dashboardDao->getDashboardId());
     $challengeDao->setCommunityId($communityDao->getCommunityId());
-    // closed by default
-    $challengeDao->setStatus(MIDAS_CHALLENGE_STATUS_CLOSED);
+    $challengeDao->setStatus($challengeStatus);
     $challengeModel->save($challengeDao);
 
     // create 3 folders in the community, Truth, Testing, Training

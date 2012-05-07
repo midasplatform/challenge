@@ -9,8 +9,10 @@ This software is distributed WITHOUT ANY WARRANTY; without even
 the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
-?>
+/** Challenge_CommunityDao */
+class Challenge_EnabledCommunityDao extends AppDao {
 
-<?php
-  echo '<a  href="'.$this->webroot.'/challenge/competitor/init" >Grand challenge competitor submission</a>';
-?>
+  public $_model = 'EnabledCommunity';
+  public $_module = 'challenge';
+
+}
