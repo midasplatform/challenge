@@ -27,5 +27,10 @@ define("MIDAS_CHALLENGE_COMMUNITY_STATUS_ENABLED", "enabled");
 define("MIDAS_CHALLENGE_COMMUNITY_STATUS_DISABLED", "disabled");
 
 define("MIDAS_CHALLENGE_MODULE", "challenge");
-  
+
+define("MIDAS_CHALLENGE_TESTING", "Testing");
+define("MIDAS_CHALLENGE_TRAINING", "Training");
+define("MIDAS_CHALLENGE_TRUTH", "Truth");
+define("MIDAS_CHALLENGE_IMAGES", "Images");
+
 ?>

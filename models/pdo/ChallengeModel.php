@@ -23,9 +23,9 @@ class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
 
   function getByCommunityId($communityId)
     {
-    $row = $this->database->fetchrow($this->database->select()->where('community_id=?', $communityId));
+    $rowset = $this->database->fetchAll($this->database->select()->where('community_id=?', $communityId));
     $return = array();
-    if(!empty($row))
+    foreach($rowset as $row)
       {
       $challengeId = $row['challenge_id'];
       $status = $row['status'];

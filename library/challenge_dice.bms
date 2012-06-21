@@ -12,12 +12,14 @@ ForEach(jobInd ${cfg_jobInds})
 
 
   # get each of the param values for this particular job
-  GetParam(commaTestImage ${cfg_testItems} ${jobInd})
-  GetParam(commaResultImage ${cfg_resultItems} ${jobInd})
+#  GetParam(commaTestImage ${cfg_testItems} ${jobInd})
+  #GetParam(commaResultImage ${cfg_resultItems} ${jobInd})
+  GetParam(truthImage ${cfg_truthItems} ${jobInd})
+  GetParam(resultImage ${cfg_resultItems} ${jobInd})
 
   # clean trailing commas
-  RegEx(testImage ${commaTestImage} '[^,]*' MATCH)
-  RegEx(resultImage ${commaResultImage} '[^,]*' MATCH)
+#  RegEx(testImage ${commaTestImage} '[^,]*' MATCH)
+#  RegEx(resultImage ${commaResultImage} '[^,]*' MATCH)
 
   
  
@@ -25,16 +27,17 @@ ForEach(jobInd ${cfg_jobInds})
  
   # define the output filenames
   # clean off trailing commas
-  RegEx(outputJobInd ${jobInd} '[^,]*' MATCH)
+ # RegEx(outputJobInd ${jobInd} '[^,]*' MATCH)
   
-  Set(outputFile output.${outputJobInd}.txt)
+ # Set(outputFile output.${outputJobInd}.txt)
+  Set(outputFile output.${jobInd}.txt)
 
   # Set the Application Properties to be passed to the condor scripts
   SetApp(dice @ValidateImageDice)
-  SetAppOption(dice.TestImage ${testImage})
+  SetAppOption(dice.TruthImage ${truthImage})
   SetAppOption(dice.ResultImage ${resultImage})
   SetAppOption(dice.OutputFile ${outputFile})
-  CondorPostScript(dice ${cfg_exe} ${cfg_condorpostscript} ${cfg_output_directory} ${cfg_taskID} ${cfg_dashboardID} ${cfg_resultsrunID} ${cfg_resultsFolderID} ${cfg_challengeID} challenge ${testImage} ${resultImage} ${cfg_outputFolderID} ${outputFile})
+  CondorPostScript(dice ${cfg_exe} ${cfg_condorpostscript} ${cfg_output_directory} ${cfg_taskID} ${cfg_dashboardID} ${cfg_resultsrunID} ${cfg_resultsFolderID} ${cfg_challengeID} challenge ${truthImage} ${resultImage} ${cfg_outputFolderID} ${outputFile})
   Run(output ${dice})
 
 

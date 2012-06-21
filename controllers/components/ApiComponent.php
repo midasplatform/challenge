@@ -31,10 +31,14 @@ class Challenge_ApiComponent extends AppComponent
 
   /**
    * Create a closed challenge with given name and description, in the community,
-   * will create three folders in the community, truth, training, and testing.
+   * will create appropriate subfolders and enforce permissions, if permissions
+   * on existing folders are not suitable for a challenge, this method will return
+   * an error describing the problems and not create a challenge.
    * @param communityId the id of the community to associate with this challenge
    * @param challengeName
    * @param challengeDescription
+   * @param folderId optional, the id of the folder in the community to use as a challenge
+   * root, if the folder already exists
    * @return id of the newly created challenge
    */
   public function adminCreateChallenge($args)
@@ -54,6 +58,11 @@ class Challenge_ApiComponent extends AppComponent
     $challengeName = $args['challengeName'];
     $challengeDescription = $args['challengeDescription'];
     $challengeStatus = $args['challengeStatus'];
+    $folderId = false;
+    if(array_key_exists('folderId', $args))
+      {
+      $folderId = $args['folderId'];
+      }
 
     // must be a moderator of the community
     $modelLoad = new MIDAS_ModelLoader();
@@ -61,7 +70,7 @@ class Challenge_ApiComponent extends AppComponent
     $communityDao = $communityModel->load($communityId);
 
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $challengeDao = $challengeModel->createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $challengeStatus);
+    $challengeDao = $challengeModel->createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $challengeStatus, $folderId);
     // return the challengeId
     return $challengeDao->getKey();
     }
@@ -233,13 +242,14 @@ class Challenge_ApiComponent extends AppComponent
    * helper function to ensure that the user is part of the challenge, the
    * challenge is valid, and the user has proper permissions set on both
    * folders involved in the challenge.
-   * @param type $userDao
-   * @param type $challengeId
-   * @param type $resultsFolderId, optional
-   * @param type $outputFolderId, optional
+   * @param $userDao
+   * @param $challengeId
+   * @param $resultsType one of ['Testing'|'Training']
+   * @param $resultsFolderId, optional
+   * @param $outputFolderId, optional
    * @return 3 lists of results by comparing testing with results folders, assuming a resultsFolderId is passed in
    */
-  protected function validateCompetitorResults($userDao, $challengeId, $resultsFolderId = null, $outputFolderId = null)
+  protected function validateCompetitorResults($userDao, $challengeId, $resultsType, $resultsFolderId = null, $outputFolderId = null)
     {
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
@@ -255,7 +265,7 @@ class Challenge_ApiComponent extends AppComponent
     if($resultsFolderId !== null)
       {
       $resultsFolder = $challengeModel->validateChallengeUserFolder($userDao, $communityDao, $resultsFolderId);
-      return $challengeModel->getExpectedResultsItems($userDao, $challengeDao, $resultsFolderId);
+      return $challengeModel->getExpectedResultsItems($userDao, $challengeDao, $resultsType, $resultsFolderId);
       }
 
     }
@@ -264,13 +274,14 @@ class Challenge_ApiComponent extends AppComponent
   /**
    * Validate a competitor folder to be used as a results folder.
    * @param challengeId the id of the challenge to display testing inputs for
+   * @param resultsType one of [Testing|Training]
    * @param resultsFolderId the id of the folder owned by the user and containing results
    * @return a list of pairings b/w the testing folder of the community and
    * this user's result's folder
    */
   public function competitorValidateResults($args)
     {
-    $this->_checkKeys(array('challengeId', 'resultsFolderId'), $args);
+    $this->_checkKeys(array('challengeId', 'resultsType', 'resultsFolderId'), $args);
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
@@ -281,10 +292,16 @@ class Challenge_ApiComponent extends AppComponent
       }
 
     $challengeId = $args['challengeId'];
+    $resultsType = $args['resultsType'];
     $resultsFolderId = $args['resultsFolderId'];
 
+    if($resultsType !== MIDAS_CHALLENGE_TESTING && $resultsType !== MIDAS_CHALLENGE_TRAINING)
+      {
+      throw new Zend_Exception('resultsType should be one of ['.MIDAS_CHALLENGE_TESTING.'|'.MIDAS_CHALLENGE_TRAINING.']');
+      }
+    
     // TODO better exception handling/return value
-    return $this->validateCompetitorResults($userDao, $challengeId, $resultsFolderId, null);
+    return $this->validateCompetitorResults($userDao, $challengeId, $resultsType, $resultsFolderId, null);
     }
 
 
@@ -316,7 +333,7 @@ class Challenge_ApiComponent extends AppComponent
 
 
 
-  protected function generateMatchedResultsItemIds($userDao, $matchedResults, $resultsFolderId, $challengeId)
+  protected function generateMatchedResultsItemIds($userDao, $matchedResults, $resultsType, $resultsFolderId, $challengeId)
     {
     $modelLoad = new MIDAS_ModelLoader();
     $folderModel = $modelLoad->loadModel('Folder');
@@ -340,17 +357,29 @@ class Challenge_ApiComponent extends AppComponent
         }
       }
 
-    // get the list of matched testing items
+    // get the list of matched truth items of the right folder
     $challengeDao = $challengeModel->load($challengeId);
     $dashboardDao = $challengeDao->getDashboard();
-    $testingFolderDao = $dashboardDao->getTesting();
-    $testingItems = $folderModel->getItemsFiltered($testingFolderDao, $userDao, MIDAS_POLICY_READ);
-    foreach($testingItems as $item)
+    if($resultsType === MIDAS_CHALLENGE_TRAINING)
       {
-      $testingItemName = $item->getName();
-      if(array_key_exists($testingItemName, $matchedResults))
+      $subfolder = $dashboardDao->getTraining();  
+      }
+    else
+      {
+      $subfolder = $dashboardDao->getTesting();  
+      }
+    $truthFolder = $folderModel->getFolderExists(MIDAS_CHALLENGE_TRUTH, $subfolder);
+    if(!$truthFolder)
+      {
+      throw new Zend_Exception('Cannot find truth folder under folderId['.$subfolder->getFolderId().']');
+      }
+    $truthItems = $folderModel->getItemsFiltered($truthFolder, $userDao, MIDAS_POLICY_READ);
+    foreach($truthItems as $item)
+      {
+      $truthItemName = $item->getName();
+      if(array_key_exists($truthItemName, $matchedResults))
         {
-        $itemsForExport[$testingItemName] = $item->getItemId();
+        $itemsForExport[$truthItemName] = $item->getItemId();
         }
       }
 
@@ -367,13 +396,13 @@ class Challenge_ApiComponent extends AppComponent
     //
     // a bit like a transpose
     $jobConfigParams['cfg_jobInds'] = array();
-    $jobConfigParams['cfg_testItems'] = array();
+    $jobConfigParams['cfg_truthItems'] = array();
     $jobConfigParams['cfg_resultItems'] = array();
     $jobInd = 0;
     foreach($matchedResults as $testName => $resultName)
       {
       $jobConfigParams['cfg_jobInds'][] = $jobInd++;
-      $jobConfigParams['cfg_testItems'][] = $itemsPaths[$testName];
+      $jobConfigParams['cfg_truthItems'][] = $itemsPaths[$testName];
       $jobConfigParams['cfg_resultItems'][] = $itemsPaths[$resultName];
       }
 
@@ -386,6 +415,7 @@ class Challenge_ApiComponent extends AppComponent
    * Score a competitor folder to be used as a results folder.
    * @param challengeId the id of the challenge to display testing inputs for
    * @param resultsFolderId id of folder owned by the user and containing results
+   * @param resultsType one of [Testing|Training]
    * @param outputFolderId id of folder writable by the user, will be the parent
    * directory for a newly created directory that will contain any outputs
    * created by the scoring process
@@ -393,7 +423,7 @@ class Challenge_ApiComponent extends AppComponent
    */
   public function competitorScoreResults($args)
     {
-    $this->_checkKeys(array('challengeId', 'resultsFolderId', 'outputFolderId'), $args);
+    $this->_checkKeys(array('challengeId', 'resultsFolderId', 'resultsType', 'outputFolderId'), $args);
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
@@ -407,11 +437,16 @@ class Challenge_ApiComponent extends AppComponent
     $challengeId = $args['challengeId'];
     $resultsFolderId = $args['resultsFolderId'];
     $outputFolderId = $args['outputFolderId'];
+    $resultsType = $args['resultsType'];
 
-    $allResults = $this->validateCompetitorResults($userDao, $challengeId, $resultsFolderId, $outputFolderId);
-    $matchedResults = $allResults['matchedTestingResults'];
+    if($resultsType !== MIDAS_CHALLENGE_TESTING && $resultsType !== MIDAS_CHALLENGE_TRAINING)
+      {
+      throw new Zend_Exception('resultsType should be one of ['.MIDAS_CHALLENGE_TESTING.'|'.MIDAS_CHALLENGE_TRAINING.']');
+      }
 
-    set_time_limit(0);
+    $allResults = $this->validateCompetitorResults($userDao, $challengeId, $resultsType, $resultsFolderId, $outputFolderId);
+    $matchedResults = $allResults['matchedTruthResults'];
+
 
     // add the results folder to the dashboard
     $modelLoad = new MIDAS_ModelLoader();
@@ -443,7 +478,7 @@ class Challenge_ApiComponent extends AppComponent
 
 
 
-    $itemsForExport = $this->generateMatchedResultsItemIds($userDao, $matchedResults, $resultsFolderId, $challengeId);
+    $itemsForExport = $this->generateMatchedResultsItemIds($userDao, $matchedResults, $resultsType, $resultsFolderId, $challengeId);
     $itemsPaths = $executeComponent->exportSingleBitstreamItemsToWorkDataDir($userDao, $taskDao, $itemsForExport);
 
     // generate definitions of jobs
@@ -495,6 +530,7 @@ class Challenge_ApiComponent extends AppComponent
     $kwbatchmakeComponent->condorSubmitDag($taskDao->getWorkDir(), $dagScript);
 
     // return a notion of success
+    return array("challenge_results_run_id" => $resultsrunDao->getKey());
     }
 
   /**
