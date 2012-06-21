@@ -30,6 +30,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       'validation_dashboard_id' => array('type' => MIDAS_DATA),
       'community_id' => array('type' => MIDAS_DATA),
       'status' => array('type' => MIDAS_DATA),
+      'root_folder_id' => array('type' => MIDAS_DATA),
       'dashboard' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'validation',
                         'model' => 'Dashboard',
@@ -38,7 +39,12 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       'community' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'model' => 'Community',
                         'parent_column' => 'community_id',
-                        'child_column' => 'community_id')
+                        'child_column' => 'community_id'),
+      'root_folder' =>  array('type' => MIDAS_MANY_TO_ONE,
+                        'model' => 'Folder',
+                        'parent_column' => 'root_folder_id',
+                        'child_column' => 'folder_id')
+
 
        );
     $this->initialize(); // required
@@ -91,9 +97,69 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     return $communityModel->policyCheck($communityDao, $userDao, MIDAS_POLICY_WRITE);
     }
 
+    
+    protected function createPermissions($folderpolicygroupModel, $folder, $folderPermissions)
+      {
+      foreach($folderPermissions as $groupPolicy)
+        {
+        $group = $groupPolicy[0];
+        $policy = $groupPolicy[1];
+        if($policy !== false)
+          {
+          $createdPolicy = $folderpolicygroupModel->createPolicy($group, $folder, $policy);
+          }
+        }
+      }
+    
+    
+    protected function enforcePermissions($folderpolicygroupModel, $folder, $folderPermissions)
+      {
+      foreach($folderPermissions as $groupPolicy)
+        {
+        $group = $groupPolicy[0];
+        $policy = $groupPolicy[1];
+        $policyGroup = $folderpolicygroupModel->getPolicy($group, $folder);
+        if($policy === false)
+          {
+          if($policyGroup !== false)
+            {
+            throw new Zend_Exception('Folder id['.$folder->getFolderId().'] should have no policy for group['.$group->getName().']');
+            }
+          }
+        else if($policyGroup->getPolicy() != $policy)
+          {
+          throw new Zend_Exception('Folder id['.$folder->getFolderId().'] should have policy['.$policy.'] for group['.$group->getName().']');
+          }
+        }
+      }
+    
+    protected function createOrEnforceSubfolders($rootFolder, $subfolders, $folderModel, $folderpolicygroupModel)
+      {
+      foreach($subfolders as $folderName => $folderProperties)
+        {
+        $subfolder = $folderModel->getFolderExists($folderName, $rootFolder);
+        if($subfolder === false)
+          {
+          $subfolder = $folderModel->createFolder($folderName, $folderName, $rootFolder);
+          $this->createPermissions($folderpolicygroupModel, $subfolder, $folderProperties['permissions']);
+          }
+        else
+          {
+          $this->enforcePermissions($folderpolicygroupModel, $subfolder, $folderProperties['permissions']);
+          }
+        if(isset($folderProperties['subfolders']))
+          {
+          // recursively call this with the subfolder as root
+          $this->createOrEnforceSubfolders($subfolder, $folderProperties['subfolders'], $folderModel, $folderpolicygroupModel);
+          }
+        }
+      }
+    
+    
+    
   /** Create a challenge
    * @return ChallengeDao */
-  function createChallenge($userDao, $communityDao, $challengeName, $challengeDescription)
+  function createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $folderId)
     {
     if(!$userDao)
       {
@@ -116,13 +182,14 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
     $challengeModel->loadDaoClass('ChallengeDao', 'challenge');
     $folderModel = $modelLoad->loadModel('Folder');
-    $folderpolicyggroupModel = $modelLoad->loadModel('Folderpolicygroup');
+    $folderpolicygroupModel = $modelLoad->loadModel('Folderpolicygroup');
+    $groupModel = $modelLoad->loadModel('Group');
 
     if(!$communityModel->policyCheck($communityDao, $userDao, MIDAS_POLICY_ADMIN))
       {
       throw new Zend_Exception('You must be an administrator of this community to create a challenge');
       }
-
+      
     // create a new dashboard
     $dashboardDao = new Validation_DashboardDao();
     $dashboardDao->setName($challengeName);
@@ -136,34 +203,75 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $challengeDao->setCommunityId($communityDao->getCommunityId());
     // closed by default
     $challengeDao->setStatus(MIDAS_CHALLENGE_STATUS_CLOSED);
-    $challengeModel->save($challengeDao);
 
-    // create 3 folders in the community, Truth, Testing, Training
-    // when folders are created programmitically, there are no default perms
-    // enabling community moderators or members to access the folders
-    // so these perms must be added as needed.
-    $topFolderId = $communityDao->getFolderId();
-    $topFolderDao = $folderModel->load($topFolderId);
+    $anonymousGroup = $groupModel->load(MIDAS_GROUP_ANONYMOUS_KEY);
+
+    // challenge top level folder
+
+    $adminGroup = $communityDao->getAdminGroup();
     $moderatorGroup = $communityDao->getModeratorGroup();
     $memberGroup = $communityDao->getMemberGroup();
-
-    // Testing is writable by moderators and readable by members
-    $testingFolderDao = $folderModel->createFolder("Testing", "Public folder for Testing data", $topFolderDao);
-    $dashboardModel->setTesting($dashboardDao, $testingFolderDao);
-    $testingFolderModeratorsWritePolicy = $folderpolicyggroupModel->createPolicy($moderatorGroup, $testingFolderDao, MIDAS_POLICY_WRITE);
-    $testingFolderMembersReadPolicy = $folderpolicyggroupModel->createPolicy($memberGroup, $testingFolderDao, MIDAS_POLICY_READ);
-
-    // Training is writable by moderators and readable by members
-    $trainingFolderDao = $folderModel->createFolder("Training", "Public folder for Training data", $topFolderDao);
-    $dashboardModel->setTraining($dashboardDao, $trainingFolderDao);
-    $trainingFolderModeratorsWritePolicy = $folderpolicyggroupModel->createPolicy($moderatorGroup, $trainingFolderDao, MIDAS_POLICY_WRITE);
-    $trainingFolderMembersReadPolicy = $folderpolicyggroupModel->createPolicy($memberGroup, $trainingFolderDao, MIDAS_POLICY_READ);
-
-    // Truth is writable by moderators and not readable by anyone else
-    $truthFolderDao = $folderModel->createFolder("Truth", "Private folder for Truth data", $topFolderDao);
-    $dashboardModel->setTruth($dashboardDao, $truthFolderDao);
-    $truthFolderModeratorsWritePolicy = $folderpolicyggroupModel->createPolicy($moderatorGroup, $truthFolderDao, MIDAS_POLICY_WRITE);
-
+    $rootFolderPermissions = array(array($adminGroup, MIDAS_POLICY_ADMIN),
+                                   array($moderatorGroup, MIDAS_POLICY_WRITE),
+                                   array($memberGroup, MIDAS_POLICY_READ),
+                                   array($anonymousGroup, false));
+    
+    
+    if($folderId)
+      {
+      // a folder is already supplied
+      $rootFolderDao = $folderModel->load($folderId);
+      // now enforce a few properties
+      // existence
+      if(!$rootFolderDao)
+        {
+        throw new Zend_Exception("A folder corresponding to folderId must exist.");
+        }
+      $communityRoot = $folderModel->getRoot($rootFolderDao);
+      // in the community
+      if($communityRoot->getFolderId() !== $communityDao->getFolderId())
+        {
+        throw new Zend_Exception("folder for folderId must be in community for communityId.");
+        }
+      // permissions
+      $this->enforcePermissions($folderpolicygroupModel, $rootFolderDao, $rootFolderPermissions);
+      }
+    else
+      {
+      // create a new folder under the community public folder with the name of the challenge
+      $publicFolder = $communityDao->getPublicFolder();
+      $rootFolderDao = $folderModel->createFolder($challengeName, "Root folder for ".$challengeName, $publicFolder);
+      $this->createPermissions($folderpolicygroupModel, $rootFolderDao, $rootFolderPermissions);
+      }
+    $challengeDao->setRootFolderId($rootFolderDao->getFolderId());      
+    $challengeModel->save($challengeDao);
+    
+    // Create subfolders
+    $testingTruthPermissions = array(array($adminGroup, MIDAS_POLICY_ADMIN),
+                                   array($moderatorGroup, MIDAS_POLICY_WRITE),
+                                   array($memberGroup, false),
+                                   array($anonymousGroup, false));
+    
+    $subfolders = array(MIDAS_CHALLENGE_TESTING => 
+                            array("permissions" => $rootFolderPermissions,
+                                  "subfolders" => array(
+                                      MIDAS_CHALLENGE_IMAGES => array("permissions" => $rootFolderPermissions),
+                                      MIDAS_CHALLENGE_TRUTH => array("permissions" => $testingTruthPermissions))),
+                        MIDAS_CHALLENGE_TRAINING => 
+                            array("permissions" => $rootFolderPermissions,
+                                  "subfolders" => array(
+                                      MIDAS_CHALLENGE_IMAGES => array("permissions" => $rootFolderPermissions),
+                                      MIDAS_CHALLENGE_TRUTH => array("permissions" => $rootFolderPermissions))));
+    
+    $this->createOrEnforceSubfolders($rootFolderDao, $subfolders, $folderModel, $folderpolicygroupModel);
+    
+    // set the testing and training folders in the validation dashboard
+    $testing = $folderModel->getFolderExists("Testing", $rootFolderDao);
+    $training = $folderModel->getFolderExists("Training", $rootFolderDao);
+    $dashboardDao->setTestingfolderId($testing->getFolderId());
+    $dashboardDao->setTrainingfolderId($training->getFolderId());
+    $dashboardModel->save($dashboardDao);
+    
     return $challengeDao;
     }  // createChallenge
 
@@ -284,35 +392,47 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     }
 
   /**
-   * generate the names of expected results items based on testing folder items.
-   * @param type $testingItems
-   * @return string
+   * generate the names of expected results items based on Truth items.
+   * @param userDao
+   * @param challengeDao
+   * @param resultsType one of [Testing|Training]
+   * @param resultsFolderId id of folder to test
+   * 
+   * @return 3 lists: resultsWithoutTruth, truthWithoutResults, matchedTruthResults
    */
-  function getExpectedResultsItems($userDao, $challengeDao, $resultFolderId = null) //$testingItems, $resultsItems = null)
+  function getExpectedResultsItems($userDao, $challengeDao, $resultsType, $resultFolderId = null)
     {
     $modelLoad = new MIDAS_ModelLoader();
-    //$challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    //$communityModel = $modelLoad->loadModel('Community');
-    //$groupModel = $modelLoad->loadModel('Group');
-    //$dashboardModel = $modelLoad->loadModel('Dashboard', 'validation');
     $folderModel = $modelLoad->loadModel('Folder');
 
-
-    // get all the items in the Testing folder
+    // get all the items in the correct subfolder's Truth subfolder
     $dashboardDao = $challengeDao->getDashboard();
-    $testingFolderDao = $dashboardDao->getTesting();
-    $testingItems = $folderModel->getItemsFiltered($testingFolderDao, $userDao, MIDAS_POLICY_READ);
-    $testingResults = array();
-    foreach($testingItems as $item)
+    if($resultsType === MIDAS_CHALLENGE_TRAINING)
+      {
+      $subfolder = $dashboardDao->getTraining();  
+      }
+    else
+      {
+      $subfolder = $dashboardDao->getTesting();  
+      }
+    $truthFolder = $folderModel->getFolderExists(MIDAS_CHALLENGE_TRUTH, $subfolder);
+    if(!$truthFolder)
+      {
+      throw new Zend_Exception('Cannot find truth folder under folderId['.$subfolder->getFolderId().']');
+      }
+    
+    $truthItems = $folderModel->getItemsFiltered($truthFolder, $userDao, MIDAS_POLICY_READ);
+    $truthResults = array();
+    foreach($truthItems as $item)
       {
       $name = $item->getName();
-      $testingResults[$name] = "result_" . $name;
+      $truthResults[$name] = str_replace("_truth", "_result", $name);
       }
-
+    
     if($resultFolderId === null)
       {
-      return $testingResults;
-      }
+      return $truthResults;
+      }  
     else
       {
       // get all items in Results folder
@@ -323,30 +443,30 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
         }
       $resultsItems = $folderModel->getItemsFiltered($resultsFolder, $userDao, MIDAS_POLICY_READ);
       $resultsItemNames = array();
-      $resultsWithoutTesting = array();
+      $resultsWithoutTruth = array();
       foreach($resultsItems as $item)
         {
         $resultsItemName = $item->getName();
         $resultsItemNames[$resultsItemName] = $resultsItemName;
-        if(!in_array($resultsItemName, $testingResults))
+        if(!in_array($resultsItemName, $truthResults))
           {
-          $resultsWithoutTesting[] = $resultsItemName;
+          $resultsWithoutTruth[] = $resultsItemName;
           }
         }
-      $testingWithoutResults = array();
-      $matchedTestingResults = array();
-      foreach($testingResults as $testItem => $resultItem)
+      $truthWithoutResults = array();
+      $matchedTruthResults = array();
+      foreach($truthResults as $truthItem => $resultItem)
         {
         if(in_array($resultItem, $resultsItemNames))
           {
-          $matchedTestingResults[$testItem] = $resultItem;
+          $matchedTruthResults[$truthItem] = $resultItem;
           }
         else
           {
-          $testingWithoutResults[$testItem] = $resultItem;
+          $truthWithoutResults[$truthItem] = $resultItem;
           }
         }
-      return array('resultsWithoutTesting' => $resultsWithoutTesting, 'testingWithoutResults' => $testingWithoutResults, 'matchedTestingResults' => $matchedTestingResults);
+      return array('resultsWithoutTruth' => $resultsWithoutTruth, 'truthWithoutResults' => $truthWithoutResults, 'matchedTruthResults' => $matchedTruthResults);
       }
     }
 

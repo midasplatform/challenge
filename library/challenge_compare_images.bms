@@ -1,0 +1,45 @@
+Include(challenge.config.bms)
+
+SetApp(php @PHP)
+SetAppOption(php.script --version)
+CondorPostScript(php ${cfg_exe} ${cfg_condordagpostscript} ${cfg_output_directory} ${cfg_taskID} challenge)
+Run(output ${php})
+
+
+
+
+
+# Loop through the sequence of job indices
+ForEach(jobInd ${cfg_jobInds})
+
+  # get each of the param values for this particular job
+  GetParam(truthImage ${cfg_truthItems} ${jobInd})
+  GetParam(resultImage ${cfg_resultItems} ${jobInd})
+      
+  # Dice
+  Set(outputFile dice.${jobInd}.txt)
+  SetApp(ValidatorApp @ValidateImageDice)
+  Include(challenge_validator_app.bms)
+
+
+  # AveDist
+  Set(outputFile aveDist.${jobInd}.txt)
+  SetApp(ValidatorApp @ValidateImageAveDist)
+  Include(challenge_validator_app.bms)
+
+
+  # Jaccard
+  Set(outputFile jaccard.${jobInd}.txt)
+  SetApp(ValidatorApp @ValidateImageJaccard)
+  Include(challenge_validator_app.bms)
+
+
+  # Kappa
+  Set(outputFile kappa.${jobInd}.txt)
+  SetApp(ValidatorApp @ValidateImageKappa)
+  Include(challenge_validator_app.bms)
+
+
+EndForEach()
+
+Exit()
