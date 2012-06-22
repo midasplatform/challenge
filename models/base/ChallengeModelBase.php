@@ -98,9 +98,9 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     }
 
     
-    protected function createPermissions($folderpolicygroupModel, $folder, $folderPermissions)
+    protected function createPermissions($folderpolicygroupModel, $folderpolicyuserModel, $folder, $folderPermissions)
       {
-      foreach($folderPermissions as $groupPolicy)
+      foreach($folderPermissions['group'] as $groupPolicy)
         {
         $group = $groupPolicy[0];
         $policy = $groupPolicy[1];
@@ -109,12 +109,20 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
           $createdPolicy = $folderpolicygroupModel->createPolicy($group, $folder, $policy);
           }
         }
+      if(array_key_exists('user', $folderPermissions))
+        {
+        $user = $folderPermissions['user']['user_dao'];
+        $policy = $folderPermissions['user']['policy'];
+        if($policy !== false)
+          {
+          $folderpolicyuserModel->createPolicy($user, $folder, $policy);  
+          }
+        }
       }
     
-    
-    protected function enforcePermissions($folderpolicygroupModel, $folder, $folderPermissions)
+    protected function enforcePermissions($folderpolicygroupModel, $folderpolicyuserModel, $folder, $folderPermissions)
       {
-      foreach($folderPermissions as $groupPolicy)
+      foreach($folderPermissions['group'] as $groupPolicy)
         {
         $group = $groupPolicy[0];
         $policy = $groupPolicy[1];
@@ -131,9 +139,26 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
           throw new Zend_Exception('Folder id['.$folder->getFolderId().'] should have policy['.$policy.'] for group['.$group->getName().']');
           }
         }
+      if(array_key_exists('user', $folderPermissions))
+        {
+        $user = $folderPermissions['user']['user_dao'];
+        $desiredPolicy = $folderPermissions['user']['policy'];
+        $actualPolicy = $folderpolicyuserModel->getPolicy($user, $folder);
+        if($actualPolicy === false)
+          {
+          if($desiredPolicy !== false)
+            {
+            throw new Zend_Exception('Folder id['.$folder->getFolderId().'] should have policy['.$desiredPolicy.'] for user['.$user->getUserId().'] but has policy['.$actualPolicy.']');  
+            }
+          }
+        else if($actualPolicy->getPolicy() != $desiredPolicy)
+          {
+          throw new Zend_Exception('Folder id['.$folder->getFolderId().'] should have policy['.$desiredPolicy.'] for user['.$user->getUserId().'] but has policy['.$actualPolicy->getPolicy().']');  
+          }
+        }
       }
     
-    protected function createOrEnforceSubfolders($rootFolder, $subfolders, $folderModel, $folderpolicygroupModel)
+    protected function createOrEnforceSubfolders($rootFolder, $subfolders, $folderModel, $folderpolicygroupModel, $folderpolicyuserModel)
       {
       foreach($subfolders as $folderName => $folderProperties)
         {
@@ -141,16 +166,16 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
         if($subfolder === false)
           {
           $subfolder = $folderModel->createFolder($folderName, $folderName, $rootFolder);
-          $this->createPermissions($folderpolicygroupModel, $subfolder, $folderProperties['permissions']);
+          $this->createPermissions($folderpolicygroupModel, $folderpolicyuserModel, $subfolder, $folderProperties['permissions']);
           }
         else
           {
-          $this->enforcePermissions($folderpolicygroupModel, $subfolder, $folderProperties['permissions']);
+          $this->enforcePermissions($folderpolicygroupModel, $folderpolicyuserModel, $subfolder, $folderProperties['permissions']);
           }
         if(isset($folderProperties['subfolders']))
           {
           // recursively call this with the subfolder as root
-          $this->createOrEnforceSubfolders($subfolder, $folderProperties['subfolders'], $folderModel, $folderpolicygroupModel);
+          $this->createOrEnforceSubfolders($subfolder, $folderProperties['subfolders'], $folderModel, $folderpolicygroupModel, $folderpolicyuserModel);
           }
         }
       }
@@ -469,6 +494,61 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       return array('resultsWithoutTruth' => $resultsWithoutTruth, 'truthWithoutResults' => $truthWithoutResults, 'matchedTruthResults' => $matchedTruthResults);
       }
     }
+    
+    
+  function addUserToChallenge($userDao, $challenge) 
+    {
+    if(!$userDao)
+      {
+      throw new Exception('User must be logged in to be added to a challenge.');
+      }
+    if(!$userDao instanceof UserDao)
+      {
+      throw new Zend_Exception("userDao should be a valid instance.");
+      }
+    $communityDao = $challenge->getCommunity();
+      
+    if(!$communityDao instanceof CommunityDao)
+      {
+      throw new Zend_Exception("communityDao should be a valid instance.");
+      }
+
+    $modelLoad = new MIDAS_ModelLoader();
+    $communityModel = $modelLoad->loadModel('Community');
+    $folderModel = $modelLoad->loadModel('Folder');
+    $folderpolicygroupModel = $modelLoad->loadModel('Folderpolicygroup');
+    $folderpolicyuserModel = $modelLoad->loadModel('Folderpolicyuser');
+    $groupModel = $modelLoad->loadModel('Group');
+
+    if(!$communityModel->policyCheck($communityDao, $userDao, MIDAS_POLICY_READ))
+      {
+      throw new Zend_Exception('User must be a member of the community to join the challenge.');
+      }
+
+    $adminGroup = $communityDao->getAdminGroup();
+    $moderatorGroup = $communityDao->getModeratorGroup();
+    $memberGroup = $communityDao->getMemberGroup();
+    $anonymousGroup = $groupModel->load(MIDAS_GROUP_ANONYMOUS_KEY);
+
+    $userFolderPermissions = array('group' => array(array($adminGroup, MIDAS_POLICY_READ),
+                                   array($moderatorGroup, MIDAS_POLICY_READ),
+                                   array($memberGroup, false),
+                                   array($anonymousGroup, false)),
+                                   'user' => array('user_dao' => $userDao, 'policy' => MIDAS_POLICY_ADMIN));  
+    
+      
+    // create a top level folder in the User's private area named $challengeName_data
+    $subfolders = array($challenge->getDashboard()->getName() . " data" => 
+                            array("permissions" => $userFolderPermissions,
+                                  "subfolders" => array(
+                                      MIDAS_CHALLENGE_TRAINING . ' results' => array("permissions" => $userFolderPermissions),
+                                      MIDAS_CHALLENGE_TRAINING . ' output' => array("permissions" => $userFolderPermissions),
+                                      MIDAS_CHALLENGE_TESTING . ' results' => array("permissions" => $userFolderPermissions),
+                                      MIDAS_CHALLENGE_TESTING . ' output' => array("permissions" => $userFolderPermissions))));
+                                      
+    $this->createOrEnforceSubfolders($userDao->getPrivateFolder(), $subfolders, $folderModel, $folderpolicygroupModel, $folderpolicyuserModel);
+    }
+    
 
 
 
