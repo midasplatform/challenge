@@ -39,23 +39,26 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->user = $this->userSession->Dao;
     $challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
     $this->view->challenges = $challenges;
+    $selectOptions = false;
     foreach($challenges as $challengdId => $challengeDetails)
       {
       $selectOptions[$challengdId] = $challengeDetails['name'];
       }
-
-    $configForm = $this->ModuleForm->Config->createSelectChallengeForm($selectOptions);
-    $formArray = $this->getFormAsArray($configForm);
-    $this->view->configForm = $formArray;
-
-    if($this->_request->isPost())
+    if($selectOptions)
       {
-      $submitSelect = $this->_getParam('submitSelect');
-      if(isset($submitSelect))
+      $configForm = $this->ModuleForm->Config->createSelectChallengeForm($selectOptions);
+      $formArray = $this->getFormAsArray($configForm);
+      $this->view->configForm = $formArray;
+      
+      if($this->_request->isPost())
         {
-        $this->view->targetChallengeId = $this->_getParam('challengeList');
-        $this->view->targetChallengeName = $selectOptions[$this->_getParam('challengeList')];
-        $this->view->targetChallengeDesc = $challenges[$this->_getParam('challengeList')]['description'];
+        $submitSelect = $this->_getParam('submitSelect');
+        if(isset($submitSelect))
+          {
+          $this->view->targetChallengeId = $this->_getParam('challengeList');
+          $this->view->targetChallengeName = $selectOptions[$this->_getParam('challengeList')];
+          $this->view->targetChallengeDesc = $challenges[$this->_getParam('challengeList')]['description'];
+          }
         }
       }
     }

@@ -29,6 +29,7 @@ class Challenge_Notification extends ApiEnabled_Notification
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_MANAGE_TABS', 'getCommunityManageTab');
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_ADMIN_ACTIONS', 'getCommunityViewAction');
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_JSS', 'getCommunityViewJSs');
+    $this->addCallBack('CALLBACK_CORE_USER_JOINED_COMMUNITY', 'userJoinedCommunity');
     }//end init
     
   /**
@@ -170,6 +171,27 @@ class Challenge_Notification extends ApiEnabled_Notification
     $fc = Zend_Controller_Front::getInstance();
     $moduleUriroot = $fc->getBaseUrl().'/modules/challenge';
     return array($moduleUriroot.'/public/js/admin/admin.create.js');
+    }
+    
+  public function userJoinedCommunity($args)
+    {
+    $userDao = $args['user'];
+    $communityDao = $args['community'];
+    // get the challenge from the community
+    $apiargs['useSession'] = true;
+    $apiargs['communityId'] = $args['community']->getKey();
+    $challenges = $this->ModuleComponent->Api->anonymousGetChallenge($apiargs);
+    if(!empty($challenges) && sizeof($challenges) > 0)
+      {
+      foreach($challenges as $challengeId => $status)
+        {
+        // create the user folders for the challenge
+        $modelLoad = new MIDAS_ModelLoader();
+        $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+        $challenge = $challengeModel->load($challengeId);
+        $challengeModel->addUserToChallenge($userDao, $challenge);
+        }
+      }
     }
  
     
