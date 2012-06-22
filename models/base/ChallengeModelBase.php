@@ -236,10 +236,11 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $adminGroup = $communityDao->getAdminGroup();
     $moderatorGroup = $communityDao->getModeratorGroup();
     $memberGroup = $communityDao->getMemberGroup();
-    $rootFolderPermissions = array(array($adminGroup, MIDAS_POLICY_ADMIN),
+    $rootFolderPermissions = array('group' => array(
+                                   array($adminGroup, MIDAS_POLICY_ADMIN),
                                    array($moderatorGroup, MIDAS_POLICY_WRITE),
                                    array($memberGroup, MIDAS_POLICY_READ),
-                                   array($anonymousGroup, false));
+                                   array($anonymousGroup, false)));
     
     
     if($folderId)
@@ -272,10 +273,11 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $challengeModel->save($challengeDao);
     
     // Create subfolders
-    $testingTruthPermissions = array(array($adminGroup, MIDAS_POLICY_ADMIN),
+    $testingTruthPermissions = array('group' => array(
+                                   array($adminGroup, MIDAS_POLICY_ADMIN),
                                    array($moderatorGroup, MIDAS_POLICY_WRITE),
                                    array($memberGroup, false),
-                                   array($anonymousGroup, false));
+                                   array($anonymousGroup, false)));
     
     $subfolders = array(MIDAS_CHALLENGE_TESTING => 
                             array("permissions" => $rootFolderPermissions,
