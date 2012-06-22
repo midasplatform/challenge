@@ -40,6 +40,24 @@ ForEach(jobInd ${cfg_jobInds})
   Include(challenge_validator_app.bms)
 
 
+  # HausdorffDist
+  Set(outputFile HausdorffDist.${jobInd}.txt)
+  SetApp(ValidatorApp @ValidateImageHausdorffDist)
+  Include(challenge_validator_app.bms)
+
+
+  # Sensitivity
+  Set(outputFile Sensitivity.${jobInd}.txt)
+  SetApp(ValidatorApp @ValidateImageSensitivity)
+  Include(challenge_validator_app.bms)
+
+
+  # Specificity
+  Set(outputFile Specificity.${jobInd}.txt)
+  SetApp(ValidatorApp @ValidateImageSpecificity)
+  Include(challenge_validator_app.bms)
+
+
 EndForEach()
 
 Exit()

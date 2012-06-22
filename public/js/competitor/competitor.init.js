@@ -44,11 +44,12 @@ function onFinishCallback()
     var challengeId = $('#midas_challenge_competitor_selectedChallengeId').val();
     var resultsFolderId = $('#midas_challenge_competitor_selectedResultsFolderId').val();
     var outputFolderId = $('#midas_challenge_competitor_selectedOutputFolderId').val();
-     
+    var resultsType = $('#midas_challenge_competitor_resultsType').val();
+ 
     ajaxWebApi.ajax(
       {
       method: 'midas.challenge.competitor.score.results',  
-      args: 'challengeId=' + challengeId + '&resultsFolderId=' + resultsFolderId + '&outputFolderId=' + outputFolderId,
+      args: 'challengeId=' + challengeId + '&resultsFolderId=' + resultsFolderId + '&outputFolderId=' + outputFolderId  + '&resultsType=' + resultsType,
       success: function() 
         {
         window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?challengeId=' + challengeId); 
@@ -148,16 +149,16 @@ function onShowStepCallback(obj)
     } 
   }
 
-function _validateResultsFolder(challengeId, resultsFolderId)
+function _validateResultsFolder(challengeId, resultsFolderId, resultsType)
   {  
   ajaxWebApi.ajax(
     {
     method: 'midas.challenge.competitor.validate.results',  
-    args: 'challengeId=' + challengeId + '&resultsFolderId=' + resultsFolderId ,
+    args: 'challengeId=' + challengeId + '&resultsFolderId=' + resultsFolderId  + '&resultsType=' + resultsType,
     success: function(results) {
       var validationInfo = '';
       var matchedItemsInfo = '';
-      if( $.isArray(results.data.testingWithoutResults) ) //  it is either an empty array (initialarray), or an object collection
+      if( $.isArray(results.data.truthWithoutResults) ) //  it is either an empty array (initialarray), or an object collection
         {
         midas.createNotice("The selected results folder is valid!", 4000);  
         $('#validateResultsFolder_Pass').show();   
@@ -169,15 +170,15 @@ function _validateResultsFolder(challengeId, resultsFolderId)
         validationInfo = '<br/> <b>Mismatched items: </b> <br/> </br>';
         validationInfo += '<table id="validationInfo" class="validation">';
         validationInfo += '<tr> <th>What is required by the challenge</th> <th>What is in your results folder</th></tr>';
-        for (var idx in results.data.testingWithoutResults)
+        for (var idx in results.data.truthWithoutResults)
           {
-          validationInfo += '<tr> <td> <span>' + results.data.testingWithoutResults[idx]+ '</span> </td>';
+          validationInfo += '<tr> <td> <span>' + results.data.truthWithoutResults[idx]+ '</span> </td>';
           validationInfo += '<td><img src="' + json.global.webroot + '/core/public/images/icons/nok.png"> </td> </tr>'; 
           }
-        for (var idx in results.data.resultsWithoutTesting)
+        for (var idx in results.data.resultsWithoutTruth)
           {
           validationInfo += '<tr> <td><img src="' + json.global.webroot + '/core/public/images/icons/nok.png"> </td>';
-          validationInfo += '<td> <span>' + results.data.resultsWithoutTesting[idx] + '</span> </td> </tr>';
+          validationInfo += '<td> <span>' + results.data.resultsWithoutTruth[idx] + '</span> </td> </tr>';
           }
         validationInfo += '</table>';
         }
@@ -245,9 +246,10 @@ function folderSelectionCallback(name, id)
     $('#midas_challenge_competitor_selectedResultsFolderId').val(id);
     $('#validateResultsFolder_Pass').hide();
     $('#validateResultsFolder_Fail').hide();
+    var resultsType = $('#midas_challenge_competitor_resultsType').val();
     if(challengeId != '' && id != '')
       {
-      _validateResultsFolder(challengeId, id);
+      _validateResultsFolder(challengeId, id, resultsType);
       }
     return;
     }
