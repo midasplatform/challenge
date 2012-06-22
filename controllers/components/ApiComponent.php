@@ -530,7 +530,7 @@ class Challenge_ApiComponent extends AppComponent
 
 
     // export the batchmake scripts
-    $bmScript = "challenge_dice.bms";
+    $bmScript = "challenge.bms";
     $kwbatchmakeComponent->preparePipelineScripts($taskDao->getWorkDir(), $bmScript);
     $kwbatchmakeComponent->preparePipelineBmms($taskDao->getWorkDir(), array($bmScript));
 
