@@ -83,34 +83,32 @@ if __name__ == "__main__":
   interfaceMidas = core.Communicator (cfgParams['url'])
   token = interfaceMidas.login_with_api_key(cfgParams['email'], cfgParams['apikey'])
 
+  method = 'midas.challenge.admin.add.results.run.item'
+
+
   # parse output and upload value
   lines = open(outputParseFile,'r')
   for line in lines:
+    line = line.strip()
     cols = line.split()
-    val = cols[-1]
-    keyPlus = cols[0]
-    keyParts = keyPlus.split('(')
-    key = keyParts[0]
-    break
+    value = cols[-1]
+    key = cols[0]
+    parameters = {}
+    parameters['token'] = token
+    parameters['challenge_results_run_id'] = resultsrunId
+    parameters['test_item_id'] = testItemId
+    parameters['results_item_id'] = resultItemId
+    parameters['output_item_id'] = itemId
+    parameters['condor_job_id'] = condorjobid
+    parameters['result_key'] = key
+    parameters['result_value'] = value
+    log.write("\n\nCalled add.results.run.item with params:"+str(parameters))
+    resultsRunItem = interfaceMidas.request(method, parameters)
+    log.write("\n\nresponse: "+str(resultsRunItem)+"\n\n")
   lines.close()
-  result_key = key
-  result_value = val
   
 
-  method = 'midas.challenge.admin.add.results.run.item'
-  parameters = {}
-  parameters['token'] = token
-  parameters['challenge_results_run_id'] = resultsrunId
-  parameters['test_item_id'] = testItemId
-  parameters['results_item_id'] = resultItemId
-  parameters['output_item_id'] = itemId
-  parameters['condor_job_id'] = condorjobid
-  parameters['result_key'] = result_key
-  parameters['result_value'] = result_value
 
-  log.write("\n\nCalled add.results.run.item with params:"+str(parameters))
-  resultsRunItem = interfaceMidas.request(method, parameters)
-  log.write("\n\nresponse: "+str(resultsRunItem)+"\n\n")
   
   log.close()
   exit()
