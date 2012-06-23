@@ -19,20 +19,6 @@ def loadConfig(filename):
    except Exception, e: raise
 
 
-def parseVolumeMeasurement(filepath):
-  if not os.path.exists(filepath):
-    return None
-  lines = open(filepath, 'r')
-  volume = "n/a"
-  #  pattern = re.compile("Volume of segmentation (mm^3) = 465.686
-  for line in lines:
-    line = line.strip()
-    if line.find("Volume of segmentation (mm^3) = ") > -1:
-      cols = line.split()
-      volume = cols[-1]
-  lines.close()
-  return volume
-
 
 if __name__ == "__main__":
   (scriptName, workDir, taskId, dashboardId, resultsrunId, resultsFolderId, challengeId, dagjobname, testImage, resultImage, outputFolderId, outputParseFile, jobname, jobid, returncode) = sys.argv
@@ -102,36 +88,25 @@ if __name__ == "__main__":
   for line in lines:
     cols = line.split()
     val = cols[-1]
+    keyPlus = cols[0]
+    keyParts = keyPlus.split('(')
+    key = keyParts[0]
     break
   lines.close()
-  scalarvalue = val
+  result_key = key
+  result_value = val
+  
 
-
- 
+  method = 'midas.challenge.admin.add.results.run.item'
   parameters = {}
-  parameters['dashboard_id'] = dashboardId
-  parameters['folder_id'] = resultsFolderId
-  parameters['item_id'] = resultItemId
-  parameters['value'] = scalarvalue
- 
-  method = 'midas.validation.set.scalar.result'
-  log.write("\n\nCalled set.scalar.result with params:"+str(parameters))
-  scalarResultId = (interfaceMidas.request(method, parameters))['scalarresult_id']
-  log.write("\n\nresponse: "+str(scalarResultId)+"\n\n")
-
-  # now back to user
-  cfgParams = loadConfig('userconfig.cfg')
-  interfaceMidas = core.Communicator (cfgParams['url'])
-  token = interfaceMidas.login_with_api_key(cfgParams['email'], cfgParams['apikey'])
-
-  method = 'midas.challenge.competitor.add.results.run.item'
-  parameters = {}
+  parameters['token'] = token
   parameters['challenge_results_run_id'] = resultsrunId
   parameters['test_item_id'] = testItemId
   parameters['results_item_id'] = resultItemId
   parameters['output_item_id'] = itemId
   parameters['condor_job_id'] = condorjobid
-  parameters['scalarresult_id'] = scalarResultId
+  parameters['result_key'] = result_key
+  parameters['result_value'] = result_value
 
   log.write("\n\nCalled add.results.run.item with params:"+str(parameters))
   resultsRunItem = interfaceMidas.request(method, parameters)
