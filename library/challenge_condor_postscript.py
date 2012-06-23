@@ -90,9 +90,11 @@ if __name__ == "__main__":
   lines = open(outputParseFile,'r')
   for line in lines:
     line = line.strip()
-    cols = line.split()
+    cols = line.split('=')
     value = cols[-1]
+    value = value.strip()
     key = cols[0]
+    key = key.strip()
     parameters = {}
     parameters['token'] = token
     parameters['challenge_results_run_id'] = resultsrunId
