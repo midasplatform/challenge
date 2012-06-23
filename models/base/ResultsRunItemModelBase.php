@@ -32,7 +32,8 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
       'results_item_id' => array('type' => MIDAS_DATA),
       'output_item_id' => array('type' => MIDAS_DATA),
       'condor_dag_job_id' => array('type' => MIDAS_DATA),
-      'validation_scalarresult_id' => array('type' => MIDAS_DATA),
+      'result_key' => array('type' => MIDAS_DATA),
+      'result_value' => array('type' => MIDAS_DATA),
       'challenge_results_run' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'challenge',
                         'model' => 'ResultsRun',
@@ -49,13 +50,7 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
       'output_item' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'model' => 'Item',
                         'parent_column' => 'output_item_id',
-                        'child_column' => 'item_id'),
-      'validation_scalarresult' =>  array('type' => MIDAS_MANY_TO_ONE,
-                        'module' => 'validation',
-                        'model' => 'ScalarResult',
-                        'parent_column' => 'validation_scalarresult_id',
-                        'child_column' => 'scalarresult_id')
-       );
+                        'child_column' => 'item_id'));
     $this->initialize(); // required
     }
 
@@ -63,7 +58,7 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
 
   /** Create a ResultsRunItem
    * @return ResultsRunItemDao */
-  function createResultsItemRun($challengeResultsRunId, $testItemId, $resultsItemId, $outputItemId, $condorDagJobId, $scalarResultId)
+  function createResultsItemRun($challengeResultsRunId, $testItemId, $resultsItemId, $outputItemId, $condorDagJobId, $resultKey, $resultValue)
     {
     $modelLoad = new MIDAS_ModelLoader();
     $this->loadDaoClass('ResultsRunItemDao', 'challenge');
@@ -75,7 +70,8 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
     $resultsrunItemDao->setResultsItemId($resultsItemId);
     $resultsrunItemDao->setOutputItemId($outputItemId);
     $resultsrunItemDao->setCondorDagJobId($condorDagJobId);
-    $resultsrunItemDao->setValidationScalarresultId($scalarResultId);
+    $resultsrunItemDao->setResultKey($resultKey);
+    $resultsrunItemDao->setResultValue($resultValue);
 
     $this->save($resultsrunItemDao);
     return $resultsrunItemDao;

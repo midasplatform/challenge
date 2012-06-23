@@ -210,9 +210,9 @@ class Challenge_ApiComponent extends AppComponent
     // method to score a training folder? for the 2nd pass
     //validateChallengeUserFolder
 
-  public function competitorAddResultsRunItem($args)
+  public function adminAddResultsRunItem($args)
     {
-    $this->_checkKeys(array('challenge_results_run_id', 'test_item_id', 'results_item_id', 'output_item_id', 'condor_job_id', 'scalarresult_id'), $args);
+    $this->_checkKeys(array('challenge_results_run_id', 'test_item_id', 'results_item_id', 'output_item_id', 'condor_job_id', 'result_key', 'result_value'), $args);
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
@@ -222,20 +222,25 @@ class Challenge_ApiComponent extends AppComponent
       {
       throw new Zend_Exception('You must be logged in to add a results run item');
       }
+    if(!$userDao->getAdmin())
+      {
+      throw new Zend_Exception('You must be an admin to add a results run item');
+      }
+      
 
     $challengeResultsRunId = $args['challenge_results_run_id'];
     $testItemId = $args['test_item_id'];
     $resultsItemId = $args['results_item_id'];
     $outputItemId = $args['output_item_id'];
     $condorDagJobId = $args['condor_job_id'];
-    $scalarResultId = $args['scalarresult_id'];
+    $resultKey = $args['result_key'];
+    $resultValue = $args['result_value'];
 
     $modelLoad = new MIDAS_ModelLoader();
     $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
-    $resultsRunItemDao = $resultsRunItemModel->createResultsItemRun($challengeResultsRunId, $testItemId, $resultsItemId, $outputItemId, $condorDagJobId, $scalarResultId);
+    $resultsRunItemDao = $resultsRunItemModel->createResultsItemRun($challengeResultsRunId, $testItemId, $resultsItemId, $outputItemId, $condorDagJobId, $resultKey, $resultValue);
     return $resultsRunItemDao;
     }
-
 
 
   /**
