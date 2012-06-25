@@ -19,14 +19,20 @@ class Challenge_ResultsRunItemModel extends Challenge_ResultsRunItemModelBase {
   function loadResultsItemsValues($challengeResultsRunId)
     {
     $sql = $this->database->select()->setIntegrityCheck(false);
-    $sql->from(array('crri' => 'challenge_results_run_item'), array('test_item_id', 'results_item_id', 'output_item_id'));
+    $sql->from(array('crri' => 'challenge_results_run_item'), array('test_item_id', 'result_key', 'result_value'));
     $sql->joinInner(array('i1' => 'item'), 'crri.test_item_id=i1.item_id', array('test_item_name' => 'i1.name'));
-    $sql->joinInner(array('i2' => 'item'), 'crri.results_item_id=i2.item_id', array('results_item_name' => 'i2.name'));
-    $sql->joinInner(array('i3' => 'item'), 'crri.output_item_id=i3.item_id', array('output_item_name' => 'i3.name'));
-    $sql->join(array('vs' => 'validation_scalarresult'), 'vs.scalarresult_id = crri.validation_scalarresult_id');
+    //$sql->joinInner(array('i1' => 'item'), 'crri.test_item_id=i1.item_id', array('test_item_name' => 'i1.name'));
+    //$sql->joinInner(array('i2' => 'item'), 'crri.results_item_id=i2.item_id', array('results_item_name' => 'i2.name'));
+    //$sql->joinInner(array('i3' => 'item'), 'crri.output_item_id=i3.item_id', array('output_item_name' => 'i3.name'));
+    //$sql->join(array('vs' => 'validation_scalarresult'), 'vs.scalarresult_id = crri.validation_scalarresult_id');
     $sql->where('crri.challenge_results_run_id=?', $challengeResultsRunId);
     $rowset = $this->database->fetchAll($sql);
-
+//challenge_results_run_item_id | challenge_results_run_id | test_item_id | results_item_id | condor_dag_job_id | output_item_id | result_key              | result_value 
+    
+ 
+    
+    
+    
     // this is what the sql looks like:
       /*
       select test_item_id,
@@ -48,13 +54,15 @@ class Challenge_ResultsRunItemModel extends Challenge_ResultsRunItemModelBase {
     foreach($rowset as $row)
       {
       $returnRow = array();
-      $returnRow['result_item_id'] = $row['results_item_id'];
-      $returnRow['result_item_name'] = $row['results_item_name'];
-      $returnRow['output_item_id'] = $row['output_item_id'];
-      $returnRow['output_item_name'] = $row['output_item_name'];
-      $returnRow['test_item_id'] = $row['test_item_id'];
+      //$returnRow['result_item_id'] = $row['results_item_id'];
+      //$returnRow['result_item_name'] = $row['results_item_name'];
+      //$returnRow['output_item_id'] = $row['output_item_id'];
+      //$returnRow['output_item_name'] = $row['output_item_name'];
+      //$returnRow['test_item_id'] = $row['test_item_id'];
       $returnRow['test_item_name'] = $row['test_item_name'];
-      $returnRow['score'] = $row['value'];
+      $returnRow['result_value'] = $row['result_value'];
+      $returnRow['result_key'] = $row['result_key'];
+      //$returnRow['score'] = $row['value'];
       $returnVals[] = $returnRow;
       }
     return $returnVals;

@@ -552,7 +552,7 @@ class Challenge_ApiComponent extends AppComponent
   public function competitorListResults($args)
     {
     // TODO be smarter about joins, see dashboard method
-    $this->_checkKeys(array('challengeId'), $args);
+    $this->_checkKeys(array('challengeId', 'resultsType'), $args);
     // TODO implementation
     // TODO figure out what happens if no results or more than one set of results
 
@@ -566,8 +566,9 @@ class Challenge_ApiComponent extends AppComponent
       }
 
     $challengeId = $args['challengeId'];
+    $resultsType = $args['resultsType'];
 
-    /*
+    
 
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
@@ -577,10 +578,80 @@ class Challenge_ApiComponent extends AppComponent
 
     list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
 
-    $resultsRun = $resultsrunModel->loadLatestResultsRun($userDao->getUserId(), $challengeId);
+    $resultsRun = $resultsrunModel->loadLatestResultsRun($userDao->getUserId(), $challengeId, $resultsType);
     //$resultsRunItems = $resultsRunItemModel->findBy('challenge_results_run_id', $resultsRun->getChallengeResultsRunId());
     $resultsRunItemsValues = $resultsRunItemModel->loadResultsItemsValues($resultsRun->getChallengeResultsRunId());
-    $returnRows = array();
+
+    // now that we have the results back, combine them based on the test_item_name
+    $subjectScores = array();
+    $metrics = array(
+        'AveDist(A_1, B_1)',
+        'AveDist(A_2, B_2)',
+        'Dice(A_1, B_1)',
+        'Dice(A_2, B_2)',
+        'HausdorffDist(A_1, B_1)',
+        'HausdorffDist(A_2, B_2)',
+        'Kappa(A,B)',
+        'Sensitivity(A_1, B_1)',
+        'Sensitivity(A_2, B_2)',
+        'Specificity(A_1, B_1)',
+        'Specificity(A_2, B_2)');
+    $metricSums = array();
+    foreach($metrics as $metric)
+      {
+      $metricSums[$metric] = array('count' => 0, 'sum' => 0);  
+      }
+      
+    foreach($resultsRunItemsValues as $resultsRunItemsValue)
+      {
+      $testItemName = $resultsRunItemsValue['test_item_name'];
+      if(!array_key_exists($testItemName, $subjectScores))
+        {
+        $subjectScores[$testItemName] = array();  
+        }
+        $metricType = $resultsRunItemsValue['result_key'];
+        $metricScore = $resultsRunItemsValue['result_value'];
+        $subjectScores[$testItemName][$metricType] = $metricScore;
+        $metricSum = $metricSums[$metricType];
+        $metricSum['count'] = $metricSum['count'] + 1;
+        $metricSum['sum'] = $metricSum['sum'] + $metricScore;
+        $metricSums[$metricType] = $metricSum;
+      }
+    
+    
+    // now compute an average for each metric type
+    $subjectScores['averages'] = array();
+    foreach($metricSums as $metricType => $totals)
+      {
+      if($totals['count'] == 0)
+        {
+        $subjectScores['averages'][$metricType] = 'N/A';
+        }
+      else
+        {
+        $subjectScores['averages'][$metricType] = $totals['sum'] / $totals['count'];  
+        }
+      }
+    
+    $resultRows = array();
+    foreach($subjectScores as $subject => $scores)
+      {
+      $resultRow = array();
+      $pos = strpos($subject, '_truth.mha');
+      if($pos > -1)
+        {
+        $subject = substr($subject, 0, $pos);  
+        }
+      $resultRow['Subject'] = $subject;
+      foreach($metrics as $metric)
+        {
+        $resultRow[$metric] = round($scores[$metric], 3);
+        }
+      $resultRows[] = $resultRow;
+      }
+      
+      
+    /*$returnRows = array();
     foreach($resultsRunItemsValues as $resultsRunItemsValue)
       {
       $test_item_id = $resultsRunItemsValue['test_item_id'];
@@ -594,12 +665,11 @@ class Challenge_ApiComponent extends AppComponent
       $resultsRunItemsValue['test_item_name'] = $testItem->getName();
       $returnRows[] = $resultsRunItemsValue;
       }
-
-    // TODO don't yet have a notion of finished
-    $processingComplete = 'true';
-    $responseData = array('results_rows' => $returnRows, 'processing_complete' => $processingComplete);
 */
-
+    // TODO don't yet have a notion of finished
+    $processingComplete = 'false';
+    $responseData = array('results_rows' => $resultRows, 'processing_complete' => $processingComplete);
+/*
     // TODO this is fake data, uncomment if no condor setup
     $rows = array();
     $row1 = array('test_item_name' => 'test1', 'test_item_id' => '1',
@@ -638,7 +708,7 @@ class Challenge_ApiComponent extends AppComponent
       $processingComplete = 'true';
       }
     $responseData = array('results_rows' => $rows, 'processing_complete' => $processingComplete);
-
+*/
     return $responseData;
     }
 

@@ -52,7 +52,7 @@ function onFinishCallback()
       args: 'challengeId=' + challengeId + '&resultsFolderId=' + resultsFolderId + '&outputFolderId=' + outputFolderId  + '&resultsType=' + resultsType,
       success: function() 
         {
-        window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?challengeId=' + challengeId); 
+        window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?challengeId=' + challengeId +'&resultsType=' + resultsType); 
         },
       error: function(XMLHttpRequest, textStatus, errorThrown)
         {
