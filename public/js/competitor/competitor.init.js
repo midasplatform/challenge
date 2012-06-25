@@ -184,14 +184,14 @@ function _validateResultsFolder(challengeId, resultsFolderId, resultsType)
         }
       $('div#midas_challenge_competitor_validatedResultsFolder_Info').html(validationInfo);
       
-      if( !$.isArray(results.data.matchedTestingResults) ) // it is either an empty array (initialarray), or an object collectionn
+      if( !$.isArray(results.data.matchedTruthResults) ) // it is either an empty array (initialarray), or an object collectionn
         {
         matchedItemsInfo = '<br/> <b>Matched items: </b> <br/> </br>';
         matchedItemsInfo += '<table id="matchedItemsInfo" class="validation">';
         matchedItemsInfo += '<tr> <th>What is required by the challenge</th> <th>If it is in your results folder</th></tr>';
-        for (var idx in results.data.matchedTestingResults)
+        for (var idx in results.data.matchedTruthResults)
           {
-          matchedItemsInfo += '<tr> <td> <span>' + results.data.matchedTestingResults[idx]+ '</span> </td>';
+          matchedItemsInfo += '<tr> <td> <span>' + results.data.matchedTruthResults[idx]+ '</span> </td>';
           matchedItemsInfo += '<td><img src="' + json.global.webroot + '/core/public/images/icons/ok.png"> </td> </tr>'; 
           }
         matchedItemsInfo += '</table>';
