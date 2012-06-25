@@ -28,6 +28,7 @@ echo '<script type="text/javascript" src="' . $this->apiWebroot . '/public/js/co
 <link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/jquery.dataTables.css" />
 <link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
 
+
       
 <div id="showscores" >
   <?php
@@ -49,12 +50,13 @@ echo '<script type="text/javascript" src="' . $this->apiWebroot . '/public/js/co
         </thead>
         <tbody>
           <?php       
-            foreach($challengeScores['results_rows'] as $row)
+            foreach($challengeScores['results_rows'] as $subject => $scores)
               {
               echo "<tr class='resultsRow'>";
               foreach($this->tableData_resultsColumns as $column)
                 {
-                echo "<td>".$row[$column]."</td>";
+                $colVal = $scores[$column];
+                echo "<td>".$colVal."</td>";
                 }
               echo "</tr>";
               }

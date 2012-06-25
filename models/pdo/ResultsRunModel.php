@@ -23,7 +23,7 @@ class Challenge_ResultsRunModel extends Challenge_ResultsRunModelBase {
    * @param type $status
    * @return type
    */
-  function loadLatestResultsRun($userId, $challengeId)
+  function loadLatestResultsRun($userId, $challengeId, $resultsType)
     {
     
 //    $sql = $this->database->select('max(challenge_results_run_id)')->setIntegrityCheck(false);
@@ -32,6 +32,7 @@ class Challenge_ResultsRunModel extends Challenge_ResultsRunModelBase {
     $sql->from(array('crr' => 'challenge_results_run'));
     $sql->join(array('bt' => 'batchmake_task'), 'crr.batchmake_task_id=bt.batchmake_task_id');
     $sql->where('crr.challenge_id=?', $challengeId);
+    $sql->where('crr.results_type=?', $resultsType);
     $sql->where('bt.user_id=?', $userId);
     $rowset = $this->database->fetchAll($sql);
     

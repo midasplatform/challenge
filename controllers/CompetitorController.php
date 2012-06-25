@@ -113,6 +113,7 @@ class Challenge_CompetitorController extends Challenge_AppController
   public function showscoreAction()
     {
     $challengeId = $this->_getParam("challengeId");
+    $resultsType = $this->_getParam("resultsType");
     $challenges = array();
     $showAllChallenges = true;
     if(!isset($challengeId))
@@ -127,6 +128,7 @@ class Challenge_CompetitorController extends Challenge_AppController
       $dashboardDao = $this->Challenge_Challenge->load($challengeId)->getDashboard();
       $challenges = array($challengeId => array('name' => $dashboardDao->getName(), 'description' => $dashboardDao->getDescription() ) );
       $this->view->json['challengeId'] = $challengeId;
+      $this->view->json['resultsType'] = $resultsType;
       }
     $tableData = array();
     foreach($challenges as $challengeId => $challengeDetails)
@@ -134,6 +136,7 @@ class Challenge_CompetitorController extends Challenge_AppController
       $apiargs = array();
       $apiargs['useSession'] = true;
       $apiargs['challengeId'] = $challengeId;
+      $apiargs['resultsType'] = $resultsType;
       $tableData[$challengeDetails['name']] = $this->ModuleComponent->Api->competitorListResults($apiargs);
       $this->view->json['processingComplete'] = $tableData[$challengeDetails['name']]['processing_complete'];
       }
@@ -141,8 +144,32 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->showAllChallenges = $showAllChallenges;
     $this->view->tableData = $tableData;
     $this->view->user = $this->userSession->Dao;
-    $this->view->tableHeaders = array('testing item', 'result item', 'metric', 'score', 'output item');
-    $this->view->tableData_resultsColumns = array('test_item_name', 'result_item_name', 'metric_item_name', 'score', 'output_item_name');
+    $this->view->tableData_resultsColumns = array(
+        'Subject', 
+        'AveDist(A_1, B_1)',
+        'AveDist(A_2, B_2)',
+        'Dice(A_1, B_1)',
+        'Dice(A_2, B_2)',
+        'HausdorffDist(A_1, B_1)',
+        'HausdorffDist(A_2, B_2)',
+        'Kappa(A,B)',
+        'Sensitivity(A_1, B_1)',
+        'Sensitivity(A_2, B_2)',
+        'Specificity(A_1, B_1)',
+        'Specificity(A_2, B_2)');
+    $this->view->tableHeaders = array(
+        'Subject', 
+        'Ave Dist 1',
+        'Ave Dist 2',
+        'Dice 1',
+        'Dice 2',
+        'Hausdorff Dist 1',
+        'Hausdorff Dist 2',
+        'Kappa',
+        'Sensitivity 1',
+        'Sensitivity 2',
+        'Specificity 1',
+        'Specificity 2');
 
     }
 

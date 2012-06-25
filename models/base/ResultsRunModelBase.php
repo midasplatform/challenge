@@ -98,7 +98,7 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
     }
 
 
-  abstract function loadLatestResultsRun($userId, $challengeId);
+  abstract function loadLatestResultsRun($userId, $challengeId, $resultsType);
 
 
 
