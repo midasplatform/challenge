@@ -471,17 +471,9 @@ class Challenge_ApiComponent extends AppComponent
     // create a task
     $taskDao = $kwbatchmakeComponent->createTask($userDao);
 
-
-    // TODO what is exe and params?
-    $executableName = "TODO";
-    $params = "TODO";
-
-
     // create a resultsrun
     $resultsrunModel = $modelLoad->loadModel('ResultsRun', 'challenge');
-    $resultsrunDao = $resultsrunModel->createResultsRun($userDao, $challengeId, $executableName, $params, $taskDao->getBatchmakeTaskId(), $resultsFolderId, $outputFolderId);
-
-
+    $resultsrunDao = $resultsrunModel->createResultsRun($userDao, $challengeId, $resultsType, $taskDao->getBatchmakeTaskId(), $resultsFolderId, $outputFolderId);
 
     $itemsForExport = $this->generateMatchedResultsItemIds($userDao, $matchedResults, $resultsType, $resultsFolderId, $challengeId);
     $itemsPaths = $executeComponent->exportSingleBitstreamItemsToWorkDataDir($userDao, $taskDao, $itemsForExport);
