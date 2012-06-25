@@ -645,7 +645,14 @@ class Challenge_ApiComponent extends AppComponent
       $resultRow['Subject'] = $subject;
       foreach($metrics as $metric)
         {
-        $resultRow[$metric] = round($scores[$metric], 3);
+        if(array_key_exists($metric, $scores))
+          {
+          $resultRow[$metric] = round($scores[$metric], 3);
+          }
+        else
+          {
+          $resultRow[$metric] = 'N/A';
+          }
         }
       $resultRows[] = $resultRow;
       }
