@@ -27,9 +27,8 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
 
     $this->_mainData = array(
       'challenge_results_run_id' => array('type' => MIDAS_DATA),
-      'executable_name' => array('type' => MIDAS_DATA),
-      'params' => array('type' => MIDAS_DATA),
       'challenge_id' => array('type' => MIDAS_DATA),
+      'results_type' => array('type' => MIDAS_DATA),
       'batchmake_task_id' => array('type' => MIDAS_DATA),
       'results_folder_id' => array('type' => MIDAS_DATA),
       'output_folder_id' => array('type' => MIDAS_DATA),
@@ -57,7 +56,7 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
 
   /** Create a ResultsRun
    * @return ResultsRunDao */
-  function createResultsRun($userDao, $challengeId, $executableName, $params, $batchmakeTaskId, $resultsFolderId, $outputFolderId)
+  function createResultsRun($userDao, $challengeId, $resultsType, $batchmakeTaskId, $resultsFolderId, $outputFolderId)
     {
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
@@ -69,8 +68,7 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
 
     // create a new resultsrun
     $resultsrunDao = new Challenge_ResultsRunDao();
-    $resultsrunDao->setExecutableName($executableName);
-    $resultsrunDao->setParams($params);
+    $resultsrunDao->setResultsType($resultsType);
     $resultsrunDao->setChallengeId($challengeId);
     $resultsrunDao->setBatchmakeTaskId($batchmakeTaskId);
     $resultsrunDao->setResultsFolderId($resultsFolderId);
