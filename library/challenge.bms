@@ -28,12 +28,6 @@ ForEach(jobInd ${cfg_jobInds})
   Include(challenge_validator_app.bms)
 
 
-  # Jaccard
-  Set(outputFile jaccard.${jobInd}.txt)
-  SetApp(ValidatorApp @ValidateImageJaccard)
-  Include(challenge_validator_app.bms)
-
-
   # Kappa
   Set(outputFile kappa.${jobInd}.txt)
   SetApp(ValidatorApp @ValidateImageKappa)
