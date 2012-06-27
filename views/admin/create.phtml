@@ -25,8 +25,12 @@ PURPOSE.  See the above copyright notices for more information.
     <?php echo $this->form['description']?>
   </div>
   <div class="radioElement">
-    <h4><?php echo $this->t('Status')?></h4>
-    <?php echo $this->form['status']?>
+    <h4><?php echo $this->t('Training Status')?></h4>
+    <?php echo $this->form['training_status']?>
+  </div>
+  <div class="radioElement">
+    <h4><?php echo $this->t('Testing Status')?></h4>
+    <?php echo $this->form['testing_status']?>
   </div>
   <div>
     <input type='submit' name='createChallenge' value='<?php echo $this->t('Create')?>'/>

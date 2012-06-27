@@ -35,7 +35,7 @@ class Challenge_CompetitorController extends Challenge_AppController
       }
 
     $args['useSession'] = true;
-    $args['status'] = MIDAS_CHALLENGE_STATUS_OPEN;
+    //$args['status'] = MIDAS_CHALLENGE_STATUS_OPEN;
     $this->view->user = $this->userSession->Dao;
     $challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
     $this->view->challenges = $challenges;
@@ -181,7 +181,7 @@ class Challenge_CompetitorController extends Challenge_AppController
     $challenges = $this->ModuleComponent->Api->anonymousGetChallenge($args);
     $tableHeaders = array();
     $tableData = array();
-    foreach($challenges as $challengeId => $status)
+    foreach($challenges as $challengeId => $statuses)
       {
       $dashboardDao = $this->Challenge_Challenge->load($challengeId)->getDashboard();
       $challengeName = $dashboardDao->getName();

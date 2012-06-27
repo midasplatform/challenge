@@ -39,11 +39,13 @@ class Challenge_ApiComponent extends AppComponent
    * @param challengeDescription
    * @param folderId optional, the id of the folder in the community to use as a challenge
    * root, if the folder already exists
+   * @param trainingStatus
+   * @param testingStatus
    * @return id of the newly created challenge
    */
   public function adminCreateChallenge($args)
     {
-    $this->_checkKeys(array('communityId', 'challengeName', 'challengeDescription', 'challengeStatus'), $args);
+    $this->_checkKeys(array('communityId', 'challengeName', 'challengeDescription', 'trainingStatus', 'testingStatus'), $args);
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
@@ -57,7 +59,8 @@ class Challenge_ApiComponent extends AppComponent
     $communityId = $args['communityId'];
     $challengeName = $args['challengeName'];
     $challengeDescription = $args['challengeDescription'];
-    $challengeStatus = $args['challengeStatus'];
+    $trainingStatus = $args['trainingStatus'];
+    $testingStatus = $args['testingStatus'];
     $folderId = false;
     if(array_key_exists('folderId', $args))
       {
@@ -70,19 +73,20 @@ class Challenge_ApiComponent extends AppComponent
     $communityDao = $communityModel->load($communityId);
 
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $challengeDao = $challengeModel->createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $challengeStatus, $folderId);
+    $challengeDao = $challengeModel->createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $trainingStatus, $testingStatus, $folderId);
     // return the challengeId
     return $challengeDao->getKey();
     }
 
   /**
-   * Open a challenge, requires challenge moderator status.
+   * Open a challenge for training, requires challenge moderator status.
    * @param challengeId
+   * @param resultsType
    * @return true on success
    */
   public function adminOpenChallenge($args)
     {
-    $this->_checkKeys(array('challengeId'), $args);
+    $this->_checkKeys(array('challengeId', 'resultsType'), $args);
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
@@ -94,21 +98,27 @@ class Challenge_ApiComponent extends AppComponent
       }
 
     $challengeId = $args['challengeId'];
+    $resultsType = $args['resultsType'];
+    if($resultsType !== MIDAS_CHALLENGE_TESTING && $resultsType !== MIDAS_CHALLENGE_TRAINING)
+      {
+      throw new Zend_Exception('resultsType should be one of ['.MIDAS_CHALLENGE_TESTING.'|'.MIDAS_CHALLENGE_TRAINING.']');
+      }
 
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $challengeModel->openChallenge($userDao, $challengeId);
+    $challengeModel->openChallenge($userDao, $challengeId, $resultsType);
     return true;
     }
 
   /**
-   * Close a challenge, requires challenge moderator status.
+   * Close a challenge for training, requires challenge moderator status.
    * @param challengeId
+   * @param resultsType
    * @return true on success
    */
   public function adminCloseChallenge($args)
     {
-    $this->_checkKeys(array('challengeId'), $args);
+    $this->_checkKeys(array('challengeId', 'resultsType'), $args);
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
@@ -120,10 +130,15 @@ class Challenge_ApiComponent extends AppComponent
       }
 
     $challengeId = $args['challengeId'];
+    $resultsType = $args['resultsType'];
+    if($resultsType !== MIDAS_CHALLENGE_TESTING && $resultsType !== MIDAS_CHALLENGE_TRAINING)
+      {
+      throw new Zend_Exception('resultsType should be one of ['.MIDAS_CHALLENGE_TESTING.'|'.MIDAS_CHALLENGE_TRAINING.']');
+      }
 
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $challengeModel->closeChallenge($userDao, $challengeId);
+    $challengeModel->closeChallenge($userDao, $challengeId, $resultsType);
     return true;
     }
 
@@ -141,7 +156,8 @@ class Challenge_ApiComponent extends AppComponent
   /**
    * List all the challenges a user is a competitor for, based on which
    * communities the user is a member of and are associated with challenges.
-   * @param status
+   * @param trainingStatus
+   * @param testingStatus
    * @return an array of challenge ids as keys, with an array of
    * challenge name and description as the value for each key.
    */
@@ -158,7 +174,10 @@ class Challenge_ApiComponent extends AppComponent
 
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $availableChallenges = $challengeModel->findAvailableChallenges($userDao, isset($args['status']) ? $args['status'] : null);
+    $availableChallenges =
+      $challengeModel->findAvailableChallenges($userDao,
+                                               isset($args['trainingStatus']) ? $args['trainingStatus'] : null,
+                                               isset($args['testingStatus']) ? $args['testingStatus'] : null);
     return $availableChallenges;
     }
 
@@ -166,7 +185,9 @@ class Challenge_ApiComponent extends AppComponent
   /**
    * Check if a community has a challenge
    * @param communityId
-   * @return an array of challenge ids as keys, with challenge status as the value for each key.
+   * @return an array of challenge ids as keys,
+   * with the value being an array of 
+   * ('training_status' => $trainingStatus, 'testing_status' => $testingStatus)
    */
   public function anonymousGetChallenge($args)
     {

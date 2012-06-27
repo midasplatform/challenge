@@ -23,8 +23,12 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
     <?php echo $this->infoForm['description']?>
   </div>
   <div class="radioElement">
-    <h4><?php echo $this->t('Status')?></h4>
-    <?php echo $this->infoForm['status']?>
+    <h4><?php echo $this->t('Training Status')?></h4>
+    <?php echo $this->infoForm['training_status']?>
+  </div>
+  <div class="radioElement">
+    <h4><?php echo $this->t('Testing Status')?></h4>
+    <?php echo $this->infoForm['testing_status']?>
   </div>
   <div>
     <?php echo $this->infoForm['submit']?>

@@ -56,10 +56,17 @@ class Challenge_ConfigForm extends AppForm
 
     $description = new Zend_Form_Element_Textarea('description');
 
-    $status = new Zend_Form_Element_Radio('status');
-    $status->addMultiOptions(array(
-                 MIDAS_CHALLENGE_STATUS_OPEN => $this->t("Open, competitors can participate in"),
-                 MIDAS_CHALLENGE_STATUS_CLOSED => $this->t("Closed, competitors cannot participate in, but can view existing scores"),
+    $trainingStatus = new Zend_Form_Element_Radio('training_status');
+    $trainingStatus->addMultiOptions(array(
+                 MIDAS_CHALLENGE_STATUS_OPEN => $this->t("Open, competitors can score training data"),
+                 MIDAS_CHALLENGE_STATUS_CLOSED => $this->t("Closed, competitors cannot score training data"),
+                  ))
+            ->setRequired(true)
+            ->setValue(MIDAS_CHALLENGE_STATUS_CLOSED);
+    $testingStatus = new Zend_Form_Element_Radio('testing_status');
+    $testingStatus->addMultiOptions(array(
+                 MIDAS_CHALLENGE_STATUS_OPEN => $this->t("Open, competitors can score testing data"),
+                 MIDAS_CHALLENGE_STATUS_CLOSED => $this->t("Closed, competitors cannot score testing data, but can view existing scores"),
                   ))
             ->setRequired(true)
             ->setValue(MIDAS_CHALLENGE_STATUS_CLOSED);
@@ -67,7 +74,7 @@ class Challenge_ConfigForm extends AppForm
     $submit = new  Zend_Form_Element_Submit('submit');
     $submit ->setLabel($this->t("Save"));
 
-    $form->addElements(array($name, $description, $status, $submit));
+    $form->addElements(array($name, $description, $trainingStatus, $testingStatus, $submit));
     return $form;
     }
 

@@ -29,10 +29,11 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       'challenge_id' => array('type' => MIDAS_DATA),
       'validation_dashboard_id' => array('type' => MIDAS_DATA),
       'community_id' => array('type' => MIDAS_DATA),
-      'status' => array('type' => MIDAS_DATA),
       'root_folder_id' => array('type' => MIDAS_DATA),
       'training_folder_stem' => array('type' => MIDAS_DATA),
       'testing_folder_stem' => array('type' => MIDAS_DATA),
+      'training_status' => array('type' => MIDAS_DATA),
+      'testing_status' => array('type' => MIDAS_DATA),
       'dashboard' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'validation',
                         'model' => 'Dashboard',
@@ -53,7 +54,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
   /** Returns challenge(s) by a communityId */
   abstract function getByCommunityId($communityId);
 
-  abstract function findAvailableChallenges($userDao, $status);
+  abstract function findAvailableChallenges($userDao, $trainingStatus, $testingStatus);
 
   abstract function getUsersLatestTestingResults($challengeId);
 
@@ -188,7 +189,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     
   /** Create a challenge
    * @return ChallengeDao */
-  function createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $challengeStatus = MIDAS_CHALLENGE_STATUS_CLOSED, $folderId)
+  function createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $trainingStatus = MIDAS_CHALLENGE_STATUS_CLOSED, $testingStatus = MIDAS_CHALLENGE_STATUS_CLOSED, $folderId)
     {
     if(!$userDao)
       {
@@ -230,7 +231,9 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $challengeDao = new Challenge_ChallengeDao();
     $challengeDao->setValidationDashboardId($dashboardDao->getDashboardId());
     $challengeDao->setCommunityId($communityDao->getCommunityId());
-    $challengeDao->setStatus($challengeStatus);
+    $challengeDao->setTrainingStatus($trainingStatus);
+    $challengeDao->setTestingStatus($testingStatus);
+
     $challengeDao->setTrainingFolderStem(MIDAS_CHALLENGE_TRAINING);
     $challengeDao->setTestingFolderStem(MIDAS_CHALLENGE_TESTING);
     $challengeModel->save($challengeDao);
@@ -243,11 +246,10 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $moderatorGroup = $communityDao->getModeratorGroup();
     $memberGroup = $communityDao->getMemberGroup();
     $rootFolderPermissions = array('group' => array(
-                                   array($adminGroup, MIDAS_POLICY_ADMIN),
-                                   array($moderatorGroup, MIDAS_POLICY_WRITE),
-                                   array($memberGroup, MIDAS_POLICY_READ),
-                                   array($anonymousGroup, false)));
-    
+                                   array('group_dao' => $adminGroup, 'policy' => MIDAS_POLICY_ADMIN),
+                                   array('group_dao' => $moderatorGroup, 'policy' => MIDAS_POLICY_WRITE),
+                                   array('group_dao' => $memberGroup, 'policy' => MIDAS_POLICY_READ),
+                                   array('group_dao' => $anonymousGroup, 'policy' => false)));
     
     if($folderId)
       {
@@ -280,10 +282,10 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     
     // Create subfolders
     $testingTruthPermissions = array('group' => array(
-                                   array($adminGroup, MIDAS_POLICY_ADMIN),
-                                   array($moderatorGroup, MIDAS_POLICY_WRITE),
-                                   array($memberGroup, false),
-                                   array($anonymousGroup, false)));
+                                 array('group_dao' => $adminGroup, 'policy' => MIDAS_POLICY_ADMIN),
+                                 array('group_dao' => $moderatorGroup, 'policy' => MIDAS_POLICY_WRITE),
+                                 array('group_dao' => $memberGroup, 'policy' => false),
+                                 array('group_dao' => $anonymousGroup, 'policy' => false)));
     
     $subfolders = array(MIDAS_CHALLENGE_TESTING => 
                             array("permissions" => $rootFolderPermissions,
@@ -309,9 +311,9 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     }  // createChallenge
 
   /**
-   * Open a challenge
+   * Open a challenge for training
    **/
-  function openChallenge($userDao, $challengeId)
+  function openChallenge($userDao, $challengeId, $resultsType)
     {
     $challengeDao = $this->load($challengeId);
     if(!$this->isChallengeModerator($userDao, $challengeDao))
@@ -319,14 +321,26 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       throw new Zend_Exception("You must be a moderator of this challenge.");
       }
 
-    $challengeDao->setStatus(MIDAS_CHALLENGE_STATUS_OPEN);
+    if($resultsType === MIDAS_CHALLENGE_TRAINING)
+      {
+      $challengeDao->setTrainingStatus(MIDAS_CHALLENGE_STATUS_OPEN);
+      }
+    else if($resultsType === MIDAS_CHALLENGE_TESTING)
+      {
+      $challengeDao->setTestingStatus(MIDAS_CHALLENGE_STATUS_OPEN);
+      }
+    else
+      {
+      throw new Zend_Exception('resultsType should be one of ['.MIDAS_CHALLENGE_TESTING.'|'.MIDAS_CHALLENGE_TRAINING.']');
+      }
+    
     $this->save($challengeDao);
     }
 
   /**
-   * Close a challenge
+   * Close a challenge for training
    **/
-  function closeChallenge($userDao, $challengeId)
+  function closeChallenge($userDao, $challengeId, $resultsType)
     {
     $challengeDao = $this->load($challengeId);
     if(!$this->isChallengeModerator($userDao, $challengeDao))
@@ -334,7 +348,19 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       throw new Zend_Exception("You must be a moderator of this challenge.");
       }
 
-    $challengeDao->setStatus(MIDAS_CHALLENGE_STATUS_CLOSED);
+    if($resultsType === MIDAS_CHALLENGE_TRAINING)
+      {
+      $challengeDao->setTrainingStatus(MIDAS_CHALLENGE_STATUS_CLOSED);
+      }
+    else if($resultsType === MIDAS_CHALLENGE_TESTING)
+      {
+      $challengeDao->setTestingStatus(MIDAS_CHALLENGE_STATUS_CLOSED);
+      }
+    else
+      {
+      throw new Zend_Exception('resultsType should be one of ['.MIDAS_CHALLENGE_TESTING.'|'.MIDAS_CHALLENGE_TRAINING.']');
+      }
+      
     $this->save($challengeDao);
     }
 
