@@ -22,15 +22,59 @@ class Challenge_Notification extends ApiEnabled_Notification
   public function init()
     {
     $this->enableWebAPI($this->moduleName);
+    $this->addCallBack('CALLBACK_CORE_GET_FOOTER_HEADER', 'getHeader');
     $this->addCallBack('CALLBACK_CORE_GET_LEFT_LINKS', 'getLeftLink');
     $this->addCallBack('CALLBACK_CORE_GET_USER_ACTIONS', 'getUserAction');
     $this->addCallBack('CALLBACK_CORE_GET_USER_TABS', 'getUserTab');
+    $this->addCallBack('CALLBACK_CORE_LAYOUT_TOPBUTTONS', 'getButton');
     //$this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_TABS', 'getCommunityViewTab');
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_MANAGE_TABS', 'getCommunityManageTab');
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_ADMIN_ACTIONS', 'getCommunityViewAction');
     $this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_JSS', 'getCommunityViewJSs');
     $this->addCallBack('CALLBACK_CORE_USER_JOINED_COMMUNITY', 'userJoinedCommunity');
     }//end init
+
+  /** get layout header */
+  public function getHeader()
+    {
+    return '<link type="text/css" rel="stylesheet" href="'.Zend_Registry::get('webroot').'/modules/challenge/public/css/layout/challenge.css" />';
+    }
+
+  protected function openChallengesForUser()
+    {
+    $args['useSession'] = true;
+    $args['trainingStatus'] = MIDAS_CHALLENGE_STATUS_OPEN;
+    $trainingChallenges = $this->ModuleComponent->Api->competitorListChallenges($args);
+    unset($args['trainingStatus']);
+    $args['testingStatus'] = MIDAS_CHALLENGE_STATUS_OPEN;
+    $testingChallenges = $this->ModuleComponent->Api->competitorListChallenges($args);
+    $challenges = array_merge($trainingChallenges, $testingChallenges);
+    return (!empty($challenges));
+    }
+    
+    
+  /** add a process button  */ 
+  public function getButton($params)
+    {
+    if(!isset($this->userSession->Dao) || !$this->openChallengesForUser())
+      {
+      return array();
+      }
+    else
+      {
+      $fc = Zend_Controller_Front::getInstance();
+      $baseURL = $fc->getBaseUrl();
+      $moduleWebroot = $baseURL . '/' . MIDAS_CHALLENGE_MODULE;  
+      $html =  "<li class='processButton' style='margin-left:5px;' title='Score Submissions' rel='".$moduleWebroot."/competitor/init'>
+              <a href='".$moduleWebroot."/competitor/init'><img id='processButtonImg' src='".Zend_Registry::get('webroot')."/modules/challenge//public/images/process-ok.png' alt='Score Submissions'/>
+              <img id='processButtonLoadiing' style='margin-top:5px;display:none;' src='".Zend_Registry::get('webroot')."/core/public/images/icons/loading.gif' alt=''/>
+              Score Submissions
+              </a>
+              </li> ";
+      return $html;
+      }
+    }
+    
     
   /**
    *@method getLeftLink
@@ -46,9 +90,7 @@ class Challenge_Notification extends ApiEnabled_Notification
       }
     else 
       {
-      $args['useSession'] = true;
-      $challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
-      if(!empty($challenges))
+      if($this->openChallengesForUser())
         {
         $fc = Zend_Controller_Front::getInstance();
         $baseURL = $fc->getBaseUrl();
