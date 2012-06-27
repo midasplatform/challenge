@@ -31,6 +31,8 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       'community_id' => array('type' => MIDAS_DATA),
       'status' => array('type' => MIDAS_DATA),
       'root_folder_id' => array('type' => MIDAS_DATA),
+      'training_folder_stem' => array('type' => MIDAS_DATA),
+      'testing_folder_stem' => array('type' => MIDAS_DATA),
       'dashboard' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'validation',
                         'model' => 'Dashboard',
@@ -44,8 +46,6 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
                         'model' => 'Folder',
                         'parent_column' => 'root_folder_id',
                         'child_column' => 'folder_id')
-
-
        );
     $this->initialize(); // required
     }
@@ -100,10 +100,10 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     
     protected function createPermissions($folderpolicygroupModel, $folderpolicyuserModel, $folder, $folderPermissions)
       {
-      foreach($folderPermissions['group'] as $groupPolicy)
+      foreach($folderPermissions['group'] as $groupPermissions)
         {
-        $group = $groupPolicy[0];
-        $policy = $groupPolicy[1];
+        $group = $groupPermissions['group_dao'];
+        $policy = $groupPermissions['policy'];
         if($policy !== false)
           {
           $createdPolicy = $folderpolicygroupModel->createPolicy($group, $folder, $policy);
@@ -122,10 +122,10 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     
     protected function enforcePermissions($folderpolicygroupModel, $folderpolicyuserModel, $folder, $folderPermissions)
       {
-      foreach($folderPermissions['group'] as $groupPolicy)
+      foreach($folderPermissions['group'] as $groupPermissions)
         {
-        $group = $groupPolicy[0];
-        $policy = $groupPolicy[1];
+        $group = $groupPermissions['group_dao'];
+        $policy = $groupPermissions['policy'];
         $policyGroup = $folderpolicygroupModel->getPolicy($group, $folder);
         if($policy === false)
           {
@@ -160,6 +160,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     
     protected function createOrEnforceSubfolders($rootFolder, $subfolders, $folderModel, $folderpolicygroupModel, $folderpolicyuserModel)
       {
+      $folderNamesToIds = array();
       foreach($subfolders as $folderName => $folderProperties)
         {
         $subfolder = $folderModel->getFolderExists($folderName, $rootFolder);
@@ -172,15 +173,18 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
           {
           $this->enforcePermissions($folderpolicygroupModel, $folderpolicyuserModel, $subfolder, $folderProperties['permissions']);
           }
+        $folderNamesToIds[$subfolder->getName()] = $subfolder->getFolderId();  
         if(isset($folderProperties['subfolders']))
           {
           // recursively call this with the subfolder as root
-          $this->createOrEnforceSubfolders($subfolder, $folderProperties['subfolders'], $folderModel, $folderpolicygroupModel, $folderpolicyuserModel);
+          $returnedSubfolders = $this->createOrEnforceSubfolders($subfolder, $folderProperties['subfolders'], $folderModel, $folderpolicygroupModel, $folderpolicyuserModel);
+          $folderNamesToIds = array_merge($returnedSubfolders, $folderNamesToIds);
           }
         }
+      return $folderNamesToIds;  
       }
     
-    
+      
     
   /** Create a challenge
    * @return ChallengeDao */
@@ -227,6 +231,8 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $challengeDao->setValidationDashboardId($dashboardDao->getDashboardId());
     $challengeDao->setCommunityId($communityDao->getCommunityId());
     $challengeDao->setStatus($challengeStatus);
+    $challengeDao->setTrainingFolderStem(MIDAS_CHALLENGE_TRAINING);
+    $challengeDao->setTestingFolderStem(MIDAS_CHALLENGE_TESTING);
     $challengeModel->save($challengeDao);
 
     $anonymousGroup = $groupModel->load(MIDAS_GROUP_ANONYMOUS_KEY);
@@ -532,23 +538,43 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $memberGroup = $communityDao->getMemberGroup();
     $anonymousGroup = $groupModel->load(MIDAS_GROUP_ANONYMOUS_KEY);
 
-    $userFolderPermissions = array('group' => array(array($adminGroup, MIDAS_POLICY_READ),
-                                   array($moderatorGroup, MIDAS_POLICY_READ),
-                                   array($memberGroup, false),
-                                   array($anonymousGroup, false)),
-                                   'user' => array('user_dao' => $userDao, 'policy' => MIDAS_POLICY_ADMIN));  
     
+    $userFolderPermissions = array('group' => array(
+                                     array('group_dao' => $adminGroup, 'policy' => MIDAS_POLICY_READ),
+                                     array('group_dao' => $moderatorGroup, 'policy' => MIDAS_POLICY_READ),
+                                     array('group_dao' => $memberGroup, 'policy' => false),
+                                     array('group_dao' => $anonymousGroup, 'policy' => false)),
+                                   'user' => array('user_dao' => $userDao, 'policy' => MIDAS_POLICY_ADMIN));  
       
+    $trainingSubmissionFolderName = $challenge->getTrainingFolderStem() . ' submissions';
+    $trainingOutputFolderName = $challenge->getTrainingFolderStem() . ' output';
+    $testingSubmissionFolderName = $challenge->getTestingFolderStem() . ' submissions';
+    $testingOutputFolderName = $challenge->getTestingFolderStem() . ' output';
+    
+    
     // create a top level folder in the User's private area named $challengeName_data
     $subfolders = array($challenge->getDashboard()->getName() . " data" => 
                             array("permissions" => $userFolderPermissions,
                                   "subfolders" => array(
-                                      MIDAS_CHALLENGE_TRAINING . ' results' => array("permissions" => $userFolderPermissions),
-                                      MIDAS_CHALLENGE_TRAINING . ' output' => array("permissions" => $userFolderPermissions),
-                                      MIDAS_CHALLENGE_TESTING . ' results' => array("permissions" => $userFolderPermissions),
-                                      MIDAS_CHALLENGE_TESTING . ' output' => array("permissions" => $userFolderPermissions))));
+                                      $trainingSubmissionFolderName => array("permissions" => $userFolderPermissions),
+                                      $trainingOutputFolderName => array("permissions" => $userFolderPermissions),
+                                      $testingSubmissionFolderName => array("permissions" => $userFolderPermissions),
+                                      $testingOutputFolderName => array("permissions" => $userFolderPermissions))));
                                       
-    $this->createOrEnforceSubfolders($userDao->getPrivateFolder(), $subfolders, $folderModel, $folderpolicygroupModel, $folderpolicyuserModel);
+    $folderNamesToIds = $this->createOrEnforceSubfolders($userDao->getPrivateFolder(), $subfolders, $folderModel, $folderpolicygroupModel, $folderpolicyuserModel);
+
+    
+    $competitorModel = $modelLoad->loadModel('Competitor', 'challenge');
+    $this->loadDaoClass('CompetitorDao', 'challenge');
+    $competitorDao = new Challenge_CompetitorDao();
+    $competitorDao->setChallengeId($challenge->getChallengeId());
+    $competitorDao->setUserId($userDao->getUserId());
+    $competitorDao->setTrainingSubmissionFolderId($folderNamesToIds[$trainingSubmissionFolderName]);
+    $competitorDao->setTrainingOutputFolderId($folderNamesToIds[$trainingOutputFolderName]);
+    $competitorDao->setTestingSubmissionFolderId($folderNamesToIds[$testingSubmissionFolderName]);
+    $competitorDao->setTestingOutputFolderId($folderNamesToIds[$testingOutputFolderName]);
+    $competitorModel->save($competitorDao);
+
     }
     
 
