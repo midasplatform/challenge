@@ -69,7 +69,7 @@ class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
       }
     if($testingStatus)
       {
-      $sql->where('cc.testing_status=?', $trainingStatus);
+      $sql->where('cc.testing_status=?', $testingStatus);
       }
 
     $rowset = $this->database->fetchAll($sql);
