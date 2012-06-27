@@ -73,5 +73,53 @@ class Challenge_ResultsRunModel extends Challenge_ResultsRunModelBase {
     }
 //select max(challenge_results_run_id) from challenge_results_run, batchmake_task where challenge_id = 6 and user_id = 2 and batchmake_task.batchmake_task_id = challenge_results_run.batchmake_task_id order by challenge_results_run_id;
 
+    
+  function getUsersLatestTestingResults($challengeId)
+    {
+    /*
+    // TODO distinct not working
+    $sql = $this->database->select('user_id')->distinct()->setIntegrityCheck(false);
+    $sql->from(array('crr' => 'challenge_results_run'));
+    $sql->join(array('bt' => 'batchmake_task'), 'crr.batchmake_task_id=bt.batchmake_task_id');
+    $sql->where('crr.challenge_id=?', $challengeId);
+    $sql->where('crr.results_type=?', $resultsType);
+
+    $rowset = $this->database->fetchAll($sql);
+    $rows = array();
+    foreach($rowset as $row)
+      {
+      // TODO distinct not working, so using set/hash to do it
+      $rows[$row['user_id']] = $row['user_id'];
+      }
+   //    select user_id from challenge_results_run, batchmake_task where batchmake_task.batchmake_task_id=challenge_results_run.batchmake_task_id group by user_id;
+    return $rows;
+    */
+//    $query = "select max(challenge_results_run_id) as latest_results_run_id, user_id  from challenge_results_run, batchmake_task where batchmake_task.batchmake_task_id = challenge_results_run.batchmake_task_id and results_type='Testing' and challenge_id=".$challengeId." group by user_id";
+    //$query = "select user_id  from challenge_results_run, batchmake_task where batchmake_task.batchmake_task_id = challenge_results_run.batchmake_task_id and results_type='Testing' and challenge_id=".$challengeId." group by user_id";
+    //$sql = $this->database->select(array("user_id", "challenge_results_run_id"))->setIntegrityCheck(false);//array('user_id', new Zend_Db_Expr('MAX(challenge_results_run_id)')))->setIntegrityCheck(false);
+    $sql = $this->database->select()->setIntegrityCheck(false);//array('user_id', new Zend_Db_Expr('MAX(challenge_results_run_id)')))->setIntegrityCheck(false);
+    $sql->from(array('crr' => 'challenge_results_run'));//, 'latest_results_run_id' => new Zend_Db_Expr('MAX(challenge_results_run_id')));
+    $sql->join(array('bt' => 'batchmake_task'), 'crr.batchmake_task_id=bt.batchmake_task_id');
+    $sql->where('crr.challenge_id=?', $challengeId);
+    $sql->where('crr.results_type=?', MIDAS_CHALLENGE_TESTING);
+    //$sql->group("user_id");
+
+    $sql_out = (string) $sql    ;
+//
+    
+    $rowset = $this->database->fetchAll($sql);
+    $rows = array();
+    foreach($rowset as $row)
+      {
+      $challengeResultsRunId = $row['challenge_results_run_id'];
+      if(!array_key_exists($row['user_id'], $rows) || (int)$challengeResultsRunId > (int)$rows[$row['user_id']])
+        {
+        $rows[$row['user_id']] = $row['challenge_results_run_id'];
+        }
+      }
+    return $rows;
+    
+    
+    }
 
 }

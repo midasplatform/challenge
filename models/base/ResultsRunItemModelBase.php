@@ -78,8 +78,7 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
     }
 
   abstract function loadResultsItemsValues($challengeResultsRunId);
-
-
+  abstract function loadLatestResultsRunSummary($resultRunId);
 
 
 }  // end class Challenge_ResultsRunItemModelBase
