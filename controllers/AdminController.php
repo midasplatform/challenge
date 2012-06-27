@@ -43,7 +43,8 @@ class Challenge_AdminController extends Challenge_AppController
       $args['useSession'] = true;
       $args['challengeName'] = $form->getValue('name');
       $args['challengeDescription'] =  $form->getValue('description');
-      $args['challengeStatus'] =  $form->getValue('status');
+      $args['trainingStatus'] =  $form->getValue('training_status');
+      $args['testingStatus'] =  $form->getValue('testing_status');
       $challengeId = $this->ModuleComponent->Api->adminCreateChallenge($args);
       $this->_redirect("/community/".$community_id);
       }
@@ -89,11 +90,13 @@ class Challenge_AdminController extends Challenge_AppController
 
       $dashboardDao->setName($formInfo->getValue('name'));
       $dashboardDao->setDescription($formInfo->getValue('description'));
-      $forminfo_status = $formInfo->getValue('status');
+      $forminfo_trainingStatus = $formInfo->getValue('training_status');
+      $forminfo_testingStatus = $formInfo->getValue('testing_status');
       $modelLoader = new MIDAS_ModelLoader();
       $dashboardModel = $modelLoader->loadModel('Dashboard', 'validation');
       $dashboardModel->save($dashboardDao);
-      $challengeDao->setStatus($forminfo_status);
+      $challengeDao->setTrainingStatus($forminfo_trainingStatus);
+      $challengeDao->setTestingStatus($forminfo_testingStatus);
       $this->Challenge_Challenge->save($challengeDao);
       if($challengeDao !== false)
         {
@@ -111,8 +114,10 @@ class Challenge_AdminController extends Challenge_AppController
     $name->setValue($dashboardDao->getName());
     $description = $formInfo->getElement('description');
     $description->setValue($dashboardDao->getDescription());
-    $status = $formInfo->getElement('status');
-    $status->setValue($challengeDao->getStatus());
+    $trainingStatus = $formInfo->getElement('training_status');
+    $testingStatus = $formInfo->getElement('testing_status');
+    $trainingStatus->setValue($challengeDao->getTrainingStatus());
+    $testingStatus->setValue($challengeDao->getTestingStatus());
     $this->view->infoForm = $this->getFormAsArray($formInfo);
 
     }//

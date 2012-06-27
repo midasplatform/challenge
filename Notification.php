@@ -183,7 +183,7 @@ class Challenge_Notification extends ApiEnabled_Notification
     $challenges = $this->ModuleComponent->Api->anonymousGetChallenge($apiargs);
     if(!empty($challenges) && sizeof($challenges) > 0)
       {
-      foreach($challenges as $challengeId => $status)
+      foreach($challenges as $challengeId => $statuses)
         {
         // create the user folders for the challenge
         $modelLoad = new MIDAS_ModelLoader();
@@ -193,7 +193,6 @@ class Challenge_Notification extends ApiEnabled_Notification
         }
       }
     }
- 
     
   } //end class
   

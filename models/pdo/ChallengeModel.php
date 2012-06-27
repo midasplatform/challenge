@@ -28,8 +28,9 @@ class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
     foreach($rowset as $row)
       {
       $challengeId = $row['challenge_id'];
-      $status = $row['status'];
-      $return[$challengeId] = $status;
+      $trainingStatus = $row['training_status'];
+      $testingStatus = $row['testing_status'];
+      $return[$challengeId] = array('training_status' => $trainingStatus, 'testing_status' => $testingStatus);
       }
     return $return;
     }
@@ -38,10 +39,11 @@ class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
    * lists the set of challenges for a user, based on which communities
    * they are a member of, if a status is provided, will filter by status.
    * @param UserDao $userDao
-   * @param type $status
+   * @param $trainingStatus
+   * @param $testingStatus
    * @return type
    */
-  function findAvailableChallenges($userDao, $status = null)
+  function findAvailableChallenges($userDao, $trainingStatus = null, $testingStatus = null)
     {
     if(!$userDao)
       {
@@ -61,9 +63,13 @@ class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
     $sql->join(array('vd' => 'validation_dashboard'), 'validation_dashboard_id=dashboard_id');
     $sql->where('g.name=?', $membersGroupName);
     $sql->where('u2g.user_id=?', $userId);
-    if($status)
+    if($trainingStatus)
       {
-      $sql->where('cc.status=?', $status);
+      $sql->where('cc.training_status=?', $trainingStatus);
+      }
+    if($testingStatus)
+      {
+      $sql->where('cc.testing_status=?', $trainingStatus);
       }
 
     $rowset = $this->database->fetchAll($sql);
