@@ -194,31 +194,64 @@ class Challenge_CompetitorController extends Challenge_AppController
       $apiResults = array();
       $apiResults = $this->ModuleComponent->Api->anonymousListDashboard($apiargs);
 
-      $testItemCount = count($apiResults['test_items']);
-      if(count($apiResults['competitor_scores']) > 0) // has scores from at least one competitor
-        {
-        $tableHeaders[$challengeId] = array('competitor id', 'aggregated score');
-        foreach($apiResults['test_items'] as $testItemId => $testItemName)
-          {
-          $tableHeaders[$challengeId][] = $testItemName;
-          }
-
-        foreach($apiResults['competitor_scores'] as $competitorId => $scores)
-          {
-          $tableData[$challengeId][$competitorId] = array_fill(0, $testItemCount + 1, 0.0);
-          $aggregated_score = 0.0;
-          foreach($scores as $testItemId => $testScore)
-            {
-            $tableData[$challengeId][$competitorId][array_search($testItemId, array_keys($apiResults['test_items'])) + 1 ] = floatval($testScore['score']);
-            $aggregated_score += floatval($testScore['score']);
-            }
-          $tableData[$challengeId][$competitorId][0] = $aggregated_score / $testItemCount;
-          }
-        }
+//      $testItemCount = count($apiResults['test_items']);
+    //  if(count($apiResults['competitor_scores']) > 0) // has scores from at least one competitor
+    //    {
+        $tableHeaders[$challengeId] = array(
+        'Competitor', 
+        'Ave Dist 1',
+        'Ave Dist 2',
+        'Dice 1',
+        'Dice 2',
+        'Hausdorff Dist 1',
+        'Hausdorff Dist 2',
+        'Kappa',
+        'Sensitivity 1',
+        'Sensitivity 2',
+        'Specificity 1',
+        'Specificity 2',
+        'Average Rank');
+        //foreach($apiResults['test_items'] as $testItemId => $testItemName)
+        //  {
+        //  $tableHeaders[$challengeId][] = $testItemName;
+        //  }
+        $resultColumns = array(
+        'AveDist(A_1, B_1)',
+        'AveDist(A_2, B_2)',
+        'Dice(A_1, B_1)',
+        'Dice(A_2, B_2)',
+        'HausdorffDist(A_1, B_1)',
+        'HausdorffDist(A_2, B_2)',
+        'Kappa(A,B)',
+        'Sensitivity(A_1, B_1)',
+        'Sensitivity(A_2, B_2)',
+        'Specificity(A_1, B_1)',
+        'Specificity(A_2, B_2)',
+        'Average Rank');
+        
+      //  foreach($apiResults['competitor_scores'] as $competitorId => $scores)
+        //  {
+          //$tableData[$challengeId][$competitorId] = array_fill(0, $testItemCount + 1, 0.0);
+          //$aggregated_score = 0.0;
+          //foreach($scores as $testItemId => $testScore)
+          //  {
+          //  $tableData[$challengeId][$competitorId][array_search($testItemId, array_keys($apiResults['test_items'])) + 1 ] = floatval($testScore['score']);
+          //  $aggregated_score += floatval($testScore['score']);
+          //  }
+          //$tableData[$challengeId][$competitorId][0] = $aggregated_score / $testItemCount;
+      //    $tableData[$challengeId][$competitorId] = array();
+          
+        //  }
+        //}
+        
       }
     $this->view->challengeInfo = $challengeInfo;
-    $this->view->tableData = $tableData;
-    $this->view->tableHeaders = $tableHeaders;
+    $this->view->tableData = array();
+    $this->view->tableData[$challengeId] = $apiResults['competitor_scores'];//$tableData;
+    $this->view->resultColumns = $resultColumns;
+    //$this->view->challengeResults = $apiResults['competitor_scores'];
+  $this->view->tableHeaders = $tableHeaders;
+  $this->view->resultColumns = $resultColumns;
     }
 
 }//end class

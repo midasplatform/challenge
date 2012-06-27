@@ -55,7 +55,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
 
   abstract function findAvailableChallenges($userDao, $status);
 
-  abstract function getUsersWithSubmittedResults($challengeId);
+  abstract function getUsersLatestTestingResults($challengeId);
 
 
 

@@ -68,5 +68,35 @@ class Challenge_ResultsRunItemModel extends Challenge_ResultsRunItemModelBase {
     return $returnVals;
     }
 
+    
+  function loadLatestResultsRunSummary($resultRunId) 
+    {
+    $sql = $this->database->select()->setIntegrityCheck(false);
+    $sql->from(array("ccri" => "challenge_results_run_item"));
+    $sql->where('challenge_results_run_id=?', $resultRunId);
+    //$sql->join(array('result_count' => 'COUNT(*)'));
+    $sql->columns   (array("result_count" => "COUNT(*)", "metric_sum" => "sum(result_value)", "metric_average" => "avg(result_value)"));
+    $sql->group('ccri.result_key');
+    $sql_out = (string)$sql;  
+
+    
+//
+    //
+    //$sql = "select challenge_results_run_id from challenge_results_run_item";
+//    $sql = "select challenge_results_run_id, count(*), result_key, sum(result_value), avg(result_value) from challenge_results_run_item group by challenge_results_run_id, result_key";
+    $results = $this->database->fetchAll($sql);
+    $runResults = array();
+    foreach($results as $row)
+      {
+      $runResults[$row['result_key']] = array(
+          'result_count' => $row['result_count'],
+          'metric_sum' => $row['metric_sum'],
+          'metric_average' => $row['metric_average']);
+      }
+    return $runResults;     
+    }
+    
+    
+    
 
 }
