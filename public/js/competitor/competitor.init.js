@@ -2,35 +2,141 @@ var midas = midas || {};
 midas.challenge = midas.challenge || {};
 midas.challenge.competitor = midas.challenge.competitor || {};
 
-var currentBrowser = false;
+midas.challenge.competitor.currentBrowser = false;
 
-$(document).ready(function()
-  {
-  // Initialize Smart Wizard
-  $('#wizard').smartWizard(
-    {
-    // Properties
-    keyNavigation: true, // Enable/Disable key navigation(left and right keys are used if enabled)
-    enableAllSteps: false,  // Enable/Disable all steps on first load
-    transitionEffect: 'fade', // Effect on navigation, none/fade/slide/slideleft
-    contentURL:null, // specifying content url enables ajax content loading
-    contentCache:false, // cache step contents, if false content is fetched always from ajax url
-    cycleSteps: false, // cycle step navigation
-    enableFinishButton: false, // makes finish button enabled always
-    errorSteps:[],    // array of step numbers to highlighting as error steps
-    labelNext:'Next', // label for Next button
-    labelPrevious:'Previous', // label for Previous button
-    labelFinish:'Get score',  // label for Finish button
-    // Events
-    onLeaveStep: onLeaveStepCallback, // triggers when leaving a step
-    onShowStep: onShowStepCallback,  // triggers when showing a step
-    onFinish: onFinishCallback  // triggers when Finish button is clicked
+$(document).ready(function()  {
+    //$('#midas_challenge_competitor_scoreResults_anchor').click(function() { return false; });
+    // TODO this styling isn't working, do a better job with style
+    // validate folder if it is supplied
+    var challenge_id = $('#midas_challenge_competitor_challengeId').val();
+    var results_type = $('#midas_challenge_competitor_resultsType').val();
+    var submission_folder_id = $('#midas_challenge_competitor_selectedResultsFolderId').val();
+    if(submission_folder_id !== null && submission_folder_id !== undefined & submission_folder_id !== '') {
+        midas.challenge.competitor.validateResultsFolder(challenge_id, submission_folder_id, results_type);          
+    }
+    
+    // event handler on results folder browse button
+    $('#midas_challenge_competitor_browseResultsFolder').click(function() {
+        midas.loadDialog("selectfolder_resultsfolder","/challenge/competitor/selectresultsfolder");
+        midas.showDialog('Browse for Results Submission Folder');
+        currentBrowser = 'folderresults';
     });
+    
+    // TODO event handlers for challenge and dataset selection
+});
 
-  $('#wizard').show();
 
-  });
+function folderSelectionCallback(name, id)
+  {
+  var challengeId =  $('#midas_challenge_competitor_challengeId').val();
+  if(midas.challenge.competitor.currentBrowser == 'folderresults')
+    {
+    $('#midas_challenge_competitor_selectedResultsFolder').html(name);
+    $('#midas_challenge_competitor_selectedResultsFolderId').val(id);
+    $('#validateResultsFolder_Pass').hide();
+    $('#validateResultsFolder_Fail').hide();
+    var resultsType = $('#midas_challenge_competitor_resultsType').val();
+    if(challengeId != '' && id != '')
+      {
+      midas.challenge.competitor.validateResultsFolder(challengeId, id, resultsType);
+      }
+    return;
+    }
+}
 
+midas.challenge.competitor.enableScoring = function() {
+    $('#midas_challenge_competitor_scoreResults_anchor').removeClass('buttonScoreSubmissionDisabled').addClass('buttonScoreSubmission');
+    $('#midas_challenge_competitor_scoreResults_anchor').click(function() { 
+        var challenge_id = $('#midas_challenge_competitor_challengeId').val();
+        var results_type = $('#midas_challenge_competitor_resultsType').val();
+        var submission_folder_id = $('#midas_challenge_competitor_selectedResultsFolderId').val();
+        ajaxWebApi.ajax({
+            method: 'midas.challenge.competitor.score.results',  
+            args: 'challengeId=' + challenge_id + '&resultsFolderId=' + submission_folder_id + '&resultsType=' + results_type,
+            success: function() {
+                window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?challengeId=' + challenge_id +'&resultsType=' + results_type); 
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                var validationInfo = '';
+                validationInfo = '<br/> <b>Scoring</b> action has an error: ' + XMLHttpRequest.message + '<br/> </br>';
+                $('div#midas_challenge_competitor_getScore_Info').html(validationInfo);  
+            }
+        })
+    });
+}
+
+
+midas.challenge.competitor.validateResultsFolder = function(challengeId, resultsFolderId, resultsType)
+  {  
+  ajaxWebApi.ajax(
+    {
+    method: 'midas.challenge.competitor.validate.results',  
+    args: 'challengeId=' + challengeId + '&resultsFolderId=' + resultsFolderId  + '&resultsType=' + resultsType,
+    success: function(results) {
+      var validationInfo = '';
+      var matchedItemsInfo = '';
+      if( $.isArray(results.data.truthWithoutResults) ) //  it is either an empty array (initialarray), or an object collection
+        {
+        //midas.createNotice("The selected results folder is valid!", 4000);  
+        $('#validateResultsFolder_AllMatched').show();   
+        midas.challenge.competitor.enableScoring();
+
+        }
+      else 
+        {
+        //midas.createNotice("Sorry, the selected results folder is not valid! ", 4000, 'error');
+        if($.isArray(results.data.matchedTruthResults)) {
+            $('#validateResultsFolder_NoneMatched').show();
+        }
+        else {
+            $('#validateResultsFolder_SomeMatched').show();
+            midas.challenge.competitor.enableScoring();
+    //        $('#midas_challenge_competitor_scoreResults_anchor').removeClass('buttonScoreSubmissionDisabled').addClass('buttonScoreSubmission');
+    //$('#midas_challenge_competitor_scoreResults_anchor').click(function() { return false; });
+
+
+        }
+        validationInfo = '<br/> <b>Mismatched items: </b> <br/> </br>';
+        validationInfo += '<table id="validationInfo" class="validation">';
+        validationInfo += '<tr> <th>What is required by the challenge</th> <th>What is in your results folder</th></tr>';
+        for (var idx in results.data.truthWithoutResults)
+          {
+          validationInfo += '<tr> <td> <span>' + results.data.truthWithoutResults[idx]+ '</span> </td>';
+          validationInfo += '<td><img src="' + json.global.webroot + '/core/public/images/icons/nok.png"> </td> </tr>'; 
+          }
+        for (var idx in results.data.resultsWithoutTruth)
+          {
+          validationInfo += '<tr> <td><img src="' + json.global.webroot + '/core/public/images/icons/nok.png"> </td>';
+          validationInfo += '<td> <span>' + results.data.resultsWithoutTruth[idx] + '</span> </td> </tr>';
+          }
+        validationInfo += '</table>';
+        }
+      $('div#midas_challenge_competitor_validatedResultsFolder_Info').html(validationInfo);
+      
+      if( !$.isArray(results.data.matchedTruthResults) ) // it is either an empty array (initialarray), or an object collectionn
+        {
+        matchedItemsInfo = '<br/> <b>Matched items: </b> <br/> </br>';
+        matchedItemsInfo += '<table id="matchedItemsInfo" class="validation">';
+        matchedItemsInfo += '<tr> <th>What is required by the challenge</th> <th>If it is in your results folder</th></tr>';
+        for (var idx in results.data.matchedTruthResults)
+          {
+          matchedItemsInfo += '<tr> <td> <span>' + results.data.matchedTruthResults[idx]+ '</span> </td>';
+          matchedItemsInfo += '<td><img src="' + json.global.webroot + '/core/public/images/icons/ok.png"> </td> </tr>'; 
+          }
+        matchedItemsInfo += '</table>';
+        }
+        $('div#midas_challenge_competitor_matchedItems_Info').html(matchedItemsInfo);
+      },
+    error: function(XMLHttpRequest, textStatus, errorThrown){
+      $('#validateResultsFolder_Fail').show();
+      var validationInfo = '';
+      validationInfo = '<br/> <b>Reason: </b>' + XMLHttpRequest.message + '<br/> </br>';
+      $('div#midas_challenge_competitor_validatedResultsFolder_Info').html(validationInfo);
+      }  
+    });
+    return;
+  }
+/*
 function onLeaveStepCallback(obj)
   {
   var step_num= obj.attr('rel'); // get the current step number
@@ -129,6 +235,15 @@ function validateAllSteps()
 function onShowStepCallback(obj)
   {
   var step_num = obj.attr('rel'); // get the current step number
+  
+  if(step_num == 1) {
+      var challenge_id = $('#midas_challenge_competitor_challengeId').val();
+      var results_type = $('#midas_challenge_competitor_resultsType').val();
+      var submission_folder_id = $('#midas_challenge_competitor_selectedResultsFolderId').val();
+      _validateResultsFolder(challenge_id, submission_folder_id, results_type)
+  }
+  
+  
   
   if(step_num == 2)
     {
@@ -267,3 +382,4 @@ function folderSelectionCallback(name, id)
     }
 }
   
+*/

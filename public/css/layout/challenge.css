@@ -13,3 +13,43 @@ div.HeaderAction ul li.processButton:hover{
   background-image: -moz-linear-gradient(center top, #5b7ad2 0%, #42779d 100% );
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#5b7ad2', endColorstr='#42779d');
 }
+
+
+
+.buttonScoreSubmissionDisabled {
+  display:block;
+  float:right;
+  margin:5px 10px 0 3px;
+  padding:5px;
+  text-decoration: none;
+  text-align: center;
+  font: 14px Verdana, Arial, Helvetica, sans-serif;
+  width:100px;
+  color:white!important;
+  outline-style:none;
+  background-color:   lightgray;
+  border: 1px solid lightgray;
+  -moz-border-radius  : 5px;
+  -webkit-border-radius: 5px;
+ /* color:#F8F8F8  !important;
+  background-color: #CCCCCC !important;
+  border: 1px solid #CCCCCC  !important;
+  cursor:text;*/
+}
+.buttonScoreSubmission {
+  display:block;
+  float:right;
+  margin:5px 10px 0 3px;
+  padding:5px;
+  text-decoration: none;
+  text-align: center;
+  font: bold 14px Verdana, Arial, Helvetica, sans-serif;
+  width:100px;
+  color:white!important;
+  font-weight: bold!important;
+  outline-style:none;
+  background-color:   #5A5655;
+  border: #354856 1px solid;
+  -moz-border-radius  : 5px;
+  -webkit-border-radius: 5px;
+}

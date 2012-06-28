@@ -442,14 +442,14 @@ class Challenge_ApiComponent extends AppComponent
    * @param challengeId the id of the challenge to display testing inputs for
    * @param resultsFolderId id of folder owned by the user and containing results
    * @param resultsType one of [Testing|Training]
-   * @param outputFolderId id of folder writable by the user, will be the parent
+   * @param outputFolderId, optional, id of folder writable by the user, will be the parent
    * directory for a newly created directory that will contain any outputs
    * created by the scoring process
    * @return some notion of success or error, to be determined
    */
   public function competitorScoreResults($args)
     {
-    $this->_checkKeys(array('challengeId', 'resultsFolderId', 'resultsType', 'outputFolderId'), $args);
+    $this->_checkKeys(array('challengeId', 'resultsFolderId', 'resultsType'), $args);
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
@@ -462,9 +462,16 @@ class Challenge_ApiComponent extends AppComponent
 
     $challengeId = $args['challengeId'];
     $resultsFolderId = $args['resultsFolderId'];
-    $outputFolderId = $args['outputFolderId'];
     $resultsType = $args['resultsType'];
-
+    if(array_key_exists('outputFolderId', $args))
+      {
+      $outputFolderId = $args['outputFolderId'];
+      }
+    else
+      {
+      $outputFolderId = null;
+      }
+    
     if($resultsType !== MIDAS_CHALLENGE_TESTING && $resultsType !== MIDAS_CHALLENGE_TRAINING)
       {
       throw new Zend_Exception('resultsType should be one of ['.MIDAS_CHALLENGE_TESTING.'|'.MIDAS_CHALLENGE_TRAINING.']');
