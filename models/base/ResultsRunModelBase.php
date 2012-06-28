@@ -81,18 +81,26 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
     // will live.
     $challengeDao = $challengeModel->load($challengeId);
     $communityDao = $challengeDao->getCommunity();
-    $outputFolderParentDao = $folderModel->load($outputFolderId);
-    $outputFolderDao = $folderModel->createFolder("Results Output " . $resultsrunDao->getChallengeResultsRunId(), "Output folder from running results", $outputFolderParentDao);
+    if($outputFolderId)
+      {
+      $outputFolderParentDao = $folderModel->load($outputFolderId);
+      $outputFolderDao = $folderModel->createFolder("Results Output " . $resultsrunDao->getChallengeResultsRunId(), "Output folder from running results", $outputFolderParentDao);
 
-    // give user ownership rights
-    $folderpolicyuserModel->createPolicy($userDao, $outputFolderDao, MIDAS_POLICY_ADMIN);
+      // give user ownership rights
+      $folderpolicyuserModel->createPolicy($userDao, $outputFolderDao, MIDAS_POLICY_ADMIN);
 
-    // give community moderators read access
-    $moderatorGroup = $communityDao->getModeratorGroup();
-    $outputFolderModeratorsReadPolicy = $folderpolicyggroupModel->createPolicy($moderatorGroup, $outputFolderDao, MIDAS_POLICY_READ);
-
-    $resultsrunDao->setOutputFolderId($outputFolderDao->getFolderId());
-    $this->save($resultsrunDao);
+      // give community moderators read access
+      $moderatorGroup = $communityDao->getModeratorGroup();
+      $outputFolderModeratorsReadPolicy = $folderpolicyggroupModel->createPolicy($moderatorGroup, $outputFolderDao, MIDAS_POLICY_READ);
+  
+      $resultsrunDao->setOutputFolderId($outputFolderDao->getFolderId());
+      $this->save($resultsrunDao);
+      }
+    else
+      {
+      $resultsrunDao->setOutputFolderId('');
+      $this->save($resultsrunDao);
+      }
 
     return $resultsrunDao;
     }

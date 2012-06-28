@@ -76,10 +76,11 @@ class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
     $return = array();
     foreach($rowset as $row)
       {
-      $challengeId = $row['challenge_id'];
-      $name = $row['name'];
-      $description = $row['description'];
-      $return[$challengeId] = array('name' => $name, 'description' => $description);
+      $return[$row['challenge_id']] = array('name' => $row['name'],
+                                    'description' => $row['description'],
+                                    'id' => $row['challenge_id'],
+                                    'training_status' => $row['training_status'],
+                                    'testing_status' => $row['testing_status']);
       }
     return $return;
     }

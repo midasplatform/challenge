@@ -21,13 +21,14 @@
 class Challenge_CompetitorController extends Challenge_AppController
 {
   public $_moduleComponents = array('Api');
-  public $_moduleModels = array('Challenge');
+  public $_moduleModels = array('Challenge', 'Competitor');
+  public $_models = array('Folder');
   public $_moduleForms = array('Config');
 
   /** init a job*/
   function initAction()
     {
-    $this->view->header = "Competitor Wizard";
+    $this->view->header = "Submission Scoring";
     if(!$this->logged)
       {
       $this->haveToBeLogged();
@@ -35,21 +36,48 @@ class Challenge_CompetitorController extends Challenge_AppController
       }
 
     $args['useSession'] = true;
-    //$args['status'] = MIDAS_CHALLENGE_STATUS_OPEN;
-    $this->view->user = $this->userSession->Dao;
-    $challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
+    $args['trainingStatus'] = MIDAS_CHALLENGE_STATUS_OPEN;
+    $trainingChallenges = $this->ModuleComponent->Api->competitorListChallenges($args);
+    unset($args['trainingStatus']);
+    $args['testingStatus'] = MIDAS_CHALLENGE_STATUS_OPEN;
+    $testingChallenges = $this->ModuleComponent->Api->competitorListChallenges($args);
+    $challenges = $trainingChallenges + $testingChallenges;
+    // will need to keep the status of training/testing to pass to ui
+    $userDao = $this->userSession->Dao;    
+    
+    
+    
+    $this->view->user = $userDao;
     $this->view->challenges = $challenges;
     $selectOptions = false;
-    foreach($challenges as $challengdId => $challengeDetails)
+    
+    $challengeResultsFolders = array();
+    foreach($challenges as $challengeId => $challengeDetails)
       {
-      $selectOptions[$challengdId] = $challengeDetails['name'];
+      $competitor = $this->Challenge_Competitor->findChallengeCompetitor($userDao->getUserId(), $challengeId);  
+      if(!empty($competitor) && sizeof($competitor) > 0)
+        {
+        $trainingFolderId = $competitor[0]['training_submission_folder_id'];
+        $trainingFolder = $this->Folder->load($trainingFolderId);
+        $trainingFolderName = $trainingFolder->getName();
+        $testingFolderId = $competitor[0]['testing_submission_folder_id'];
+        $testingFolder = $this->Folder->load($testingFolderId);
+        $testingFolderName = $testingFolder->getName();
+        $challengeResultsFolders[$challengeId] =
+          array('training_submission_folder_id' => $trainingFolderId,
+                'training_submission_folder_name' => $trainingFolderName,
+                'testing_submission_folder_id' => $testingFolderId,
+                'testing_submission_folder_name' => $testingFolderName);
+        }
+      $selectOptions[$challengeId] = $challengeDetails['name'];
       }
     if($selectOptions)
       {
       $configForm = $this->ModuleForm->Config->createSelectChallengeForm($selectOptions);
       $formArray = $this->getFormAsArray($configForm);
       $this->view->configForm = $formArray;
-      
+      $this->view->json['challengeResultsFolders'] = $challengeResultsFolders;
+      $this->view->challengeResultsFolders = $challengeResultsFolders;
       if($this->_request->isPost())
         {
         $submitSelect = $this->_getParam('submitSelect');
