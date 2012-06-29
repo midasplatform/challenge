@@ -485,7 +485,11 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     foreach($truthItems as $item)
       {
       $name = $item->getName();
-      $truthResults[$name] = str_replace("_truth", "_result", $name);
+      // ignore files with _complete_truth in their name
+      if(strpos($name, '_complete_truth') === false)
+        {
+        $truthResults[$name] = str_replace("_truth", "_result", $name);
+        }
       }
     
     if($resultFolderId === null)
