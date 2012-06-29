@@ -32,11 +32,17 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
       'batchmake_task_id' => array('type' => MIDAS_DATA),
       'results_folder_id' => array('type' => MIDAS_DATA),
       'output_folder_id' => array('type' => MIDAS_DATA),
+      'challenge_competitor_id' => array('type' => MIDAS_DATA),
       'challenge' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'challenge',
                         'model' => 'Challenge',
                         'parent_column' => 'challenge_id',
                         'child_column' => 'challenge_id'),
+      'competitor' =>  array('type' => MIDAS_MANY_TO_ONE,
+                        'module' => 'challenge',
+                        'model' => 'Competitor',
+                        'parent_column' => 'challenge_competitor_id',
+                        'child_column' => 'challenge_competitor_id'),
       'batchmake_task' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'batchmake',
                         'model' => 'Task',
@@ -60,16 +66,18 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
     {
     $modelLoad = new MIDAS_ModelLoader();
     $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $competitorModel = $modelLoad->loadModel('Competitor', 'challenge');
     $communityModel = $modelLoad->loadModel('Community');
     $folderModel = $modelLoad->loadModel('Folder');
     $folderpolicyggroupModel = $modelLoad->loadModel('Folderpolicygroup');
     $folderpolicyuserModel = $modelLoad->loadModel('Folderpolicyuser');
     $this->loadDaoClass('ResultsRunDao', 'challenge');
-
+    $competitor = $competitorModel->findChallengeCompetitor($userDao->getUserId(), $challengeId);
     // create a new resultsrun
     $resultsrunDao = new Challenge_ResultsRunDao();
     $resultsrunDao->setResultsType($resultsType);
     $resultsrunDao->setChallengeId($challengeId);
+    $resultsrunDao->setChallengeCompetitorId($competitor->getChallengeCompetitorId());
     $resultsrunDao->setBatchmakeTaskId($batchmakeTaskId);
     $resultsrunDao->setResultsFolderId($resultsFolderId);
 

@@ -55,19 +55,16 @@ class Challenge_CompetitorController extends Challenge_AppController
     foreach($challenges as $challengeId => $challengeDetails)
       {
       $competitor = $this->Challenge_Competitor->findChallengeCompetitor($userDao->getUserId(), $challengeId);  
-      if(!empty($competitor) && sizeof($competitor) > 0)
+      if($competitor !== false)
         {
-        $trainingFolderId = $competitor[0]['training_submission_folder_id'];
-        $trainingFolder = $this->Folder->load($trainingFolderId);
-        $trainingFolderName = $trainingFolder->getName();
-        $testingFolderId = $competitor[0]['testing_submission_folder_id'];
-        $testingFolder = $this->Folder->load($testingFolderId);
-        $testingFolderName = $testingFolder->getName();
+        $trainingFolder = $competitor->getTrainingSubmissionFolder();
+        $testingFolder = $competitor->getTestingSubmissionFolder();
+        
         $challengeResultsFolders[$challengeId] =
-          array('training_submission_folder_id' => $trainingFolderId,
-                'training_submission_folder_name' => $trainingFolderName,
-                'testing_submission_folder_id' => $testingFolderId,
-                'testing_submission_folder_name' => $testingFolderName);
+          array('training_submission_folder_id' => $trainingFolder->getFolderId(),
+                'training_submission_folder_name' => $trainingFolder->getName(),
+                'testing_submission_folder_id' => $testingFolder->getFolderId(),
+                'testing_submission_folder_name' => $testingFolder->getName());
         }
       $selectOptions[$challengeId] = $challengeDetails['name'];
       }

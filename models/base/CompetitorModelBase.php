@@ -39,7 +39,7 @@ abstract class Challenge_CompetitorModelBase extends Challenge_AppModel {
                         'child_column' => 'challenge_id'),
       'training_submission_folder' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'model' => 'Folder',
-                        'parent_column' => 'training_submissiont_folder_id',
+                        'parent_column' => 'training_submission_folder_id',
                         'child_column' => 'folder_id'),
       'training_output_folder' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'model' => 'Folder',

@@ -485,7 +485,11 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     foreach($truthItems as $item)
       {
       $name = $item->getName();
-      $truthResults[$name] = str_replace("_truth", "_result", $name);
+      // ignore files with _complete_truth in their name
+      if(strpos($name, '_complete_truth') === false)
+        {
+        $truthResults[$name] = str_replace("_truth", "_result", $name);
+        }
       }
     
     if($resultFolderId === null)
@@ -591,10 +595,15 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
 
     
     $competitorModel = $modelLoad->loadModel('Competitor', 'challenge');
-    $this->loadDaoClass('CompetitorDao', 'challenge');
-    $competitorDao = new Challenge_CompetitorDao();
-    $competitorDao->setChallengeId($challenge->getChallengeId());
-    $competitorDao->setUserId($userDao->getUserId());
+    // if the user already has a competitor id, reuse that, but change over the folder ids
+    $competitorDao = $competitorModel->findChallengeCompetitor($userDao->getUserId(), $challenge->getChallengeId());
+    if($competitorDao === false) 
+      {
+      $this->loadDaoClass('CompetitorDao', 'challenge');
+      $competitorDao = new Challenge_CompetitorDao();
+      $competitorDao->setChallengeId($challenge->getChallengeId());
+      $competitorDao->setUserId($userDao->getUserId());
+      }
     $competitorDao->setTrainingSubmissionFolderId($folderNamesToIds[$trainingSubmissionFolderName]);
     $competitorDao->setTrainingOutputFolderId($folderNamesToIds[$trainingOutputFolderName]);
     $competitorDao->setTestingSubmissionFolderId($folderNamesToIds[$testingSubmissionFolderName]);
