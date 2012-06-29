@@ -233,7 +233,7 @@ class Challenge_ApiComponent extends AppComponent
 
   public function adminAddResultsRunItem($args)
     {
-    $this->_checkKeys(array('challenge_results_run_id', 'test_item_id', 'results_item_id', 'output_item_id', 'condor_job_id', 'result_key', 'result_value'), $args);
+    $this->_checkKeys(array('challenge_results_run_id', 'test_item_id', 'results_item_id', 'condor_job_id', 'result_key', 'result_value'), $args);
 
     $componentLoader = new MIDAS_ComponentLoader();
     $authComponent = $componentLoader->loadComponent('Authentication', 'api');
@@ -252,7 +252,14 @@ class Challenge_ApiComponent extends AppComponent
     $challengeResultsRunId = $args['challenge_results_run_id'];
     $testItemId = $args['test_item_id'];
     $resultsItemId = $args['results_item_id'];
-    $outputItemId = $args['output_item_id'];
+    if(array_key_exists('output_item_id', $args))
+      {
+      $outputItemId = $args['output_item_id'];
+      }
+    else
+      {
+      $outputItemId = 0;
+      }
     $condorDagJobId = $args['condor_job_id'];
     $resultKey = $args['result_key'];
     $resultValue = $args['result_value'];

@@ -1,5 +1,5 @@
 SetAppOption(ValidatorApp.TruthImage ${truthImage})
 SetAppOption(ValidatorApp.ResultImage ${resultImage})
 SetAppOption(ValidatorApp.OutputFile ${outputFile})
-CondorPostScript(ValidatorApp ${cfg_exe} ${cfg_condorpostscript} ${cfg_output_directory} ${cfg_taskID} ${cfg_dashboardID} ${cfg_resultsrunID} ${cfg_resultsFolderID} ${cfg_challengeID} challenge ${truthImage} ${resultImage} ${cfg_outputFolderID} ${outputFile})
+CondorPostScript(ValidatorApp ${cfg_exe} ${cfg_condorpostscript} ${cfg_output_directory} ${cfg_taskID} ${cfg_dashboardID} ${cfg_resultsrunID} ${cfg_resultsFolderID} ${cfg_challengeID} challenge ${truthImage} ${resultImage} ${outputFile})
 Run(output ${ValidatorApp})
