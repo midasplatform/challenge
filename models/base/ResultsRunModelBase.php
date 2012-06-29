@@ -29,6 +29,7 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
       'challenge_results_run_id' => array('type' => MIDAS_DATA),
       'challenge_id' => array('type' => MIDAS_DATA),
       'results_type' => array('type' => MIDAS_DATA),
+      'date' => array('type' => MIDAS_DATA),
       'batchmake_task_id' => array('type' => MIDAS_DATA),
       'results_folder_id' => array('type' => MIDAS_DATA),
       'output_folder_id' => array('type' => MIDAS_DATA),
@@ -114,6 +115,8 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
     }
 
 
+  abstract function getAllUsersResultsRuns($userId);  
+    
   abstract function loadLatestResultsRun($userId, $challengeId, $resultsType);
 
   abstract function getUsersLatestTestingResults($challengeId);

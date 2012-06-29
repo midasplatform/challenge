@@ -567,7 +567,7 @@ class Challenge_ApiComponent extends AppComponent
 
   /**
    * Get the results for a competitor for a challenge.
-   * @param challengeId the id of the challenge to display testing inputs for
+   * @param resultsRunId the id of the results run
    * @return find the most recent (TBD???) set of results for a competitor for
    * the challenge.
    *
@@ -587,7 +587,7 @@ class Challenge_ApiComponent extends AppComponent
   public function competitorListResults($args)
     {
     // TODO be smarter about joins, see dashboard method
-    $this->_checkKeys(array('challengeId', 'resultsType'), $args);
+    $this->_checkKeys(array('resultsRunId'), $args);
     // TODO implementation
     // TODO figure out what happens if no results or more than one set of results
 
@@ -600,9 +600,7 @@ class Challenge_ApiComponent extends AppComponent
       throw new Zend_Exception('You must be logged in to view results.');
       }
 
-    $challengeId = $args['challengeId'];
-    $resultsType = $args['resultsType'];
-
+    $resultsRunId = $args['resultsRunId'];
     
 
     $modelLoad = new MIDAS_ModelLoader();
@@ -611,11 +609,14 @@ class Challenge_ApiComponent extends AppComponent
     $resultsrunModel = $modelLoad->loadModel('ResultsRun', 'challenge');
     $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
 
+    $resultsRun = $resultsrunModel->load($resultsRunId);
+    $challengeId = $resultsRun->getChallengeId();
+
+    
     list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
 
-    $resultsRun = $resultsrunModel->loadLatestResultsRun($userDao->getUserId(), $challengeId, $resultsType);
-    //$resultsRunItems = $resultsRunItemModel->findBy('challenge_results_run_id', $resultsRun->getChallengeResultsRunId());
     $resultsRunItemsValues = $resultsRunItemModel->loadResultsItemsValues($resultsRun->getChallengeResultsRunId());
+
 //TODO something like this instead
 //select challenge_results_run_id, count(*), result_key, sum(result_value), avg(result_value) from challenge_results_run_item group by challenge_results_run_id, result_key;
     // now that we have the results back, combine them based on the test_item_name

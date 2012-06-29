@@ -53,8 +53,8 @@ midas.challenge.competitor.enableScoring = function() {
         ajaxWebApi.ajax({
             method: 'midas.challenge.competitor.score.results',  
             args: 'challengeId=' + challenge_id + '&resultsFolderId=' + submission_folder_id + '&resultsType=' + results_type,
-            success: function() {
-                window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?challengeId=' + challenge_id +'&resultsType=' + results_type); 
+            success: function(results) {
+                window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?resultsRunId=' + results.data.challenge_results_run_id); 
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 var validationInfo = '';

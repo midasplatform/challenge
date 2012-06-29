@@ -107,6 +107,11 @@ class Challenge_Notification extends ApiEnabled_Notification
   /** Add a tab to the user's main page for competitors to submit results for a challenge  */
   public function getUserAction($args)
     {
+    if(!isset($this->userSession->Dao))
+      {
+      return array();
+      }
+    
     $apiargs['useSession'] = true;
     $challenges = $this->ModuleComponent->Api->competitorListChallenges($apiargs);
     if(!empty($challenges))
@@ -126,13 +131,18 @@ class Challenge_Notification extends ApiEnabled_Notification
   /** Add a tab to the user's main page for competitors to submit results for a challenge  */
   public function getUserTab($args)
     {
+    if(!isset($this->userSession->Dao))
+      {
+      return array();
+      }
+
     $apiargs['useSession'] = true;
     $challenges = $this->ModuleComponent->Api->competitorListChallenges($apiargs);
     if(!empty($challenges))
       {
       $fc = Zend_Controller_Front::getInstance();
       $moduleWebroot = $fc->getBaseUrl().'/'.$this->moduleName;
-      return array($this->t('My challenge scores') => $moduleWebroot.'/competitor/showscore');
+      return array($this->t('My challenge scores') => $moduleWebroot.'/competitor/scorelisting');
       }
     else
       {

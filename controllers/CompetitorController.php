@@ -21,7 +21,7 @@
 class Challenge_CompetitorController extends Challenge_AppController
 {
   public $_moduleComponents = array('Api');
-  public $_moduleModels = array('Challenge', 'Competitor');
+  public $_moduleModels = array('Challenge', 'Competitor', 'ResultsRun');
   public $_models = array('Folder');
   public $_moduleForms = array('Config');
 
@@ -137,34 +137,34 @@ class Challenge_CompetitorController extends Challenge_AppController
   /** show score */
   public function showscoreAction()
     {
-    $challengeId = $this->_getParam("challengeId");
-    $resultsType = $this->_getParam("resultsType");
-    $challenges = array();
-    $showAllChallenges = true;
-    if(!isset($challengeId))
+    if(!$this->logged)
       {
-      $this->disableLayout();
-      $args['useSession'] = true;
-      $challenges = $this->ModuleComponent->Api->competitorListChallenges($args);
+      $this->haveToBeLogged();
+      return false;
       }
-    else
-      { // show scores for an individual challenge
-      $showAllChallenges = false;
-      $dashboardDao = $this->Challenge_Challenge->load($challengeId)->getDashboard();
-      $challenges = array($challengeId => array('name' => $dashboardDao->getName(), 'description' => $dashboardDao->getDescription() ) );
-      $this->view->json['challengeId'] = $challengeId;
-      $this->view->json['resultsType'] = $resultsType;
-      }
-    $tableData = array();
-    foreach($challenges as $challengeId => $challengeDetails)
+  
+    $userDao = $this->userSession->Dao;
+    $resultsRunId = $this->_getParam("resultsRunId");
+    $resultsRun = $this->Challenge_ResultsRun->load($resultsRunId);
+    
+    // check privileges
+    if($userDao->getUserId() !== $resultsRun->getCompetitor()->getUserId() &&
+       !$this->Challenge_Challenge->isChallengeModerator($userDao, $resultsRun->getChallenge()))
       {
-      $apiargs = array();
-      $apiargs['useSession'] = true;
-      $apiargs['challengeId'] = $challengeId;
-      $apiargs['resultsType'] = $resultsType;
-      $tableData[$challengeDetails['name']] = $this->ModuleComponent->Api->competitorListResults($apiargs);
-      $this->view->json['processingComplete'] = $tableData[$challengeDetails['name']]['processing_complete'];
+      throw new Zend_Exception("You are not authorized to see these results.");
       }
+      
+    // show scores for an individual challenge
+    $showAllChallenges = false;
+    $dashboardDao = $resultsRun->getChallenge()->getDashboard();
+    $this->view->json['resultsRunId'] = $resultsRunId;
+   
+    $apiargs = array();
+    $apiargs['useSession'] = true;
+    $apiargs['resultsRunId'] = $resultsRunId;
+    $tableData[$dashboardDao->getName()] = $this->ModuleComponent->Api->competitorListResults($apiargs);
+    $this->view->json['processingComplete'] = $tableData[$dashboardDao->getName()]['processing_complete'];
+      
 
     $this->view->showAllChallenges = $showAllChallenges;
     $this->view->tableData = $tableData;
@@ -279,4 +279,49 @@ class Challenge_CompetitorController extends Challenge_AppController
   $this->view->resultColumns = $resultColumns;
     }
 
+    
+    
+    
+    
+  /** listing of all user's scoring runs */
+  public function scorelistingAction()
+    {
+    if(!$this->logged)
+      {
+      $this->haveToBeLogged();
+      return false;
+      }
+    $this->disableLayout();
+
+    $userDao = $this->userSession->Dao;
+    $resultsRuns = $this->Challenge_ResultsRun->getAllUsersResultsRuns($userDao->getUserId());
+
+    $tableHeaders = array("Challenge", "Dataset", "Run Date");
+    $tableColumns = array("challenge_name", "results_type");
+    $scorelistingRows = array();
+    
+    
+    // need rundate and runid
+    
+    foreach($resultsRuns as $resultRun)
+      {
+      $scorelistingRow = array();
+      $scorelistingRow["challenge_name"] = $resultRun->getChallenge()->getDashboard()->getName();
+      $scorelistingRow["results_type"] =  $resultRun->getResultsType();
+      $scorelistingRow["run_date"] =  $resultRun->getDate();
+      $scorelistingRow["results_run_id"] =  $resultRun->getChallengeResultsRunId();
+      $scorelistingRows[] = $scorelistingRow;
+      // challengename, results type, run id for linking, date  
+      }
+    
+    
+    $this->view->tableHeaders = $tableHeaders;
+    $this->view->tableColumns = $tableColumns;
+    $this->view->scorelistingRows = $scorelistingRows;
+    
+  }
+    
+    
+    
+    
 }//end class
