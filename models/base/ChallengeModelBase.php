@@ -595,10 +595,15 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
 
     
     $competitorModel = $modelLoad->loadModel('Competitor', 'challenge');
-    $this->loadDaoClass('CompetitorDao', 'challenge');
-    $competitorDao = new Challenge_CompetitorDao();
-    $competitorDao->setChallengeId($challenge->getChallengeId());
-    $competitorDao->setUserId($userDao->getUserId());
+    // if the user already has a competitor id, reuse that, but change over the folder ids
+    $competitorDao = $competitorModel->findChallengeCompetitor($userDao->getUserId(), $challenge->getChallengeId());
+    if($competitorDao === false) 
+      {
+      $this->loadDaoClass('CompetitorDao', 'challenge');
+      $competitorDao = new Challenge_CompetitorDao();
+      $competitorDao->setChallengeId($challenge->getChallengeId());
+      $competitorDao->setUserId($userDao->getUserId());
+      }
     $competitorDao->setTrainingSubmissionFolderId($folderNamesToIds[$trainingSubmissionFolderName]);
     $competitorDao->setTrainingOutputFolderId($folderNamesToIds[$trainingOutputFolderName]);
     $competitorDao->setTestingSubmissionFolderId($folderNamesToIds[$testingSubmissionFolderName]);

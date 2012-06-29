@@ -23,19 +23,16 @@ class Challenge_CompetitorModel extends Challenge_CompetitorModelBase {
     $sql->where('cc.user_id=?', $userId);
     $sql->where('cc.challenge_id=?', $challengeId);
 
-    $rowset = $this->database->fetchAll($sql);
-    $return = array();
-    foreach($rowset as $row)
+    $rowset = $this->database->fetchRow($sql);
+    if(!empty($rowset))
       {
-      $return[] = 
-        array('challenge_id' => $row['challenge_id'],
-              'user_id' => $row['user_id'],
-              'training_submission_folder_id' => $row['training_submission_folder_id'],
-              'training_output_folder_id' => $row['training_output_folder_id'],
-              'testing_submission_folder_id' => $row['testing_submission_folder_id'],
-              'testing_output_folder_id' => $row['testing_output_folder_id']);
+      $competitorDao = $this->load($rowset['challenge_competitor_id']);
+      return $competitorDao;
       }
-    return $return;
+    else
+      {
+      return false;  
+      }
     }
 
     
