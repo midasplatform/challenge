@@ -662,7 +662,7 @@ class Challenge_ApiComponent extends AppComponent
       {
       if($totals['count'] == 0)
         {
-        $subjectScores['averages'][$metricType] = 'N/A';
+        $subjectScores['averages'][$metricType] = 'waiting';
         }
       else
         {
@@ -688,7 +688,7 @@ class Challenge_ApiComponent extends AppComponent
           }
         else
           {
-          $resultRow[$metric] = 'N/A';
+          $resultRow[$metric] = 'waiting';
           }
         }
       $resultRows[] = $resultRow;
