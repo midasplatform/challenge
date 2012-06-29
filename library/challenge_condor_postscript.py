@@ -21,7 +21,7 @@ def loadConfig(filename):
 
 
 if __name__ == "__main__":
-  (scriptName, workDir, taskId, dashboardId, resultsrunId, resultsFolderId, challengeId, dagjobname, testImage, resultImage, outputFolderId, outputParseFile, jobname, jobid, returncode) = sys.argv
+  (scriptName, workDir, taskId, dashboardId, resultsrunId, resultsFolderId, challengeId, dagjobname, testImage, resultImage, outputParseFile, jobname, jobid, returncode) = sys.argv
   jobidNum = jobname[3:]
   cfgParams = loadConfig('userconfig.cfg')
 
@@ -62,21 +62,6 @@ if __name__ == "__main__":
   #itemName = parts[-1] + ".output"
   itemName = exeOutput
 
-  # create the item
-  item = interfaceMidas.create_item(token, itemName, outputFolderId)
-  itemId = item['item_id']
-  log.write("\n\nCalled createItem, got itemId:"+str(itemId)+"\n\n")
-
-  # upload the item
-  filePath = workDir + '/' + itemName
-  uploadToken = interfaceMidas.generate_upload_token(token, itemId, itemName)
-  log.write("\n\nGot uploadToken:"+str(uploadToken)+" for filename "+itemName+"\n\n")
-  length = os.path.getsize(filePath)
-  uploadResponse = interfaceMidas.perform_upload(uploadToken, itemName, itemid=itemId, revision='head', filepath=filePath)
-  log.write("\n\nGot uploadResponse:"+str(uploadResponse)+" for filename "+itemName+"\n\n")
-
-
-
   # have to upload the scalar value as an admin
 
   cfgParams = loadConfig('adminconfig.cfg')
@@ -100,7 +85,6 @@ if __name__ == "__main__":
     parameters['challenge_results_run_id'] = resultsrunId
     parameters['test_item_id'] = testItemId
     parameters['results_item_id'] = resultItemId
-    parameters['output_item_id'] = itemId
     parameters['condor_job_id'] = condorjobid
     parameters['result_key'] = key
     parameters['result_value'] = value
