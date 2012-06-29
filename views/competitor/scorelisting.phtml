@@ -1,0 +1,63 @@
+<?php
+/*=========================================================================
+MIDAS Server
+Copyright (c) Kitware SAS. 20 rue de la Villette. All rights reserved.
+69328 Lyon, FRANCE.
+
+See Copyright.txt for details.
+This software is distributed WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the above copyright notices for more information.
+=========================================================================*/
+echo '<script type="text/javascript" src="' . $this->coreWebroot . '/public/js/layout/jquery.js"></script>';
+$this->headScript()->appendFile($this->moduleWebroot . '/public/js/jquery.dataTables.js');
+$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
+$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.updatescore.js');
+echo '<script type="text/javascript" src="' . $this->apiWebroot . '/public/js/common/common.ajaxapi.js"></script>';
+
+?>
+
+<link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/jquery.dataTables.css" />
+<link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
+
+
+      
+<div id="scorelisting" >
+    
+    <table>
+      <thead>
+        <tr class="header">
+        <?php
+        foreach($this->tableHeaders as $header)
+          {
+          echo "<th>".ucfirst($header)."</th>";
+          }
+        ?>
+        </tr>
+      </thead>
+      <tbody>
+          <?php       
+            foreach($this->scorelistingRows as $scorelistingRow)
+              {
+              echo "<tr class='resultsRow'>";
+              foreach($this->tableColumns as $column)
+                {
+                $colVal = $scorelistingRow[$column];
+                echo "<td>".$colVal."</td>";
+                }
+              // last column displays date with link to resultsrunid
+              echo "<td><a href=" .
+                   $this->webroot. "/challenge/competitor/showscore?resultsRunId=".$scorelistingRow["results_run_id"].">" .
+                   $scorelistingRow["run_date"] . '</a></td>';
+              echo "</tr>";
+              }
+          ?> 
+      </tbody>
+    </table>
+    <br/>
+</div>
+
+
+
+
+

@@ -122,4 +122,24 @@ class Challenge_ResultsRunModel extends Challenge_ResultsRunModelBase {
     
     }
 
+    
+    
+    
+  public function getAllUsersResultsRuns($userId)
+    {
+    $sql = $this->database->select()->setIntegrityCheck(false);
+    $sql->from(array('crr' => 'challenge_results_run'));//, 'latest_results_run_id' => new Zend_Db_Expr('MAX(challenge_results_run_id')));
+    $sql->join(array('cc' => 'challenge_competitor'), 'crr.challenge_competitor_id=cc.challenge_competitor_id');
+    $sql->where('cc.user_id=?', $userId);
+
+    $rowset = $this->database->fetchAll($sql);
+    $rows = array();
+    foreach($rowset as $row)
+      {
+      $rows[] = $this->load($row['challenge_results_run_id']);  
+      }
+    return $rows;
+    }
+
+    
 }

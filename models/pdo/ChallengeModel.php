@@ -49,10 +49,6 @@ class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
       {
       throw new Exception('You must be logged in to create a challenge');
       }
-    if(!$userDao instanceof UserDao)
-      {
-      throw new Zend_Exception("userDao should be a valid instance.");
-      }
 
     $userId = $userDao->getUserId();
     $membersGroupName = "Members";

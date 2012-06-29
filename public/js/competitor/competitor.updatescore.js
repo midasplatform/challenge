@@ -10,7 +10,7 @@ midas.challenge.competitor.updateResults = function()
   ajaxWebApi.ajax(
     {
     method: 'midas.challenge.competitor.list.results',  
-    args: 'challengeId=' + json.challengeId + '&resultsType=' + json.resultsType,
+    args: 'resultsRunId=' + json.resultsRunId,
     success: function(results) 
       {
       var processingComplete = results.data.processing_complete;
