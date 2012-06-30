@@ -270,7 +270,42 @@ class Challenge_ApiComponent extends AppComponent
     return $resultsRunItemDao;
     }
 
+  public function adminUpdateResultsRunItem($args)
+    {
+    $this->_checkKeys(array('result_run_item_id', 'result_value'), $args);
 
+    $componentLoader = new MIDAS_ComponentLoader();
+    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $userDao = $authComponent->getUser($args,
+                                       Zend_Registry::get('userSession')->Dao);
+    if(!$userDao)
+      {
+      throw new Zend_Exception('You must be logged in to add a results run item');
+      }
+    if(!$userDao->getAdmin())
+      {
+      throw new Zend_Exception('You must be an admin to add a results run item');
+      }
+
+    $resultsRunItemId = $args['result_run_item_id'];
+    $resultValue = $args['result_value'];
+      
+    $modelLoad = new MIDAS_ModelLoader();
+    $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
+
+    
+    $resultsRunItem = $resultsRunItemModel->load($resultsRunItemId);
+    if(!$resultsRunItem)
+      {
+      throw new Zend_Exception('Invalid results_run_item_id');
+      }
+      
+    $resultsRunItem->setResultValue($resultValue); 
+    $resultsRunItemModel->save($resultsRunItem);
+    return $resultsRunItem;
+    }
+
+    
   /**
    * helper function to ensure that the user is part of the challenge, the
    * challenge is valid, and the user has proper permissions set on both
@@ -515,6 +550,55 @@ class Challenge_ApiComponent extends AppComponent
 
     // generate definitions of jobs
     $jobsConfig = $this->generateJobsConfig($matchedResults, $itemsPaths);
+    
+    $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
+    $resultsRunItemModel->loadDaoClass('ResultsRunItemDao', 'challenge');
+    
+    $metrics = array(
+        'cfg_avedist1' => 'AveDist(A_1, B_1)',
+        'cfg_avedist2' => 'AveDist(A_2, B_2)',
+        'cfg_dice1' => 'Dice(A_1, B_1)',
+        'cfg_dice2' => 'Dice(A_2, B_2)',
+        'cfg_hausdorff1' => 'HausdorffDist(A_1, B_1)',
+        'cfg_hausdorff2' => 'HausdorffDist(A_2, B_2)',
+        'cfg_kappa' => 'Kappa(A,B)',
+        'cfg_sensitivity1' => 'Sensitivity(A_1, B_1)',
+        'cfg_sensitivity2' => 'Sensitivity(A_2, B_2)',
+        'cfg_specificity1' => 'Specificity(A_1, B_1)',
+        'cfg_specificity2' => 'Specificity(A_2, B_2)');
+    $resultRunItems_configs = array();
+    
+    
+    foreach($jobsConfig['cfg_jobInds'] as $jobInd)
+      {
+      $truthItemName = $jobsConfig['cfg_truthItems'][$jobInd];
+      $resultItemName = $jobsConfig['cfg_resultItems'][$jobInd];
+      $truthItemNameParts = explode('/',$truthItemName);
+      $resultItemNameParts = explode('/',$resultItemName);
+      $truthItemId = $truthItemNameParts[sizeof($truthItemNameParts)-2];
+      $resultItemId = $resultItemNameParts[sizeof($resultItemNameParts)-2];
+
+      foreach($metrics as $metricConfig => $metric)
+        {
+        if(!array_key_exists($metricConfig, $resultRunItems_configs))
+          {
+          $resultRunItems_configs[$metricConfig] = array();  
+          }
+          $resultsrunItemDao = new Challenge_ResultsRunItemDao();
+          $resultsrunItemDao->setChallengeResultsRunId($resultsrunDao->getKey());
+          $resultsrunItemDao->setTestItemId($truthItemId);
+          $resultsrunItemDao->setResultsItemId($resultItemId);
+          $resultsrunItemDao->setResultKey($metric);
+          $resultsrunItemDao->setResultValue(null); 
+          $resultsRunItemModel->save($resultsrunItemDao);
+          $resultRunItems_configs[$metricConfig][$jobInd] = $resultsrunItemDao->getKey(); 
+        }
+      }
+    foreach($metrics as $metricConfig => $metric)
+      {
+      $jobsConfig[$metricConfig] = $resultRunItems_configs[$metricConfig];
+      }
+    
 
     $appTaskConfigProperties = array();
     $condorPostScriptPath = BASE_PATH . "/modules/challenge/library/challenge_condor_postscript.py";
@@ -638,6 +722,9 @@ class Challenge_ApiComponent extends AppComponent
       {
       $metricSums[$metric] = array('count' => 0, 'sum' => 0);  
       }
+
+    // assume we are finished unless we encounter a missing value  
+    $processingComplete = 'true';  
       
     foreach($resultsRunItemsValues as $resultsRunItemsValue)
       {
@@ -648,11 +735,19 @@ class Challenge_ApiComponent extends AppComponent
         }
         $metricType = $resultsRunItemsValue['result_key'];
         $metricScore = $resultsRunItemsValue['result_value'];
-        $subjectScores[$testItemName][$metricType] = $metricScore;
-        $metricSum = $metricSums[$metricType];
-        $metricSum['count'] = $metricSum['count'] + 1;
-        $metricSum['sum'] = $metricSum['sum'] + $metricScore;
-        $metricSums[$metricType] = $metricSum;
+        if($metricScore === null)
+          {
+          $subjectScores[$testItemName][$metricType] = MIDAS_CHALLENGE_WAITING;
+          $processingComplete = 'false';
+          }
+        else
+          {
+          $subjectScores[$testItemName][$metricType] = $metricScore;
+          $metricSum = $metricSums[$metricType];
+          $metricSum['count'] = $metricSum['count'] + 1;
+          $metricSum['sum'] = $metricSum['sum'] + $metricScore;
+          $metricSums[$metricType] = $metricSum;
+          }
       }
     
     
@@ -662,7 +757,7 @@ class Challenge_ApiComponent extends AppComponent
       {
       if($totals['count'] == 0)
         {
-        $subjectScores['averages'][$metricType] = 'waiting';
+        $subjectScores['averages'][$metricType] = MIDAS_CHALLENGE_WAITING;
         }
       else
         {
@@ -682,13 +777,13 @@ class Challenge_ApiComponent extends AppComponent
       $resultRow['Subject'] = $subject;
       foreach($metrics as $metric)
         {
-        if(array_key_exists($metric, $scores))
+        if(array_key_exists($metric, $scores) && is_numeric($scores[$metric]))
           {
           $resultRow[$metric] = round($scores[$metric], 3);
           }
         else
           {
-          $resultRow[$metric] = 'waiting';
+          $resultRow[$metric] = MIDAS_CHALLENGE_WAITING;
           }
         }
       $resultRows[] = $resultRow;
@@ -710,8 +805,7 @@ class Challenge_ApiComponent extends AppComponent
       $returnRows[] = $resultsRunItemsValue;
       }
 */
-    // TODO don't yet have a notion of finished
-    $processingComplete = 'false';
+
     $responseData = array('results_rows' => $resultRows, 'processing_complete' => $processingComplete);
 /*
     // TODO this is fake data, uncomment if no condor setup
