@@ -6,47 +6,55 @@ CondorPostScript(php ${cfg_exe} ${cfg_condordagpostscript} ${cfg_output_director
 Run(output ${php})
 
 
-
-
-
 # Loop through the sequence of job indices
 ForEach(jobInd ${cfg_jobInds})
 
   # get each of the param values for this particular job
   GetParam(truthImage ${cfg_truthItems} ${jobInd})
   GetParam(resultImage ${cfg_resultItems} ${jobInd})
+
       
   # Dice
+  GetParam(resultRunItemId1 ${cfg_dice1} ${jobInd})
+  GetParam(resultRunItemId2 ${cfg_dice2} ${jobInd})
   Set(outputFile dice.${jobInd}.txt)
   SetApp(ValidatorApp @ValidateImageDice)
   Include(challenge_validator_app.bms)
 
 
   # AveDist
+  GetParam(resultRunItemId1 ${cfg_avedist1} ${jobInd})
+  GetParam(resultRunItemId2 ${cfg_avedist2} ${jobInd})
   Set(outputFile aveDist.${jobInd}.txt)
   SetApp(ValidatorApp @ValidateImageAveDist)
   Include(challenge_validator_app.bms)
 
 
   # Kappa
+  GetParam(resultRunItemId1 ${cfg_kappa} ${jobInd})
+  GetParam(resultRunItemId2 ${cfg_kappa} ${jobInd})
   Set(outputFile kappa.${jobInd}.txt)
   SetApp(ValidatorApp @ValidateImageKappa)
   Include(challenge_validator_app.bms)
 
 
   # HausdorffDist
+  GetParam(resultRunItemId1 ${cfg_hausdorff1} ${jobInd})
+  GetParam(resultRunItemId2 ${cfg_hausdorff2} ${jobInd})
   Set(outputFile HausdorffDist.${jobInd}.txt)
   SetApp(ValidatorApp @ValidateImageHausdorffDist)
   Include(challenge_validator_app.bms)
 
-
   # Sensitivity
+  GetParam(resultRunItemId1 ${cfg_sensitivity1} ${jobInd})
+  GetParam(resultRunItemId2 ${cfg_sensitivity2} ${jobInd})
   Set(outputFile Sensitivity.${jobInd}.txt)
   SetApp(ValidatorApp @ValidateImageSensitivity)
   Include(challenge_validator_app.bms)
 
-
   # Specificity
+  GetParam(resultRunItemId1 ${cfg_specificity1} ${jobInd})
+  GetParam(resultRunItemId2 ${cfg_specificity2} ${jobInd})
   Set(outputFile Specificity.${jobInd}.txt)
   SetApp(ValidatorApp @ValidateImageSpecificity)
   Include(challenge_validator_app.bms)

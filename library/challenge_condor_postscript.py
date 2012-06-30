@@ -21,7 +21,7 @@ def loadConfig(filename):
 
 
 if __name__ == "__main__":
-  (scriptName, workDir, taskId, dashboardId, resultsrunId, resultsFolderId, challengeId, dagjobname, testImage, resultImage, outputParseFile, jobname, jobid, returncode) = sys.argv
+  (scriptName, workDir, taskId, dashboardId, resultsrunId, resultsFolderId, challengeId, dagjobname, testImage, resultImage, outputParseFile, resultRunItemId1, resultRunItemId2, jobname, jobid, returncode) = sys.argv
   jobidNum = jobname[3:]
   cfgParams = loadConfig('userconfig.cfg')
 
@@ -68,12 +68,13 @@ if __name__ == "__main__":
   interfaceMidas = core.Communicator (cfgParams['url'])
   token = interfaceMidas.login_with_api_key(cfgParams['email'], cfgParams['apikey'])
 
-  method = 'midas.challenge.admin.add.results.run.item'
+  method = 'midas.challenge.admin.update.results.run.item'
 
 
   # parse output and upload value
   lines = open(outputParseFile,'r')
-  for line in lines:
+  result_run_item_ids = [resultRunItemId1, resultRunItemId2]
+  for ind, line in enumerate(lines):
     line = line.strip()
     cols = line.split('=')
     value = cols[-1]
@@ -82,13 +83,9 @@ if __name__ == "__main__":
     key = key.strip()
     parameters = {}
     parameters['token'] = token
-    parameters['challenge_results_run_id'] = resultsrunId
-    parameters['test_item_id'] = testItemId
-    parameters['results_item_id'] = resultItemId
-    parameters['condor_job_id'] = condorjobid
-    parameters['result_key'] = key
+    parameters['result_run_item_id'] = result_run_item_ids[ind]
     parameters['result_value'] = value
-    log.write("\n\nCalled add.results.run.item with params:"+str(parameters))
+    log.write("\n\nCalled update.results.run.item with params:"+str(parameters))
     resultsRunItem = interfaceMidas.request(method, parameters)
     log.write("\n\nresponse: "+str(resultsRunItem)+"\n\n")
   lines.close()

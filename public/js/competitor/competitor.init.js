@@ -19,7 +19,7 @@ $(document).ready(function()  {
     $('#midas_challenge_competitor_browseResultsFolder').click(function() {
         midas.loadDialog("selectfolder_resultsfolder","/challenge/competitor/selectresultsfolder");
         midas.showDialog('Browse for Results Submission Folder');
-        currentBrowser = 'folderresults';
+        midas.challenge.competitor.currentBrowser = 'folderresults';
     });
     
     // TODO event handlers for challenge and dataset selection
