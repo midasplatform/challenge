@@ -79,6 +79,8 @@ midas.challenge.competitor.validateResultsFolder = function(challengeId, results
         {
         //midas.createNotice("The selected results folder is valid!", 4000);  
         $('#validateResultsFolder_AllMatched').show();   
+        $('#validateResultsFolder_SomeMatched').hide();
+        $('#validateResultsFolder_NoneMatched').hide();
         midas.challenge.competitor.enableScoring();
 
         }
@@ -87,9 +89,13 @@ midas.challenge.competitor.validateResultsFolder = function(challengeId, results
         //midas.createNotice("Sorry, the selected results folder is not valid! ", 4000, 'error');
         if($.isArray(results.data.matchedTruthResults)) {
             $('#validateResultsFolder_NoneMatched').show();
+            $('#validateResultsFolder_AllMatched').hide();   
+            $('#validateResultsFolder_SomeMatched').hide();
         }
         else {
             $('#validateResultsFolder_SomeMatched').show();
+            $('#validateResultsFolder_NoneMatched').hide();
+            $('#validateResultsFolder_AllMatched').hide();   
             midas.challenge.competitor.enableScoring();
     //        $('#midas_challenge_competitor_scoreResults_anchor').removeClass('buttonScoreSubmissionDisabled').addClass('buttonScoreSubmission');
     //$('#midas_challenge_competitor_scoreResults_anchor').click(function() { return false; });
