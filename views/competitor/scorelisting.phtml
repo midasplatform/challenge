@@ -12,7 +12,7 @@ PURPOSE.  See the above copyright notices for more information.
 
 $this->headScript()->appendFile($this->coreWebroot . '/public/js/layout/jquery.js');
 $this->headScript()->appendFile($this->coreWebroot . '/public/js/jquery/jquery.tablesorter.min.js');
-$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
+$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.scorelisting.js');
 $this->headScript()->appendFile($this->apiWebroot . '/public/js/common/common.ajaxapi.js');
 ?>
 
@@ -36,10 +36,13 @@ $this->headScript()->appendFile($this->apiWebroot . '/public/js/common/common.aj
         </tr>
       </thead>
       <tbody>
-          <?php       
+          <?php      
+            $stripeClasses = array('odd', 'even');
+            $stripeClassInd = 0;
+            
             foreach($this->scorelistingRows as $scorelistingRow)
               {
-              echo "<tr class='resultsRow'>";
+              echo "<tr class='resultsRow ".$stripeClasses[$stripeClassInd++ % 2]."'>";
               foreach($this->tableColumns as $column)
                 {
                 $colVal = $scorelistingRow[$column];
