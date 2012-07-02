@@ -12,13 +12,10 @@ PURPOSE.  See the above copyright notices for more information.
 
 
  
-$this->headScript()->appendFile($this->coreWebroot . '/public/js/layout/jquery.js');
-$this->headScript()->appendFile($this->coreWebroot . '/public/js/layout/jquery.qtip.min.js');    
 $this->headScript()->appendFile($this->coreWebroot . '/public/js/jquery/jquery.tablesorter.min.js');
-$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
 $this->headScript()->appendFile($this->apiWebroot . '/public/js/common/common.ajaxapi.js');
+$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
 ?>
-
 <link type="text/css" rel="stylesheet" href="<?php echo $this->coreWebroot?>/public/css/jquery/jquery.tablesorter.css" />
 <link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
 
