@@ -18,14 +18,14 @@ div.HeaderAction ul li.processButton:hover{
 
 .buttonScoreSubmissionDisabled {
   display:block;
-  float:right;
   margin:5px 10px 0 3px;
   padding:5px;
   text-decoration: none;
   text-align: center;
-  font: 14px Verdana, Arial, Helvetica, sans-serif;
-  width:100px;
+  font: bold 14px Verdana, Arial, Helvetica, sans-serif;
+  width:150px;
   color:white!important;
+  font-weight: bold!important;
   outline-style:none;
   background-color:   lightgray;
   border: 1px solid lightgray;
@@ -38,13 +38,12 @@ div.HeaderAction ul li.processButton:hover{
 }
 .buttonScoreSubmission {
   display:block;
-  float:right;
   margin:5px 10px 0 3px;
   padding:5px;
   text-decoration: none;
   text-align: center;
   font: bold 14px Verdana, Arial, Helvetica, sans-serif;
-  width:100px;
+  width:150px;
   color:white!important;
   font-weight: bold!important;
   outline-style:none;
@@ -53,3 +52,10 @@ div.HeaderAction ul li.processButton:hover{
   -moz-border-radius  : 5px;
   -webkit-border-radius: 5px;
 }
+
+#generatingJobs {
+    float:right;
+    margin-top: -20px;
+    display: none;
+}
+
