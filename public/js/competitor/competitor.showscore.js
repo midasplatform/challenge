@@ -15,30 +15,7 @@ midas.challenge.competitor.showscoreSetup = function () {
         }  
       }
    
-    $("div.scoreHeading").qtip({
-          content: 'Click to show or hide scores for this challenge!',
-          show: 'mouseover',
-          hide: 'mouseout',
-          position: {
-                target: 'mouse',
-                my: 'bottom left',
-                viewport: $(window), // Keep the qtip on-screen at all times
-                effect: true // Disable positioning animation
-             }
-         }).click(function(){
-             $(this).next(".scoreContent").slideToggle(100);
-            }) 
-            
-    .toggle(
-      function() 
-        {
-        $(this).children("span").text("+");
-        }, 
-      function()
-        {
-        $(this).children("span").text("-");
-        }
-     );           
+        
 }
 
 
@@ -47,21 +24,21 @@ midas.challenge.competitor.showscoreSetup = function () {
 $(document).ready(function() 
   { 
     
-    $("table.scoreDisplay").dataTable(
-      {
-      "bPaginate": true,
-      "bLengthChange": true,
-      "bFilter": true,
-      "bSort": true,
-      "bInfo": true,
-      "bAutoWidth": false,
-      "aaSorting": [ [3,'desc'], [0,'asc'] ]
-      }
-    ); 
-        
-    $(".scoreContent").show();
+
+    //midas.challenge.competitor.showscoreSetup();
     
-    midas.challenge.competitor.showscoreSetup();
+    
+    
+    $('#scorelistingtable').tablesorter({
+        sortList: [[2,0]] 
+    });
+    
+    
+    // Set up sortable table
+    $('#tablesorter_scores').tablesorter({
+        sortList: [[0,0]] 
+    });
+
 
   });
  

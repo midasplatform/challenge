@@ -9,22 +9,22 @@ This software is distributed WITHOUT ANY WARRANTY; without even
 the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
-echo '<script type="text/javascript" src="' . $this->coreWebroot . '/public/js/layout/jquery.js"></script>';
-$this->headScript()->appendFile($this->moduleWebroot . '/public/js/jquery.dataTables.js');
-$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
-$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.updatescore.js');
-echo '<script type="text/javascript" src="' . $this->apiWebroot . '/public/js/common/common.ajaxapi.js"></script>';
 
+$this->headScript()->appendFile($this->coreWebroot . '/public/js/layout/jquery.js');
+$this->headScript()->appendFile($this->coreWebroot . '/public/js/jquery/jquery.tablesorter.min.js');
+$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
+$this->headScript()->appendFile($this->apiWebroot . '/public/js/common/common.ajaxapi.js');
 ?>
 
-<link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/jquery.dataTables.css" />
+
+<link type="text/css" rel="stylesheet" href="<?php echo $this->coreWebroot?>/public/css/jquery/jquery.tablesorter.css" />
 <link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
 
 
       
 <div id="scorelisting" >
     
-    <table>
+    <table id="scorelistingtable" class="tablesorter">
       <thead>
         <tr class="header">
         <?php

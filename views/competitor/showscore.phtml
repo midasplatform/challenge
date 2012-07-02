@@ -9,50 +9,52 @@ This software is distributed WITHOUT ANY WARRANTY; without even
 the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
-if($this->showAllChallenges)
-  {
-  echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js/jquery.dataTables.js"></script>';
-  echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js/competitor/competitor.showscore.js"></script>';
-  }
-else
-  {
-  echo '<script type="text/javascript" src="' . $this->coreWebroot . '/public/js/layout/jquery.js"></script>';
-  $this->headScript()->appendFile($this->moduleWebroot . '/public/js/jquery.dataTables.js');
-  $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
-  $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.updatescore.js');
-  }
-echo '<script type="text/javascript" src="' . $this->apiWebroot . '/public/js/common/common.ajaxapi.js"></script>';
 
+ 
+$this->headScript()->appendFile($this->coreWebroot . '/public/js/layout/jquery.js');
+$this->headScript()->appendFile($this->coreWebroot . '/public/js/jquery/jquery.tablesorter.min.js');
+$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
+$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.updatescore.js');
+$this->headScript()->appendFile($this->apiWebroot . '/public/js/common/common.ajaxapi.js');
 ?>
 
-<link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/jquery.dataTables.css" />
+<link type="text/css" rel="stylesheet" href="<?php echo $this->coreWebroot?>/public/css/jquery/jquery.tablesorter.css" />
 <link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
 
 
-      
-<div id="showscores" >
-  <?php
-    foreach($this->tableData as $challengeName => $challengeScores)
-      {
-      echo '<img style="display: none" class="resultsLoading" alt="Loading..." src="'.$this->coreWebroot.'/public/images/icons/loading.gif" />';
-      echo "<div class='scoreHeading'> <span>-</span> $challengeName <div id='midas_challenge_competitor_listScoreStatus'></div></div>";
-      echo '<div class="scoreContent"><table id="'.$challengeName.'" style="display:table" class="scoreDisplay">';
-  ?>
-        <thead>
+
+<div id="showscores" class="viewMain" >
+      <div class ="genericWrapperTopRight">
+         <?php
+          echo '<div style="float:right;margin-right:-200px;" class="genericBigButton ">';
+            echo "<a  href='{$this->webroot}/user/userpage#ui-tabs-1'><img style='float:left;margin-right:2px;' alt='' src='{$this->coreWebroot}/public/images/icons/back.png'/>";
+            echo $this->t('Back');  
+            echo "</a>";
+          echo '</div>';
+          
+        ?>
+    </div>
+<?php 
+  echo '<h3>Results from '.$this->challengeName.', '.$this->resultsRun->getResultsType().' run on '. $this->resultsRun->getDate().'</h3>';
+?>
+    <table class="tablesorter" id="tablesorter_scores">
+      <thead>
         <tr class="header">
         <?php
         foreach($this->tableHeaders as $header)
           {
-          echo "<th>".ucfirst($header)."</th>";
+          echo "<th class='scorecol'>".ucfirst($header)."</th>";
           }
         ?>
         </tr>
         </thead>
         <tbody>
           <?php       
-            foreach($challengeScores['results_rows'] as $subject => $scores)
+            $stripeClasses = array('odd', 'even');
+            $stripeClassInd = 0;
+            foreach($this->tableData['results_rows'] as $subject => $scores)
               {
-              echo "<tr class='resultsRow'>";
+              echo "<tr class='resultsRow ".$stripeClasses[$stripeClassInd++ % 2]."'>";
               foreach($this->tableData_resultsColumns as $column)
                 {
                 $colVal = $scores[$column];
@@ -65,12 +67,6 @@ echo '<script type="text/javascript" src="' . $this->apiWebroot . '/public/js/co
     </table>
     <br/>
     </div>
-  <?php
-    }
-  ?>
-</div>
-
-
 
 
 

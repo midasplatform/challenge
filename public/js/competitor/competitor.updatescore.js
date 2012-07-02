@@ -35,7 +35,7 @@ midas.challenge.competitor.updateResults = function()
 
 $(document).ready(function() {
     // check for new results after a delay
-    var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
+    //var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
 });
 
 
