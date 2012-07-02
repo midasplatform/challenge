@@ -146,6 +146,10 @@ class Challenge_CompetitorController extends Challenge_AppController
     $userDao = $this->userSession->Dao;
     $resultsRunId = $this->_getParam("resultsRunId");
     $resultsRun = $this->Challenge_ResultsRun->load($resultsRunId);
+    if(!$resultsRun)
+      {
+      throw new Zend_Exception("Invalid resultsRunId.");
+      }
     
     // check privileges
     if($userDao->getUserId() !== $resultsRun->getCompetitor()->getUserId() &&
@@ -155,18 +159,19 @@ class Challenge_CompetitorController extends Challenge_AppController
       }
       
     // show scores for an individual challenge
-    $showAllChallenges = false;
     $dashboardDao = $resultsRun->getChallenge()->getDashboard();
     $this->view->json['resultsRunId'] = $resultsRunId;
    
     $apiargs = array();
     $apiargs['useSession'] = true;
     $apiargs['resultsRunId'] = $resultsRunId;
-    $tableData[$dashboardDao->getName()] = $this->ModuleComponent->Api->competitorListResults($apiargs);
-    $this->view->json['processingComplete'] = $tableData[$dashboardDao->getName()]['processing_complete'];
+    $tableData = $this->ModuleComponent->Api->competitorListResults($apiargs);
+    $this->view->json['processingComplete'] = $tableData['processing_complete'];
       
 
-    $this->view->showAllChallenges = $showAllChallenges;
+    $this->view->challengeName = $dashboardDao->getName();
+    $this->view->resultsRun = $resultsRun;
+    
     $this->view->tableData = $tableData;
     $this->view->user = $this->userSession->Dao;
     $this->view->tableData_resultsColumns = array(
@@ -184,13 +189,13 @@ class Challenge_CompetitorController extends Challenge_AppController
         'Specificity(A_2, B_2)');
     $this->view->tableHeaders = array(
         'Subject', 
-        'Ave Dist 1',
-        'Ave Dist 2',
+        'Average Dist 1',
+        'Average Dist 2',
         'Dice 1',
         'Dice 2',
         'Hausdorff Dist 1',
         'Hausdorff Dist 2',
-        'Kappa',
+        "Cohen's Kappa",
         'Sensitivity 1',
         'Sensitivity 2',
         'Specificity 1',

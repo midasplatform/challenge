@@ -23,8 +23,8 @@ class Challenge_Notification extends ApiEnabled_Notification
     {
     $this->enableWebAPI($this->moduleName);
     $this->addCallBack('CALLBACK_CORE_GET_FOOTER_HEADER', 'getHeader');
-    $this->addCallBack('CALLBACK_CORE_GET_LEFT_LINKS', 'getLeftLink');
-    $this->addCallBack('CALLBACK_CORE_GET_USER_ACTIONS', 'getUserAction');
+    //$this->addCallBack('CALLBACK_CORE_GET_LEFT_LINKS', 'getLeftLink');
+    //$this->addCallBack('CALLBACK_CORE_GET_USER_ACTIONS', 'getUserAction');
     $this->addCallBack('CALLBACK_CORE_GET_USER_TABS', 'getUserTab');
     $this->addCallBack('CALLBACK_CORE_LAYOUT_TOPBUTTONS', 'getButton');
     //$this->addCallBack('CALLBACK_CORE_GET_COMMUNITY_VIEW_TABS', 'getCommunityViewTab');
