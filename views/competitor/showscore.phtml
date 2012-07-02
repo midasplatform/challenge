@@ -10,17 +10,17 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
 
+
  
 $this->headScript()->appendFile($this->coreWebroot . '/public/js/layout/jquery.js');
+$this->headScript()->appendFile($this->coreWebroot . '/public/js/layout/jquery.qtip.min.js');    
 $this->headScript()->appendFile($this->coreWebroot . '/public/js/jquery/jquery.tablesorter.min.js');
 $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
-$this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.updatescore.js');
 $this->headScript()->appendFile($this->apiWebroot . '/public/js/common/common.ajaxapi.js');
 ?>
 
 <link type="text/css" rel="stylesheet" href="<?php echo $this->coreWebroot?>/public/css/jquery/jquery.tablesorter.css" />
 <link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
-
 
 
 <div id="showscores" class="viewMain" >
@@ -36,6 +36,7 @@ $this->headScript()->appendFile($this->apiWebroot . '/public/js/common/common.aj
     </div>
 <?php 
   echo '<h3>Results from '.$this->challengeName.', '.$this->resultsRun->getResultsType().' run on '. $this->resultsRun->getDate().'</h3>';
+  echo '<img style="display: none" class="resultsLoading" alt="Loading..." src="'.$this->coreWebroot.'/public/images/icons/loading.gif" />';
 ?>
     <table class="tablesorter" id="tablesorter_scores">
       <thead>
