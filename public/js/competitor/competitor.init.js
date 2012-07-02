@@ -90,8 +90,9 @@ midas.challenge.competitor.updateUISelection = function() {
     }
 };
 
-midas.challenge.competitor.validateResultsFolder = function(challengeId, resultsFolderId, resultsType)
-  {  
+midas.challenge.competitor.validateResultsFolder = function(challengeId, resultsFolderId, resultsType) {
+    $('.validateResultsFolder').hide();   
+    $('#midas_challenge_competitor_matchedItems_Info').hide();
   ajaxWebApi.ajax(
     {
     method: 'midas.challenge.competitor.validate.results',  
@@ -107,14 +108,11 @@ midas.challenge.competitor.validateResultsFolder = function(challengeId, results
              results.data.truthWithoutResults.length === 0) {
               // there are no truths to match
               $('#validateResultsFolder_NoneMatched').show();
-              $('#validateResultsFolder_AllMatched').hide();   
-              $('#validateResultsFolder_SomeMatched').hide();
               midas.challenge.competitor.disableScoring();
           }
           else {
-              $('#validateResultsFolder_AllMatched').show();   
-              $('#validateResultsFolder_SomeMatched').hide();
-              $('#validateResultsFolder_NoneMatched').hide();
+              $('#validateResultsFolder_AllMatched').show(); 
+              $('#midas_challenge_competitor_matchedItems_Info').show();
               midas.challenge.competitor.enableScoring();
           }
       }
@@ -122,14 +120,11 @@ midas.challenge.competitor.validateResultsFolder = function(challengeId, results
         {
         if($.isArray(results.data.matchedTruthResults)) {
             $('#validateResultsFolder_NoneMatched').show();
-            $('#validateResultsFolder_AllMatched').hide();   
-            $('#validateResultsFolder_SomeMatched').hide();
             midas.challenge.competitor.disableScoring();
         }
         else {
             $('#validateResultsFolder_SomeMatched').show();
-            $('#validateResultsFolder_NoneMatched').hide();
-            $('#validateResultsFolder_AllMatched').hide();   
+            $('#midas_challenge_competitor_matchedItems_Info').show();
             midas.challenge.competitor.enableScoring();
         }
         validationInfo = '<br/> <b>Mismatched items: </b> <br/> </br>';
@@ -164,7 +159,7 @@ midas.challenge.competitor.validateResultsFolder = function(challengeId, results
         $('div#midas_challenge_competitor_matchedItems_Info').html(matchedItemsInfo);
       },
     error: function(XMLHttpRequest, textStatus, errorThrown){
-      $('#validateResultsFolder_Fail').show();
+      $('#validateResultsFolder_Error').show();
       var validationInfo = '';
       validationInfo = '<br/> <b>Reason: </b>' + XMLHttpRequest.message + '<br/> </br>';
       $('div#midas_challenge_competitor_validatedResultsFolder_Info').html(validationInfo);

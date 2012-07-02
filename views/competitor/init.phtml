@@ -76,9 +76,11 @@ $this->headScript()->appendFile($this->apiWebroot.'/public/js/common/common.ajax
         echo 
         '<br/>'.
         '<br/>'.
-        '<b>Results Folder Validation:</b> <span id="validateResultsFolder_AllMatched" style="display:none">All results are matched.</span>'.
-        '<span id="validateResultsFolder_SomeMatched" style="display:none">Some results are mis-matched or missing.</span>'.
-        '<span id="validateResultsFolder_NoneMatched" style="display:none">No results are matched.</span>'.
+        '<b>Results Folder Validation:</b>' .
+        '<span class="validateResultsFolder" id="validateResultsFolder_AllMatched" style="display:none">All results are matched.</span>'.
+        '<span class="validateResultsFolder" id="validateResultsFolder_SomeMatched" style="display:none">Some results are mis-matched or missing.</span>'.
+        '<span class="validateResultsFolder" id="validateResultsFolder_NoneMatched" style="display:none">No results are matched.</span>'.
+        '<span class="validateResultsFolder" id="validateResultsFolder_Error" style="display:none">Error</span>'.
         '<div id="midas_challenge_competitor_validatedResultsFolder_Info"> </div>'.
         '<div id="midas_challenge_competitor_matchedItems_Info"> </div>';
         
