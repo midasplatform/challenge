@@ -4,15 +4,13 @@ midas.challenge.competitor = midas.challenge.competitor || {};
 
 midas.challenge.competitor.currentBrowser = false;
 
+
+
+
 $(document).ready(function()  {
     midas.challenge.competitor.disableScoring();
     // validate folder if it is supplied
-    var challenge_id = $('#midas_challenge_competitor_challengeId').val();
-    var results_type = $('#midas_challenge_competitor_resultsType').val();
-    var submission_folder_id = $('#midas_challenge_competitor_selectedResultsFolderId').val();
-    if(submission_folder_id !== null && submission_folder_id !== undefined & submission_folder_id !== '') {
-        midas.challenge.competitor.validateResultsFolder(challenge_id, submission_folder_id, results_type);          
-    }
+    midas.challenge.competitor.updateUISelection();
     
     // event handler on results folder browse button
     $('#midas_challenge_competitor_browseResultsFolder').click(function() {
@@ -21,7 +19,15 @@ $(document).ready(function()  {
         midas.challenge.competitor.currentBrowser = 'folderresults';
     });
     
-    // TODO event handlers for challenge and dataset selection
+    // event handler on challenge selection combo   
+    $('#midas_challenge_competitor_challengeId').change(function() {
+        midas.challenge.competitor.updateUISelection();
+    });
+    
+    // event handler on resultsType selection combo   
+    $('#midas_challenge_competitor_resultsType').change(function() {
+        midas.challenge.competitor.updateUISelection();
+    });
 });
 
 
@@ -42,6 +48,9 @@ function folderSelectionCallback(name, id)
     return;
     }
 };
+
+
+
 
 midas.challenge.competitor.disableScoring = function() {
     $('#midas_challenge_competitor_scoreResults_anchor').unbind('click');
@@ -72,6 +81,14 @@ midas.challenge.competitor.enableScoring = function() {
     });
 };
 
+midas.challenge.competitor.updateUISelection = function() {
+    var challenge_id = $('#midas_challenge_competitor_challengeId').val();
+    var results_type = $('#midas_challenge_competitor_resultsType').val();
+    var submission_folder_id = $('#midas_challenge_competitor_selectedResultsFolderId').val();
+    if(submission_folder_id !== null && submission_folder_id !== undefined & submission_folder_id !== '') {
+        midas.challenge.competitor.validateResultsFolder(challenge_id, submission_folder_id, results_type);          
+    }
+};
 
 midas.challenge.competitor.validateResultsFolder = function(challengeId, resultsFolderId, resultsType)
   {  
@@ -82,14 +99,25 @@ midas.challenge.competitor.validateResultsFolder = function(challengeId, results
     success: function(results) {
       var validationInfo = '';
       var matchedItemsInfo = '';
-      if( $.isArray(results.data.truthWithoutResults) ) //  it is either an empty array (initialarray), or an object collection
-        {
-        //midas.createNotice("The selected results folder is valid!", 4000);  
-        $('#validateResultsFolder_AllMatched').show();   
-        $('#validateResultsFolder_SomeMatched').hide();
-        $('#validateResultsFolder_NoneMatched').hide();
-        midas.challenge.competitor.enableScoring();
-        }
+      
+      if( $.isArray(results.data.truthWithoutResults) ) {
+          //  it is either an empty array (initialarray), or an object collection
+          if($.isArray(results.data.matchedTruthResults) &&
+             results.data.matchedTruthResults.length === 0 &&
+             results.data.truthWithoutResults.length === 0) {
+              // there are no truths to match
+              $('#validateResultsFolder_NoneMatched').show();
+              $('#validateResultsFolder_AllMatched').hide();   
+              $('#validateResultsFolder_SomeMatched').hide();
+              midas.challenge.competitor.disableScoring();
+          }
+          else {
+              $('#validateResultsFolder_AllMatched').show();   
+              $('#validateResultsFolder_SomeMatched').hide();
+              $('#validateResultsFolder_NoneMatched').hide();
+              midas.challenge.competitor.enableScoring();
+          }
+      }
       else 
         {
         if($.isArray(results.data.matchedTruthResults)) {
