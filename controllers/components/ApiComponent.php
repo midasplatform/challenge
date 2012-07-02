@@ -766,7 +766,8 @@ class Challenge_ApiComponent extends AppComponent
       }
     
     $resultRows = array();
-    foreach($subjectScores as $subject => $scores)
+    // reverse the array to get averages first
+    foreach(array_reverse($subjectScores) as $subject => $scores)
       {
       $resultRow = array();
       $pos = strpos($subject, '_truth.mha');
