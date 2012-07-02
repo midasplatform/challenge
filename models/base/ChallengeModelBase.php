@@ -418,7 +418,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
 
     // ensure user has ownership/admin
     $folderpolicyuserDao = $folderpolicyuserModel->getPolicy($userDao, $folderDao);
-    if($folderpolicyuserDao->getPolicy() != MIDAS_POLICY_ADMIN)
+    if(!$folderpolicyuserDao || $folderpolicyuserDao->getPolicy() != MIDAS_POLICY_ADMIN)
       {
       throw new Zend_Exception('You must have admin rights to this folder to submit it as a results folder.');
       }
