@@ -20,7 +20,7 @@ span#validateOutputFolder_Pass{
 }
 
 
-span#validateResultsFolder_Fail{
+span#validateResultsFolder_Error{
   font-weight: bold;
   color: #C80000;
 }
@@ -45,3 +45,6 @@ table.validation td{
   text-align: center;
   border: 1px solid black;
 }
+
+
+
