@@ -273,7 +273,7 @@ class Challenge_CompetitorController extends Challenge_AppController
           
         //  }
         //}
-        
+        break;
       }
     $this->view->challengeInfo = $challengeInfo;
     $this->view->tableData = array();

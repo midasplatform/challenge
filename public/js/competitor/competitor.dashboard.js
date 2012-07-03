@@ -31,8 +31,8 @@ midas.challenge.competitor.dashboardSetup = function (){
 }
 
 $(document).ready(function() 
-  { 
-    $("table.dashboardDisplay").dataTable(
+  { console.log("blara");
+    /*$("table.dashboardDisplay").dataTable(
       {
       "bPaginate": true,
       "bLengthChange": true,
@@ -42,7 +42,8 @@ $(document).ready(function()
       "bAutoWidth": false,
       "aaSorting": [ [1,'desc'], [0,'asc'] ]
       }
-    ); 
+    );*/
+ $("#challenge_dashboard").tablesorter({});
     
     $(".dashboardContent").show();
     
