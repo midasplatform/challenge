@@ -998,12 +998,22 @@ class Challenge_ApiComponent extends AppComponent
       if($rankCount !== 0)
         {
         $rankAvg = $rankSum/$rankCount;  
+        $metricResultsByUser[$user]['Average Rank'] = round($rankAvg,3);
+
         }
       else
         {
-        $rankAvg = 0;  
+        //$rankAvg = 0;
+        // this user doesn't have any results, create placeholders
+        foreach($metrics as $metric)
+          {
+          // todo, should this be waiting or missing or what?
+          // a constant either way
+          $metricResultsByUser[$user][$metric]['metric_average'] = 'X';
+          $metricResultsByUser[$user][$metric]['rank'] = 'X';
+          }
+          $metricResultsByUser[$user]['Average Rank'] = 'X';
         }
-      $metricResultsByUser[$user]['Average Rank'] = round($rankAvg,3);
       }
       
     $returnVal = array('competitor_scores' => $metricResultsByUser);
