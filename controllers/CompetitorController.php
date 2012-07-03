@@ -326,6 +326,11 @@ class Challenge_CompetitorController extends Challenge_AppController
     
   }
     
+  /** list contact info and possibly an FAQ */
+  public function troubleshootingAction()
+    {
+    $this->view->header = "Challenge Troubleshooting";
+    }
     
     
     

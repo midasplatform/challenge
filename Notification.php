@@ -23,7 +23,7 @@ class Challenge_Notification extends ApiEnabled_Notification
     {
     $this->enableWebAPI($this->moduleName);
     $this->addCallBack('CALLBACK_CORE_GET_FOOTER_HEADER', 'getHeader');
-    //$this->addCallBack('CALLBACK_CORE_GET_LEFT_LINKS', 'getLeftLink');
+    $this->addCallBack('CALLBACK_CORE_GET_LEFT_LINKS', 'getLeftLink');
     //$this->addCallBack('CALLBACK_CORE_GET_USER_ACTIONS', 'getUserAction');
     $this->addCallBack('CALLBACK_CORE_GET_USER_TABS', 'getUserTab');
     $this->addCallBack('CALLBACK_CORE_LAYOUT_TOPBUTTONS', 'getButton');
@@ -83,25 +83,10 @@ class Challenge_Notification extends ApiEnabled_Notification
   */
   public function getLeftLink()
     {
-    
-    if(!isset($this->userSession->Dao))
-      {
-      return array();
-      }
-    else 
-      {
-      if($this->openChallengesForUser())
-        {
-        $fc = Zend_Controller_Front::getInstance();
-        $baseURL = $fc->getBaseUrl();
-        $moduleWebroot = $baseURL . '/' . MIDAS_CHALLENGE_MODULE;
-        return array(ucfirst("competitors") => array($moduleWebroot . '/competitor/init',  $baseURL . '/modules/challenge/public/images/competitors.png'));
-        }
-      else
-        {
-        return array();
-        }
-      }
+    $fc = Zend_Controller_Front::getInstance();
+    $baseURL = $fc->getBaseUrl();
+    $moduleWebroot = $baseURL . '/' . MIDAS_CHALLENGE_MODULE;
+    return array(ucfirst("Troubleshooting") => array($moduleWebroot . '/competitor/troubleshooting',  $baseURL . '/modules/challenge/public/images/system-help-3-16.png'));
     }
     
   /** Add a tab to the user's main page for competitors to submit results for a challenge  */
