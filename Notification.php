@@ -86,7 +86,7 @@ class Challenge_Notification extends ApiEnabled_Notification
     $fc = Zend_Controller_Front::getInstance();
     $baseURL = $fc->getBaseUrl();
     $moduleWebroot = $baseURL . '/' . MIDAS_CHALLENGE_MODULE;
-    return array(ucfirst("Troubleshooting") => array($moduleWebroot . '/competitor/troubleshooting',  $baseURL . '/modules/challenge/public/images/system-help-3-16.png'));
+    return array(ucfirst("Troubleshooting") => array($moduleWebroot . '/competitor/troubleshooting',  $baseURL . '/modules/challenge/public/images/system-help-3.png'));
     }
     
   /** Add a tab to the user's main page for competitors to submit results for a challenge  */
