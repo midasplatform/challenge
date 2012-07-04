@@ -61,10 +61,10 @@ class Challenge_CompetitorController extends Challenge_AppController
         $testingFolder = $competitor->getTestingSubmissionFolder();
         
         $challengeResultsFolders[$challengeId] =
-          array('training_submission_folder_id' => $trainingFolder->getFolderId(),
-                'training_submission_folder_name' => $trainingFolder->getName(),
-                'testing_submission_folder_id' => $testingFolder->getFolderId(),
-                'testing_submission_folder_name' => $testingFolder->getName());
+          array('training_submission_folder_id' => $trainingFolder ? $trainingFolder->getFolderId() : "",
+                'training_submission_folder_name' => $trainingFolder ? $trainingFolder->getName() : "",
+                'testing_submission_folder_id' => $testingFolder ? $testingFolder->getFolderId() : "",
+                'testing_submission_folder_name' => $testingFolder ? $testingFolder->getName() : "");
         }
       $selectOptions[$challengeId] = $challengeDetails['name'];
       }
