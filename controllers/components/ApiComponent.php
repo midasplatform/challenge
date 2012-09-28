@@ -442,13 +442,11 @@ class Challenge_ApiComponent extends AppComponent
       throw new Zend_Exception('Cannot find truth folder under folderId['.$subfolder->getFolderId().']');
       }
       
-    // changing userDao to admin for this call, so that we can have hidden items
-    // but still match them
-    $adminVal = $userDao->getAdmin();
-    $userDao->setAdmin('1');
-    $truthItems = $folderModel->getItemsFiltered($truthFolder, $userDao, MIDAS_POLICY_READ);
-    // set userDao back to the original value
-    $userDao->setAdmin($adminVal);
+    // using the 1st user for this call, since that is an admin user
+    // and we may have export hidden items
+    $userModel = MidasLoader::loadModel('User');
+    $adminDao =  $userModel->load('1');
+    $truthItems = $folderModel->getItemsFiltered($truthFolder, $adminDao, MIDAS_POLICY_READ);
   
     foreach($truthItems as $item)
       {
@@ -555,14 +553,9 @@ class Challenge_ApiComponent extends AppComponent
 
     $itemsForExport = $this->generateMatchedResultsItemIds($userDao, $matchedResults, $resultsType, $resultsFolderId, $challengeId);
 
-    // changing userDao to admin for this call, so that we can have hidden items
-    // be exported for processing
-    $adminVal = $userDao->getAdmin();
-    $userDao->setAdmin('1');
-    $itemsPaths = $executeComponent->exportSingleBitstreamItemsToWorkDataDir($userDao, $taskDao, $itemsForExport);
-    // set userDao back to the original value
-    $userDao->setAdmin($adminVal);
-  
+    $userModel = MidasLoader::loadModel('User');
+    $adminDao =  $userModel->load('1');
+    $itemsPaths = $executeComponent->exportSingleBitstreamItemsToWorkDataDir($adminDao, $taskDao, $itemsForExport);
 
     // generate definitions of jobs
     $jobsConfig = $this->generateJobsConfig($matchedResults, $itemsPaths);
