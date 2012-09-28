@@ -554,7 +554,15 @@ class Challenge_ApiComponent extends AppComponent
     $resultsrunDao = $resultsrunModel->createResultsRun($userDao, $challengeId, $resultsType, $taskDao->getBatchmakeTaskId(), $resultsFolderId, $outputFolderId);
 
     $itemsForExport = $this->generateMatchedResultsItemIds($userDao, $matchedResults, $resultsType, $resultsFolderId, $challengeId);
+
+    // changing userDao to admin for this call, so that we can have hidden items
+    // be exported for processing
+    $adminVal = $userDao->getAdmin();
+    $userDao->setAdmin('1');
     $itemsPaths = $executeComponent->exportSingleBitstreamItemsToWorkDataDir($userDao, $taskDao, $itemsForExport);
+    // set userDao back to the original value
+    $userDao->setAdmin($adminVal);
+  
 
     // generate definitions of jobs
     $jobsConfig = $this->generateJobsConfig($matchedResults, $itemsPaths);
