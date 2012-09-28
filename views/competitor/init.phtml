@@ -43,8 +43,8 @@ $this->headScript()->appendFile($this->apiWebroot.'/public/js/common/common.ajax
          $defaultFolderName = null;
          if($challenge0['testing_status'] === MIDAS_CHALLENGE_STATUS_OPEN)
            {
-           $defaultFolderId = $this->challengeResultsFolders['testing_submission_folder_id'];  
-           $defaultFolderName = $this->challengeResultsFolders['testing_submission_folder_name'];  
+           $defaultFolderId = $this->challengeResultsFolders[$challenge0["id"]]['testing_submission_folder_id'];  
+           $defaultFolderName = $this->challengeResultsFolders[$challenge0["id"]]['testing_submission_folder_name'];  
            echo '<option value="'.MIDAS_CHALLENGE_TESTING.'">'.MIDAS_CHALLENGE_TESTING.'</>';
            }
          if($challenge0['training_status'] === MIDAS_CHALLENGE_STATUS_OPEN)
