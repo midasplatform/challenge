@@ -480,7 +480,14 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       throw new Zend_Exception('Cannot find truth folder under folderId['.$subfolder->getFolderId().']');
       }
     
+    // changing userDao to admin for this call, so that we can have hidden items
+    // but still match them
+    $adminVal = $userDao->getAdmin();
+    $userDao->setAdmin('1');
     $truthItems = $folderModel->getItemsFiltered($truthFolder, $userDao, MIDAS_POLICY_READ);
+    // set userDao back to the original value
+    $userDao->setAdmin($adminVal);
+
     $truthResults = array();
     foreach($truthItems as $item)
       {

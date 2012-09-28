@@ -441,7 +441,15 @@ class Challenge_ApiComponent extends AppComponent
       {
       throw new Zend_Exception('Cannot find truth folder under folderId['.$subfolder->getFolderId().']');
       }
+      
+    // changing userDao to admin for this call, so that we can have hidden items
+    // but still match them
+    $adminVal = $userDao->getAdmin();
+    $userDao->setAdmin('1');
     $truthItems = $folderModel->getItemsFiltered($truthFolder, $userDao, MIDAS_POLICY_READ);
+    // set userDao back to the original value
+    $userDao->setAdmin($adminVal);
+  
     foreach($truthItems as $item)
       {
       $truthItemName = $item->getName();
@@ -942,6 +950,7 @@ class Challenge_ApiComponent extends AppComponent
     else
       {
       // TODO now what?
+      // THis will actually happen
       }
 
     // now for each metric, sort the results
