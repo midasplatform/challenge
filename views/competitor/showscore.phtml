@@ -32,7 +32,7 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
         ?>
     </div>
 <?php 
-  echo '<h3>Results from '.$this->challengeName.', '.$this->resultsRun->getResultsType().' run on '. $this->resultsRun->getDate().'</h3>';
+  echo '<h3>Results for ID '.$this->anonymizedId .' from '.$this->challengeName.', '.$this->resultsRun->getResultsType().' run on '. $this->resultsRun->getDate().'</h3>';
   echo '<img style="display: none" class="resultsLoading" alt="Loading..." src="'.$this->coreWebroot.'/public/images/icons/loading.gif" />';
 ?>
     <table class="tablesorter" id="tablesorter_scores">
