@@ -26,7 +26,6 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
       if(!empty($headers))
       {
       echo "<div class='dashboardHeading'> <span>-</span> ".$this->challengeInfo[$challengeId]['name']."</div>";  
-      //echo '<div class="dashboardContent"> <table id="'.$this->challengeInfo[$challengeId]['name'].'" style="display:table" class="dashboardDisplay">';
       echo '<div class="dashboardContent"> <table id="challenge_dashboard" style="display:table" class="tablesorter">';
   ?>
         <thead>
@@ -46,18 +45,10 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
               echo "<tr> <td>".$competitorId."</td>";
               foreach($this->resultColumns as $resultColumn)
                 {
-//              foreach($scores as $column => $columnData)
-  //              {
                 $columnData = $scores[$resultColumn];  
                 $metricAverage = $columnData['metric_average'];
-                if(is_numeric($metricAverage))
-                  {
-                  $metricAverage = round($metricAverage, 3);
-                  }
-                
                 echo "<td>".$metricAverage." ".$columnData['rank']."</td>";
                 }
-              echo "<td>".$scores['Average Rank']."</td>";
               echo "</tr>";
               }
           ?> 
