@@ -22,7 +22,7 @@ class Challenge_CompetitorController extends Challenge_AppController
 {
   public $_moduleComponents = array('Api');
   public $_moduleModels = array('Challenge', 'Competitor', 'ResultsRun');
-  public $_models = array('Folder');
+  public $_models = array('Folder', 'User');
   public $_moduleForms = array('Config');
 
   /** init a job*/
@@ -200,7 +200,7 @@ class Challenge_CompetitorController extends Challenge_AppController
         'Sensitivity 2',
         'Specificity 1',
         'Specificity 2');
-
+    $this->view->anonymizedId = $this->getAnonymizedId($userDao, $dashboardDao->getName());
     }
 
   /** Challenge dashboard */
@@ -224,10 +224,17 @@ class Challenge_CompetitorController extends Challenge_AppController
       $apiResults = array();
       $apiResults = $this->ModuleComponent->Api->anonymousListDashboard($apiargs);
 
-//      $testItemCount = count($apiResults['test_items']);
-    //  if(count($apiResults['competitor_scores']) > 0) // has scores from at least one competitor
-    //    {
-        $tableHeaders[$challengeId] = array(
+      // key of apiResults is user id
+      // change this to be an anonymized id
+      $anonymizedResults = array();
+      foreach($apiResults['competitor_scores'] as $userId => $results)
+        {
+        $competitorDao = $this->User->load($userId);
+        $anonymizedId = $this->getAnonymizedId($competitorDao, $challengeName);
+        $anonymizedResults[$anonymizedId] = $results;
+        }
+      
+      $tableHeaders[$challengeId] = array(
         'Competitor', 
         'Ave Dist 1',
         'Ave Dist 2',
@@ -241,11 +248,7 @@ class Challenge_CompetitorController extends Challenge_AppController
         'Specificity 1',
         'Specificity 2',
         'Average Rank');
-        //foreach($apiResults['test_items'] as $testItemId => $testItemName)
-        //  {
-        //  $tableHeaders[$challengeId][] = $testItemName;
-        //  }
-        $resultColumns = array(
+      $resultColumns = array(
         'AveDist(A_1, B_1)',
         'AveDist(A_2, B_2)',
         'Dice(A_1, B_1)',
@@ -259,29 +262,14 @@ class Challenge_CompetitorController extends Challenge_AppController
         'Specificity(A_2, B_2)',
         'Average Rank');
         
-      //  foreach($apiResults['competitor_scores'] as $competitorId => $scores)
-        //  {
-          //$tableData[$challengeId][$competitorId] = array_fill(0, $testItemCount + 1, 0.0);
-          //$aggregated_score = 0.0;
-          //foreach($scores as $testItemId => $testScore)
-          //  {
-          //  $tableData[$challengeId][$competitorId][array_search($testItemId, array_keys($apiResults['test_items'])) + 1 ] = floatval($testScore['score']);
-          //  $aggregated_score += floatval($testScore['score']);
-          //  }
-          //$tableData[$challengeId][$competitorId][0] = $aggregated_score / $testItemCount;
-      //    $tableData[$challengeId][$competitorId] = array();
-          
-        //  }
-        //}
-        break;
+      break;
       }
     $this->view->challengeInfo = $challengeInfo;
     $this->view->tableData = array();
-    $this->view->tableData[$challengeId] = $apiResults['competitor_scores'];//$tableData;
+    $this->view->tableData[$challengeId] = $anonymizedResults;
     $this->view->resultColumns = $resultColumns;
-    //$this->view->challengeResults = $apiResults['competitor_scores'];
-  $this->view->tableHeaders = $tableHeaders;
-  $this->view->resultColumns = $resultColumns;
+    $this->view->tableHeaders = $tableHeaders;
+    $this->view->resultColumns = $resultColumns;
     }
 
     
@@ -301,8 +289,8 @@ class Challenge_CompetitorController extends Challenge_AppController
     $userDao = $this->userSession->Dao;
     $resultsRuns = $this->Challenge_ResultsRun->getAllUsersResultsRuns($userDao->getUserId());
 
-    $tableHeaders = array("Challenge", "Dataset", "Run Date");
-    $tableColumns = array("challenge_name", "results_type");
+    $tableHeaders = array("Challenge", "Anonymized ID", "Dataset", "Run Date", );
+    $tableColumns = array("challenge_name", "anonymized_id", "results_type");
     $scorelistingRows = array();
     
     
@@ -312,6 +300,7 @@ class Challenge_CompetitorController extends Challenge_AppController
       {
       $scorelistingRow = array();
       $scorelistingRow["challenge_name"] = $resultRun->getChallenge()->getDashboard()->getName();
+      $scorelistingRow["anonymized_id"] =  $this->getAnonymizedId($userDao, $scorelistingRow["challenge_name"]);
       $scorelistingRow["results_type"] =  $resultRun->getResultsType();
       $scorelistingRow["run_date"] =  $resultRun->getDate();
       $scorelistingRow["results_run_id"] =  $resultRun->getChallengeResultsRunId();
@@ -325,7 +314,20 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->scorelistingRows = $scorelistingRows;
     
   }
-    
+
+  
+  function getAnonymizedId($userDao, $challengeName)
+    {
+    // use the global config password prefix as a hash salt  
+    $passwordPrefix = Zend_Registry::get('configGlobal')->password->prefix;
+    $email = $userDao->getEmail();
+    // this isn't cryptographically secure b/c of the reuse of salts, but should
+    // be fine for this relatively low security application
+    $anonymizedId = substr(md5($passwordPrefix . $email . $challengeName), 0, 8);
+    return $anonymizedId;  
+    }
+  
+  
   /** list contact info and possibly an FAQ */
   public function troubleshootingAction()
     {
