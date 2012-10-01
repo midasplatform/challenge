@@ -34,6 +34,11 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
       'condor_dag_job_id' => array('type' => MIDAS_DATA),
       'result_key' => array('type' => MIDAS_DATA),
       'result_value' => array('type' => MIDAS_DATA),
+      'return_code' => array('type' => MIDAS_DATA),
+      'process_out' => array('type' => MIDAS_DATA),
+      'process_err' => array('type' => MIDAS_DATA),
+      'process_log' => array('type' => MIDAS_DATA),
+      'status' => array('type' => MIDAS_DATA),
       'challenge_results_run' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'challenge',
                         'model' => 'ResultsRun',
@@ -72,7 +77,7 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
     $resultsrunItemDao->setCondorDagJobId($condorDagJobId);
     $resultsrunItemDao->setResultKey($resultKey);
     $resultsrunItemDao->setResultValue($resultValue);
-
+    $resultsrunItemDao->setStatus(MIDAS_CHALLENGE_STATUS_WAITING);
     $this->save($resultsrunItemDao);
     return $resultsrunItemDao;
     }

@@ -33,6 +33,7 @@ define("MIDAS_CHALLENGE_TRAINING", "Training");
 define("MIDAS_CHALLENGE_TRUTH", "Truth");
 define("MIDAS_CHALLENGE_IMAGES", "Images");
 
-define("MIDAS_CHALLENGE_WAITING", "waiting");
-
+define("MIDAS_CHALLENGE_STATUS_WAITING", "waiting");
+define("MIDAS_CHALLENGE_STATUS_DONE", "done");
+define("MIDAS_CHALLENGE_STATUS_ERROR", "error");
 ?>

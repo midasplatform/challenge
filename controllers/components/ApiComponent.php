@@ -270,6 +270,7 @@ class Challenge_ApiComponent extends AppComponent
     return $resultsRunItemDao;
     }
 
+    // TODO add additional params, make value optional
   public function adminUpdateResultsRunItem($args)
     {
     $this->_checkKeys(array('result_run_item_id', 'result_value'), $args);
@@ -599,6 +600,7 @@ class Challenge_ApiComponent extends AppComponent
           $resultsrunItemDao->setResultsItemId($resultItemId);
           $resultsrunItemDao->setResultKey($metric);
           $resultsrunItemDao->setResultValue(null); 
+          $resultsrunItemDao->setStatus(MIDAS_CHALLENGE_STATUS_WAITING);
           $resultsRunItemModel->save($resultsrunItemDao);
           $resultRunItems_configs[$metricConfig][$jobInd] = $resultsrunItemDao->getKey(); 
         }
@@ -746,7 +748,7 @@ class Challenge_ApiComponent extends AppComponent
         $metricScore = $resultsRunItemsValue['result_value'];
         if($metricScore === null)
           {
-          $subjectScores[$testItemName][$metricType] = MIDAS_CHALLENGE_WAITING;
+          $subjectScores[$testItemName][$metricType] = MIDAS_CHALLENGE_STATUS_WAITING;
           $processingComplete = 'false';
           }
         else
@@ -766,7 +768,7 @@ class Challenge_ApiComponent extends AppComponent
       {
       if($totals['count'] == 0)
         {
-        $subjectScores['averages'][$metricType] = MIDAS_CHALLENGE_WAITING;
+        $subjectScores['averages'][$metricType] = MIDAS_CHALLENGE_STATUS_WAITING;
         }
       else
         {
@@ -793,7 +795,7 @@ class Challenge_ApiComponent extends AppComponent
           }
         else
           {
-          $resultRow[$metric] = MIDAS_CHALLENGE_WAITING;
+          $resultRow[$metric] = MIDAS_CHALLENGE_STATUS_WAITING;
           }
         }
       $resultRows[] = $resultRow;
