@@ -886,14 +886,6 @@ class Challenge_ApiComponent extends AppComponent
     // TODO figure out what happens if no results or more than one set of results
 
     $componentLoader = new MIDAS_ComponentLoader();
-//    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
-//    $userDao = $authComponent->getUser($args,
-//                                       Zend_Registry::get('userSession')->Dao);
-//    if(!$userDao)
-//      {
-//      throw new Zend_Exception('You must be logged in to view results.');
-//      }
-
     $challengeId = $args['challengeId'];
     
     $modelLoad = new MIDAS_ModelLoader();
@@ -992,8 +984,23 @@ class Challenge_ApiComponent extends AppComponent
         }
       }
       
+    // get the number of items in the challenge's testing folder's truth folder
+    // get all the items in the correct subfolder's Truth subfolder
+    $dashboardDao = $challengeDao->getDashboard();
+    $subfolder = $dashboardDao->getTesting();
+    $folderModel = MidasLoader::loadModel('Folder');
+    $truthFolder = $folderModel->getFolderExists(MIDAS_CHALLENGE_TRUTH, $subfolder);
+    if(!$truthFolder)
+      {
+      throw new Zend_Exception('Cannot find truth folder under folderId['.$subfolder->getFolderId().']');
+      }  
+    $expectedResultCount = sizeof($truthFolder->getItems());  
+      
     // now we can combine the ranks for each user for each metric with the metric scores
     // then average the ranks for an overal rank
+    $usersToAverageRank = array();
+    $usersAsterisks = array();
+    $asterisk = false;
     foreach($metricResultsByUser as $user => $metricResults)
       {
       $rankSum = 0;
@@ -1001,19 +1008,29 @@ class Challenge_ApiComponent extends AppComponent
       foreach($metricResults as $metric => $scores)
         {
         $rank = $userRanksByMetric[$user][$metric];
-        $metricResultsByUser[$user][$metric]['rank'] = $rank;
+        // if they haven't submitted all the results, add an '*' to rank
+        if($metricResultsByUser[$user][$metric]['result_count'] != $expectedResultCount)
+          {
+          $asterisk = true;
+          $metricResultsByUser[$user][$metric]['rank'] = $rank . '*';
+          }
+        else
+          {
+          $metricResultsByUser[$user][$metric]['rank'] = $rank;
+          }
         $rankSum = $rankSum + $rank;
         $rankCount = $rankCount + 1;
         }
       if($rankCount !== 0)
         {
-        $rankAvg = $rankSum/$rankCount;  
-        $metricResultsByUser[$user]['Average Rank'] = round($rankAvg,3);
-
+        $rankAvg = $rankSum/$rankCount;
+        $metricResultsByUser[$user]['Average Rank'] = array();
+        $metricResultsByUser[$user]['Average Rank']['metric_average'] = round($rankAvg,3);
+        $usersToAverageRank[$user] =  round($rankAvg,3);
+        $usersAsterisks[$user] = $asterisk;
         }
       else
         {
-        //$rankAvg = 0;
         // this user doesn't have any results, create placeholders
         foreach($metrics as $metric)
           {
@@ -1022,105 +1039,59 @@ class Challenge_ApiComponent extends AppComponent
           $metricResultsByUser[$user][$metric]['metric_average'] = 'X';
           $metricResultsByUser[$user][$metric]['rank'] = 'X';
           }
-          $metricResultsByUser[$user]['Average Rank'] = 'X';
+          $metricResultsByUser[$user]['Average Rank'] = array();
+          $metricResultsByUser[$user]['Average Rank']['metric_average'] = 'X';
+          $metricResultsByUser[$userId]['Average Rank']['rank'] = 'X';
         }
+      }
+      
+      
+    // now sort by average rank to get overall rank  
+    asort($usersToAverageRank, SORT_NUMERIC);
+    $usersToOverallRank = array();
+    $rank = 1;
+    $rankCount = 1;
+    $rankedUserSize = sizeof($usersToAverageRank);
+    $rankedUsers = array_keys($usersToAverageRank);
+    foreach($rankedUsers as $ind => $userId)
+      {
+      $avgRank = $usersToAverageRank[$userId];
+      if(!array_key_exists($userId, $usersToOverallRank))
+        {
+        $usersToOverallRank[$userId] = $rank;
+        }
+      if($ind+1 < sizeof($usersToAverageRank))
+        {
+        // only need to look ahead for ties if there are more users  
+        $currentAvgRank = $avgRank;
+        $nextUser = $rankedUsers[$ind+1];
+        $nextAvgRank = $usersToAverageRank[$nextUser];
+        if($currentAvgRank === $nextAvgRank)
+          {
+          // a tie, should have the same rank
+          // don't increment the rank, but do keep track of how many at this rank
+          $rankCount = $rankCount + 1;
+          $usersToOverallRank[$nextUser] = $rank;
+          }
+        else
+          {
+          // increment the rank by however many at this rank, reset rankCount
+          $rank = $rank + $rankCount;
+          $rankCount = 1;
+          }
+        }
+      }
+      
+    foreach($usersToOverallRank as $userId => $overallRank)
+      {
+      if(array_key_exists($userId, $usersAsterisks) && $usersAsterisks[$userId])
+        {
+        $overallRank .= '*';
+        }
+      $metricResultsByUser[$userId]['Average Rank']['rank'] = $overallRank;
       }
       
     $returnVal = array('competitor_scores' => $metricResultsByUser);
-      
-    // now construct an array for each metric of user id to score
-    
-    
-    
-    
-    
-    
-    
-// can we assume that there is one Testing run per user?
-    //select challenge_results_run_id, count(*), result_key, sum(result_value), avg(result_value) from challenge_results_run_item group by challenge_results_run_id, result_key;
-
-    
-//    select max(challenge_results_run_id), user_id  from challenge_results_run, batchmake_task where batchmake_task.batchmake_task_id = challenge_results_run.batchmake_task_id and results_type='Testing' and challenge_id=42 group by user_id;
-    
-    
-    
-    
-    
-    
-    
-/*
-    $folderModel = $modelLoad->loadModel('Folder');
-    $userModel = $modelLoad->loadModel('User');
-    $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
-    $dashboardModel = $modelLoad->loadModel('Dashboard', 'validation');
-
-
-
-    // check that the community is valid and the user is a member
-    $communityDao = $challengeDao->getCommunity();
-    if(!$communityDao)
-      {
-      throw new Zend_Exception('This challenge does not have a valid community');
-      }
-
-
-    //list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
-// TODO check this for when no users
-    
-
-    $resultsPerCompetitor = array();
-    if(!isset($competitorIds) || sizeof($competitorIds) !== 0)
-      {
-      //  for each user, get the latest resultsRun, and all items
-      foreach($competitorIds as $competitorId)
-        {
-        $resultsRun = $resultsrunModel->loadLatestResultsRun($competitorId, $challengeId);
-        $resultsRunItemsValues = $resultsRunItemModel->loadResultsItemsValues($resultsRun->getChallengeResultsRunId());
-        $competitorResults = array();
-        foreach($resultsRunItemsValues as $resultsRunItemsValue)
-          {
-          $competitorResults[$resultsRunItemsValue['test_item_id']] = array('name'=> $resultsRunItemsValue['test_item_name'], 'score'=>$resultsRunItemsValue['score']);
-          }
-        $resultsPerCompetitor[$competitorId] = $competitorResults;
-        }
-      }
-    else
-      {
-      $competitorId = 1;
-      }
-
-
-
-    // need a list of all result item ids for the challenge
-    $testingFolder = $challengeDao->getDashboard()->getTesting();
-    // the results should be public, but there is no user login required for this method
-    // so use user id of the latest competitor
-    $userDao = $userModel->load($competitorId);
-    $testingItems = $folderModel->getItemsFiltered($testingFolder, $userDao, MIDAS_POLICY_READ);
-
-    $testItemIds = array();
-    foreach($testingItems as $testingItem)
-      {
-      $testItems[$testingItem->getItemId()] = $testingItem->getName();
-      }
-
-    // get all the users with results for this challenge
-
-
-    $returnVal = array('test_items' => $testItems, 'competitor_scores' => $resultsPerCompetitor);
-
-   */
-    /*
-    // TODO this is fake data, uncomment if no condor setup
-    $testItems = array("294" => "test1.mha","295" => "test2.mha");
-
-    $resultsPerCompetitor = array('1' => array("294" => array("name" => "test1.mha", "score" => "0.666667"),
-                               "295" => array("name" => "test2.mha", "score" => "0.563667")),
-                  '2' => array("294" => array("name" => "test1.mha", "score" => "0.8764"),
-                               "295" => array("name" => "test2.mha", "score" => "0.67864")));
-    $returnVal = array('test_items' => $testItems, 'competitor_scores' => $resultsPerCompetitor);
-*/
-
     return $returnVal;
     }
 
