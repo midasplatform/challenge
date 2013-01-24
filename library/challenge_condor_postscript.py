@@ -21,7 +21,7 @@ def loadConfig(filename):
 
 
 if __name__ == "__main__":
-  (scriptName, workDir, taskId, dashboardId, resultsrunId, resultsFolderId, challengeId, dagjobname, testImage, resultImage, outputParseFile, resultRunItemId1, resultRunItemId2, jobname, jobid, returncode) = sys.argv
+  (scriptName, workDir, taskId, dashboardId, resultsrunId, resultsFolderId, challengeId, dagjobname, testImage, resultImage, outputParseFile, resultRunItemIds, jobname, jobid, returncode) = sys.argv
   jobidNum = jobname[3:]
   cfgParams = loadConfig('userconfig.cfg')
 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
   # parse output and upload value
   lines = open(outputParseFile,'r')
-  result_run_item_ids = [resultRunItemId1, resultRunItemId2]
+  result_run_item_ids = resultRunItemIds.split(';')
   for ind, line in enumerate(lines):
     line = line.strip()
     cols = line.split('=')

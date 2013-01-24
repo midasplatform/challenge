@@ -34,6 +34,7 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
       'condor_dag_job_id' => array('type' => MIDAS_DATA),
       'result_key' => array('type' => MIDAS_DATA),
       'result_value' => array('type' => MIDAS_DATA),
+      'challenge_selected_metric_id' => array('type' => MIDAS_DATA),
       'challenge_results_run' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'challenge',
                         'model' => 'ResultsRun',
@@ -50,7 +51,12 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
       'output_item' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'model' => 'Item',
                         'parent_column' => 'output_item_id',
-                        'child_column' => 'item_id'));
+                        'child_column' => 'item_id'),
+      'challenge_selected_metric' =>  array('type' => MIDAS_MANY_TO_ONE,
+                        'module' => 'challenge',
+                        'model' => 'challenge_selected_metrics',
+                        'parent_column' => 'challenge_selected_metric_id',
+                        'child_column' => 'challenge_selected_metric_id'));
     $this->initialize(); // required
     }
 

@@ -15,50 +15,55 @@ ForEach(jobInd ${cfg_jobInds})
 
       
   # Dice
-  GetParam(resultRunItemId1 ${cfg_dice1} ${jobInd})
-  GetParam(resultRunItemId2 ${cfg_dice2} ${jobInd})
-  Set(outputFile dice.${jobInd}.txt)
-  SetApp(ValidatorApp @ValidateImageDice)
-  Include(challenge_validator_app.bms)
+  If(${ValidateImageDice_selected} == '1')
+    GetParam(resultRunItemIds ${ValidateImageDice_resultRunItemIds} ${jobInd})
+    Set(outputFile dice.${jobInd}.txt)
+    SetApp(ValidatorApp @ValidateImageDice)
+    Include(challenge_validator_app.bms)
+  EndIf()
 
 
   # AveDist
-  GetParam(resultRunItemId1 ${cfg_avedist1} ${jobInd})
-  GetParam(resultRunItemId2 ${cfg_avedist2} ${jobInd})
-  Set(outputFile aveDist.${jobInd}.txt)
-  SetApp(ValidatorApp @ValidateImageAveDist)
-  Include(challenge_validator_app.bms)
+  If(${ValidateImageAveDist_selected} == '1')
+    GetParam(resultRunItemIds ${ValidateImageAveDist_resultRunItemIds} ${jobInd})
+    Set(outputFile aveDist.${jobInd}.txt)
+    SetApp(ValidatorApp @ValidateImageAveDist)
+    Include(challenge_validator_app.bms)
+  EndIf()
 
 
   # Kappa
-  GetParam(resultRunItemId1 ${cfg_kappa} ${jobInd})
-  GetParam(resultRunItemId2 ${cfg_kappa} ${jobInd})
-  Set(outputFile kappa.${jobInd}.txt)
-  SetApp(ValidatorApp @ValidateImageKappa)
-  Include(challenge_validator_app.bms)
+  If(${ValidateImageKappa_selected} == '1')
+    GetParam(resultRunItemIds ${ValidateImageKappa_resultRunItemIds} ${jobInd})
+    Set(outputFile kappa.${jobInd}.txt)
+    SetApp(ValidatorApp @ValidateImageKappa)
+    Include(challenge_validator_app.bms)
+  EndIf()
 
 
   # HausdorffDist
-  GetParam(resultRunItemId1 ${cfg_hausdorff1} ${jobInd})
-  GetParam(resultRunItemId2 ${cfg_hausdorff2} ${jobInd})
-  Set(outputFile HausdorffDist.${jobInd}.txt)
-  SetApp(ValidatorApp @ValidateImageHausdorffDist)
-  Include(challenge_validator_app.bms)
+  If(${ValidateImageHausdorffDist_selected} == '1')
+    GetParam(resultRunItemIds ${ValidateImageHausdorffDist_resultRunItemIds} ${jobInd})
+    Set(outputFile HausdorffDist.${jobInd}.txt)
+    SetApp(ValidatorApp @ValidateImageHausdorffDist)
+    Include(challenge_validator_app.bms)
+  EndIf()
 
   # Sensitivity
-  GetParam(resultRunItemId1 ${cfg_sensitivity1} ${jobInd})
-  GetParam(resultRunItemId2 ${cfg_sensitivity2} ${jobInd})
-  Set(outputFile Sensitivity.${jobInd}.txt)
-  SetApp(ValidatorApp @ValidateImageSensitivity)
-  Include(challenge_validator_app.bms)
+  If(${ValidateImageSensitivity_selected} == '1')
+    GetParam(resultRunItemIds ${ValidateImageSensitivity_resultRunItemIds} ${jobInd})
+    Set(outputFile Sensitivity.${jobInd}.txt)
+    SetApp(ValidatorApp @ValidateImageSensitivity)
+    Include(challenge_validator_app.bms)
+  EndIf()
 
   # Specificity
-  GetParam(resultRunItemId1 ${cfg_specificity1} ${jobInd})
-  GetParam(resultRunItemId2 ${cfg_specificity2} ${jobInd})
-  Set(outputFile Specificity.${jobInd}.txt)
-  SetApp(ValidatorApp @ValidateImageSpecificity)
-  Include(challenge_validator_app.bms)
-
+  If(${ValidateImageSpecificity_selected} == '1')
+    GetParam(resultRunItemIds ${ValidateImageSpecificity_resultRunItemIds} ${jobInd})
+    Set(outputFile Specificity.${jobInd}.txt)
+    SetApp(ValidatorApp @ValidateImageSpecificity)
+    Include(challenge_validator_app.bms)
+  EndIf()
 
 EndForEach()
 

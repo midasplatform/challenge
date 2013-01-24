@@ -563,21 +563,14 @@ class Challenge_ApiComponent extends AppComponent
     $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
     $resultsRunItemModel->loadDaoClass('ResultsRunItemDao', 'challenge');
     
-    $metrics = array(
-        'cfg_avedist1' => 'AveDist(A_1, B_1)',
-        'cfg_avedist2' => 'AveDist(A_2, B_2)',
-        'cfg_dice1' => 'Dice(A_1, B_1)',
-        'cfg_dice2' => 'Dice(A_2, B_2)',
-        'cfg_hausdorff1' => 'HausdorffDist(A_1, B_1)',
-        'cfg_hausdorff2' => 'HausdorffDist(A_2, B_2)',
-        'cfg_kappa' => 'Kappa(A,B)',
-        'cfg_sensitivity1' => 'Sensitivity(A_1, B_1)',
-        'cfg_sensitivity2' => 'Sensitivity(A_2, B_2)',
-        'cfg_specificity1' => 'Specificity(A_1, B_1)',
-        'cfg_specificity2' => 'Specificity(A_2, B_2)');
-    $resultRunItems_configs = array();
     
+    // get the list of selected metrics for this challenge
+    $selectedMetricModel = MidasLoader::loadModel('SelectedMetric', 'challenge');
+    $selectedMetrics = $selectedMetricModel->findBy('challenge_id', $challengeId);
     
+    $revised___resultRunItems_configs = array();    
+    
+    // for each job, that is a pairing of a result with a ground truth
     foreach($jobsConfig['cfg_jobInds'] as $jobInd)
       {
       $truthItemName = $jobsConfig['cfg_truthItems'][$jobInd];
@@ -587,26 +580,79 @@ class Challenge_ApiComponent extends AppComponent
       $truthItemId = $truthItemNameParts[sizeof($truthItemNameParts)-2];
       $resultItemId = $resultItemNameParts[sizeof($resultItemNameParts)-2];
 
-      foreach($metrics as $metricConfig => $metric)
+      // created resultrunitems for the selected metrics, for each label
+      foreach($selectedMetrics as $selectedMetric)
         {
-        if(!array_key_exists($metricConfig, $resultRunItems_configs))
+        $metric = $selectedMetric->getMetric();
+        $metricExeName = $metric->getMetricExeName();
+        $metricConfig = $metricExeName . "_resultRunItemIds";
+        if($selectedMetric->getMetric()->getScorePerLabel())
           {
-          $resultRunItems_configs[$metricConfig] = array();  
+          $numLabels = $challengeDao->getNumberScoredLabels();  
           }
+        else
+          {
+          $numLabels = 1;  
+          }
+        for($labelIter = 0; $labelIter < $numLabels; $labelIter++)
+          {
+          if(!array_key_exists($metricConfig, $revised___resultRunItems_configs))
+            {
+            $revised___resultRunItems_configs[$metricConfig] = array();  
+            }
           $resultsrunItemDao = new Challenge_ResultsRunItemDao();
           $resultsrunItemDao->setChallengeResultsRunId($resultsrunDao->getKey());
           $resultsrunItemDao->setTestItemId($truthItemId);
           $resultsrunItemDao->setResultsItemId($resultItemId);
-          $resultsrunItemDao->setResultKey($metric);
+          if($metric->getScorePerLabel())
+            {
+            $resultsrunItemDao->setResultKey($metric->getMetricDisplayName() . " " . ($labelIter+1));
+            }
+          else
+            {
+            $resultsrunItemDao->setResultKey($metric->getMetricDisplayName());
+            }
           $resultsrunItemDao->setResultValue(null); 
+          $resultsrunItemDao->setChallengeSelectedMetricId($selectedMetric->getChallengeSelectedMetricId()); 
           $resultsRunItemModel->save($resultsrunItemDao);
-          $resultRunItems_configs[$metricConfig][$jobInd] = $resultsrunItemDao->getKey(); 
+          if(!array_key_exists($jobInd, $revised___resultRunItems_configs[$metricConfig]))
+            {
+            $revised___resultRunItems_configs[$metricConfig][$jobInd] = $resultsrunItemDao->getKey(); 
+            // create and append together as many rri as scored labels
+            }
+          else
+            {  
+            $revised___resultRunItems_configs[$metricConfig][$jobInd] .= ';' . $resultsrunItemDao->getKey();
+            // create and append together as many rri as scored labels
+            }
+          }
         }
       }
-    foreach($metrics as $metricConfig => $metric)
+
+    // set up each of the selected metrics along with their results run items     
+    foreach($selectedMetrics as $selectedMetric)
       {
-      $jobsConfig[$metricConfig] = $resultRunItems_configs[$metricConfig];
+      $metricExeName = $selectedMetric->getMetric()->getMetricExeName();
+      $metricConfig = $metricExeName . "_resultRunItemIds";
+      $jobsConfig[$metricConfig] = $revised___resultRunItems_configs[$metricConfig];
+      $metricSelected = $metricExeName . "_selected";
+      $jobsConfig[$metricSelected] = "1";
       }
+      
+    // add placeholders as batchmake variables for non-selected metrics
+    $challengeMetricModel = MidasLoader::loadModel('Metric', 'challenge');
+    $allMetrics = $challengeMetricModel->fetchAll();
+    foreach($allMetrics as $metric)
+      {
+      $metricExeName = $metric->getMetricExeName();
+      $metricConfig = $metricExeName . "_resultRunItemIds";
+      if(!array_key_exists($metricConfig, $jobsConfig))
+        {
+        $jobsConfig[$metricConfig] = '';
+        $metricSelected = $metricExeName . "_selected";
+        $jobsConfig[$metricSelected] = "0";  
+        }
+      }     
     
 
     $appTaskConfigProperties = array();
