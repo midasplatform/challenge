@@ -34,6 +34,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       'testing_folder_stem' => array('type' => MIDAS_DATA),
       'training_status' => array('type' => MIDAS_DATA),
       'testing_status' => array('type' => MIDAS_DATA),
+      'number_scored_labels' => array('type' => MIDAS_DATA),
       'dashboard' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'validation',
                         'model' => 'Dashboard',
