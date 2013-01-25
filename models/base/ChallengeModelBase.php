@@ -83,8 +83,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       throw new Exception('Invalid instance of a challenge.');
       }
 
-    $modelLoad = new MIDAS_ModelLoader();
-    $communityModel = $modelLoad->loadModel('Community');
+    $communityModel = MidasLoader::loadModel('Community');
 
     $communityDao = $communityModel->load($challengeDao->getCommunityId());
     if(!$communityDao)
@@ -233,15 +232,14 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       throw new Zend_Exception("communityDao should be a valid instance.");
       }
 
-    $modelLoad = new MIDAS_ModelLoader();
-    $communityModel = $modelLoad->loadModel('Community');
-    $dashboardModel = $modelLoad->loadModel('Dashboard', 'validation');
+    $communityModel = MidasLoader::loadModel('Community');
+    $dashboardModel = MidasLoader::loadModel('Dashboard', 'validation');
     $dashboardModel->loadDaoClass('DashboardDao', 'validation');
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
     $challengeModel->loadDaoClass('ChallengeDao', 'challenge');
-    $folderModel = $modelLoad->loadModel('Folder');
-    $folderpolicygroupModel = $modelLoad->loadModel('Folderpolicygroup');
-    $groupModel = $modelLoad->loadModel('Group');
+    $folderModel = MidasLoader::loadModel('Folder');
+    $folderpolicygroupModel = MidasLoader::loadModel('Folderpolicygroup');
+    $groupModel = MidasLoader::loadModel('Group');
 
     if(!$communityModel->policyCheck($communityDao, $userDao, MIDAS_POLICY_ADMIN))
       {
@@ -402,8 +400,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
    */
   function validateChallengeUser($userDao, $challengeId)
     {
-    $modelLoad = new MIDAS_ModelLoader();
-    $groupModel = $modelLoad->loadModel('Group');
+    $groupModel = MidasLoader::loadModel('Group');
 
     $challengeDao = $this->load($challengeId);
     if(!$challengeDao)
@@ -437,11 +434,10 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
    */
   function validateChallengeUserFolder($userDao, $communityDao, $folderId)
     {
-    $modelLoad = new MIDAS_ModelLoader();
-    $groupModel = $modelLoad->loadModel('Group');
-    $folderModel = $modelLoad->loadModel('Folder');
-    $folderpolicyuserModel = $modelLoad->loadModel('Folderpolicyuser');
-    $folderpolicygroupModel = $modelLoad->loadModel('Folderpolicygroup');
+    $groupModel = MidasLoader::loadModel('Group');
+    $folderModel = MidasLoader::loadModel('Folder');
+    $folderpolicyuserModel = MidasLoader::loadModel('Folderpolicyuser');
+    $folderpolicygroupModel = MidasLoader::loadModel('Folderpolicygroup');
 
     // get the results folder
     $folderDao = $folderModel->load($folderId);
@@ -491,8 +487,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
    */
   function getExpectedResultsItems($userDao, $challengeDao, $resultsType, $resultFolderId = null)
     {
-    $modelLoad = new MIDAS_ModelLoader();
-    $folderModel = $modelLoad->loadModel('Folder');
+    $folderModel = MidasLoader::loadModel('Folder');
 
     // get all the items in the correct subfolder's Truth subfolder
     $dashboardDao = $challengeDao->getDashboard();
@@ -584,12 +579,11 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       throw new Zend_Exception("communityDao should be a valid instance.");
       }
 
-    $modelLoad = new MIDAS_ModelLoader();
-    $communityModel = $modelLoad->loadModel('Community');
-    $folderModel = $modelLoad->loadModel('Folder');
-    $folderpolicygroupModel = $modelLoad->loadModel('Folderpolicygroup');
-    $folderpolicyuserModel = $modelLoad->loadModel('Folderpolicyuser');
-    $groupModel = $modelLoad->loadModel('Group');
+    $communityModel = MidasLoader::loadModel('Community');
+    $folderModel = MidasLoader::loadModel('Folder');
+    $folderpolicygroupModel = MidasLoader::loadModel('Folderpolicygroup');
+    $folderpolicyuserModel = MidasLoader::loadModel('Folderpolicyuser');
+    $groupModel = MidasLoader::loadModel('Group');
 
     if(!$communityModel->policyCheck($communityDao, $userDao, MIDAS_POLICY_READ))
       {
@@ -623,7 +617,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $folderNamesToIds = $this->createOrEnforceSubfolders($userDao->getFolder(), $subfolders, $folderModel, $folderpolicygroupModel, $folderpolicyuserModel);
 
 
-    $competitorModel = $modelLoad->loadModel('Competitor', 'challenge');
+    $competitorModel = MidasLoader::loadModel('Competitor', 'challenge');
     // if the user already has a competitor id, reuse that, but change over the folder ids
     $competitorDao = $competitorModel->findChallengeCompetitor($userDao->getUserId(), $challenge->getChallengeId());
     if($competitorDao === false)
@@ -639,7 +633,39 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
 
     }
 
-
-
+  /**
+   * returns a list of the scored columns for this challenge,
+   * either the name of a metric for metrics that are not a metric per label,
+   * or else for metrics that provide a score for each label, will return a 
+   * column per scored label.
+   * @param type $challenge
+   * @return type 
+   */
+  function getScoredColumns($challenge)
+    {
+    $selectedMetricModel = MidasLoader::loadModel('SelectedMetric', 'challenge');
+    $selectedMetrics = $selectedMetricModel->findBy('challenge_id', $challenge->getKey());
+    $columns = array();
+    foreach($selectedMetrics as $selectedMetric)
+      {
+      $metric = $selectedMetric->getMetric();
+      $metricExeName = $metric->getMetricExeName();
+      if($selectedMetric->getMetric()->getScorePerLabel())
+          {
+          $numLabels = $challenge->getNumberScoredLabels();  
+          for($labelIter = 0; $labelIter < $numLabels; $labelIter++)
+            {
+            $columns[] = $metric->getMetricDisplayName() . " " . ($labelIter+1);
+            }
+          }
+        else
+          {
+          $columns[] = $metric->getMetricDisplayName();
+          }
+      }
+    return $columns;
+    }
+    
+    
 
 }  // end class Challenge_ChallengeModelBase

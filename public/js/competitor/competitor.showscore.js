@@ -50,27 +50,20 @@ midas.challenge.competitor.updateResultsTable = function(jsonResults)  {
     $('#tablesorter_scores .resultsRow').remove();
 
     var i = 0;
-    var columns = [
-        'Subject', 
-        'AveDist(A_1, B_1)',
-        'AveDist(A_2, B_2)',
-        'Dice(A_1, B_1)',
-        'Dice(A_2, B_2)',
-        'HausdorffDist(A_1, B_1)',
-        'HausdorffDist(A_2, B_2)',
-        'Kappa(A,B)',
-        'Sensitivity(A_1, B_1)',
-        'Sensitivity(A_2, B_2)',
-        'Specificity(A_1, B_1)',
-        'Specificity(A_2, B_2)'];
     $.each(jsonResults, function(index, value) {
         
         i++;
         var stripeClass = i % 2 ? 'odd' : 'even';
         var html='';
         html+='<tr class="resultsRow '+stripeClass+'">';
-        $.each(columns, function (col_index, column)  {
-            html+=' <td>'+value[column]+'</td>';
+        $.each(json.tableHeaders, function (col_index, column)  {
+            if(value[column] === undefined) {
+                var colVal = 'queued';
+            }
+            else {
+                var colVal = value[column];
+            }
+            html+=' <td>'+colVal+'</td>';
         });
         html+='</tr>';
         $('#tablesorter_scores').append(html);

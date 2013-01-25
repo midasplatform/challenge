@@ -39,7 +39,8 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
       <thead>
         <tr class="header">
         <?php
-        foreach($this->tableHeaders as $header)
+        $tableHeaders = $this->tableHeaders;
+        foreach($tableHeaders as $header)
           {
           echo "<th class='scorecol'>".ucfirst($header)."</th>";
           }
@@ -50,12 +51,21 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
           <?php       
             $stripeClasses = array('odd', 'even');
             $stripeClassInd = 0;
-            foreach($this->tableData['results_rows'] as $subject => $scores)
+            $resultsRows = $this->tableData['results_rows'];
+            foreach($resultsRows as $subject => $scores)
               {
               echo "<tr class='resultsRow ".$stripeClasses[$stripeClassInd++ % 2]."'>";
-              foreach($this->tableData_resultsColumns as $column)
+              $resultsColumns = $this->tableData_resultsColumns;
+              foreach($resultsColumns as $column)
                 {
-                $colVal = $scores[$column];
+                if(!array_key_exists($column, $scores))
+                  {
+                  $colVal = 'queued';  
+                  }
+                else
+                  {
+                  $colVal = $scores[$column];
+                  }
                 echo "<td>".$colVal."</td>";
                 }
               echo "</tr>";

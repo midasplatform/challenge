@@ -27,9 +27,8 @@ class ChallengeModelTest extends DatabaseTestCase
     Zend_Registry::set('notifier', new MIDAS_Notifier(false, null));
     parent::setUp();
     $this->setupDatabase(array('challenge'), 'challenge'); // module dataset
-    $this->modelLoad = new MIDAS_ModelLoader();
-    $this->challengeModel = $this->modelLoad->loadModel('Challenge', 'challenge');
-    $this->dashboardModel = $this->modelLoad->loadModel('Dashboard', 'validation');
+    $this->challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
+    $this->dashboardModel = MidasLoader::loadModel('Dashboard', 'validation');
     }
 
   /** helper method for createChallenge calls that throw exceptions. */

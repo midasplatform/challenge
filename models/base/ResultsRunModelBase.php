@@ -65,13 +65,12 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
    * @return ResultsRunDao */
   function createResultsRun($userDao, $challengeId, $resultsType, $batchmakeTaskId, $resultsFolderId, $outputFolderId)
     {
-    $modelLoad = new MIDAS_ModelLoader();
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $competitorModel = $modelLoad->loadModel('Competitor', 'challenge');
-    $communityModel = $modelLoad->loadModel('Community');
-    $folderModel = $modelLoad->loadModel('Folder');
-    $folderpolicyggroupModel = $modelLoad->loadModel('Folderpolicygroup');
-    $folderpolicyuserModel = $modelLoad->loadModel('Folderpolicyuser');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
+    $competitorModel = MidasLoader::loadModel('Competitor', 'challenge');
+    $communityModel = MidasLoader::loadModel('Community');
+    $folderModel = MidasLoader::loadModel('Folder');
+    $folderpolicyggroupModel = MidasLoader::loadModel('Folderpolicygroup');
+    $folderpolicyuserModel = MidasLoader::loadModel('Folderpolicyuser');
     $this->loadDaoClass('ResultsRunDao', 'challenge');
     $competitor = $competitorModel->findChallengeCompetitor($userDao->getUserId(), $challengeId);
     // create a new resultsrun

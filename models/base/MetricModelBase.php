@@ -30,6 +30,7 @@ abstract class Challenge_MetricModelBase extends Challenge_AppModel {
       'metric_name' => array('type' => MIDAS_DATA),
       'metric_display_name' => array('type' => MIDAS_DATA),
       'score_per_label' => array('type' => MIDAS_DATA),
+      'lowest_score_best' => array('type' => MIDAS_DATA),
       'metric_exe_name' => array('type' => MIDAS_DATA));
     $this->initialize(); // required
     }
