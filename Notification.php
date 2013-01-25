@@ -223,8 +223,7 @@ class Challenge_Notification extends ApiEnabled_Notification
       foreach($challenges as $challengeId => $statuses)
         {
         // create the user folders for the challenge
-        $modelLoad = new MIDAS_ModelLoader();
-        $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+        $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
         $challenge = $challengeModel->load($challengeId);
         $challengeModel->addUserToChallenge($userDao, $challenge);
         }

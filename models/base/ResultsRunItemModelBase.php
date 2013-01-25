@@ -66,7 +66,6 @@ abstract class Challenge_ResultsRunItemModelBase extends Challenge_AppModel {
    * @return ResultsRunItemDao */
   function createResultsItemRun($challengeResultsRunId, $testItemId, $resultsItemId, $outputItemId, $condorDagJobId, $resultKey, $resultValue)
     {
-    $modelLoad = new MIDAS_ModelLoader();
     $this->loadDaoClass('ResultsRunItemDao', 'challenge');
 
     // create a new resultsrunitem

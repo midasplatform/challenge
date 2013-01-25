@@ -174,32 +174,12 @@ class Challenge_CompetitorController extends Challenge_AppController
     
     $this->view->tableData = $tableData;
     $this->view->user = $this->userSession->Dao;
-    $this->view->tableData_resultsColumns = array(
-        'Subject', 
-        'AveDist(A_1, B_1)',
-        'AveDist(A_2, B_2)',
-        'Dice(A_1, B_1)',
-        'Dice(A_2, B_2)',
-        'HausdorffDist(A_1, B_1)',
-        'HausdorffDist(A_2, B_2)',
-        'Kappa(A,B)',
-        'Sensitivity(A_1, B_1)',
-        'Sensitivity(A_2, B_2)',
-        'Specificity(A_1, B_1)',
-        'Specificity(A_2, B_2)');
-    $this->view->tableHeaders = array(
-        'Subject', 
-        'Average Dist 1',
-        'Average Dist 2',
-        'Dice 1',
-        'Dice 2',
-        'Hausdorff Dist 1',
-        'Hausdorff Dist 2',
-        "Cohen's Kappa",
-        'Sensitivity 1',
-        'Sensitivity 2',
-        'Specificity 1',
-        'Specificity 2');
+    $scoredColumns = $this->Challenge_Challenge->getScoredColumns($resultsRun->getChallenge());
+    // set the table headers to be Subject plus the scored columns
+    array_unshift($scoredColumns, 'Subject');
+    $this->view->tableData_resultsColumns = $scoredColumns;
+    $this->view->tableHeaders = $scoredColumns;
+    $this->view->json['tableHeaders'] = $scoredColumns;
     $this->view->anonymizedId = $this->getAnonymizedId($userDao, $dashboardDao->getName());
     }
 

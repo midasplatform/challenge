@@ -47,8 +47,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('communityId', 'challengeName', 'challengeDescription', 'trainingStatus', 'testingStatus'), $args);
 
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -68,11 +67,10 @@ class Challenge_ApiComponent extends AppComponent
       }
 
     // must be a moderator of the community
-    $modelLoad = new MIDAS_ModelLoader();
-    $communityModel = $modelLoad->loadModel('Community');
+    $communityModel = MidasLoader::loadModel('Community');
     $communityDao = $communityModel->load($communityId);
 
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
     $challengeDao = $challengeModel->createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $trainingStatus, $testingStatus, $folderId);
     // return the challengeId
     return $challengeDao->getKey();
@@ -88,8 +86,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('challengeId', 'resultsType'), $args);
 
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -104,8 +101,7 @@ class Challenge_ApiComponent extends AppComponent
       throw new Zend_Exception('resultsType should be one of ['.MIDAS_CHALLENGE_TESTING.'|'.MIDAS_CHALLENGE_TRAINING.']');
       }
 
-    $modelLoad = new MIDAS_ModelLoader();
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
     $challengeModel->openChallenge($userDao, $challengeId, $resultsType);
     return true;
     }
@@ -120,8 +116,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('challengeId', 'resultsType'), $args);
 
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -136,8 +131,7 @@ class Challenge_ApiComponent extends AppComponent
       throw new Zend_Exception('resultsType should be one of ['.MIDAS_CHALLENGE_TESTING.'|'.MIDAS_CHALLENGE_TRAINING.']');
       }
 
-    $modelLoad = new MIDAS_ModelLoader();
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
     $challengeModel->closeChallenge($userDao, $challengeId, $resultsType);
     return true;
     }
@@ -163,8 +157,7 @@ class Challenge_ApiComponent extends AppComponent
    */
   public function competitorListChallenges($args)
     {
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -172,8 +165,7 @@ class Challenge_ApiComponent extends AppComponent
       throw new Zend_Exception('You must be logged in to list available challenges');
       }
 
-    $modelLoad = new MIDAS_ModelLoader();
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
     $availableChallenges =
       $challengeModel->findAvailableChallenges($userDao,
                                                isset($args['trainingStatus']) ? $args['trainingStatus'] : null,
@@ -193,8 +185,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('communityId'), $args);
     $communityId = $args['communityId'];
-    $modelLoad = new MIDAS_ModelLoader();
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
     $includedChallenge = $challengeModel->getByCommunityId($communityId);
     return $includedChallenge;
     }
@@ -210,8 +201,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('challengeId'), $args);
 
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -221,8 +211,7 @@ class Challenge_ApiComponent extends AppComponent
 
     $challengeId = $args['challengeId'];
 
-    $modelLoad = new MIDAS_ModelLoader();
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
     list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
     return $challengeModel->getExpectedResultsItems($userDao, $challengeDao);
     }
@@ -235,8 +224,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('challenge_results_run_id', 'test_item_id', 'results_item_id', 'condor_job_id', 'result_key', 'result_value'), $args);
 
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -264,8 +252,7 @@ class Challenge_ApiComponent extends AppComponent
     $resultKey = $args['result_key'];
     $resultValue = $args['result_value'];
 
-    $modelLoad = new MIDAS_ModelLoader();
-    $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
+    $resultsRunItemModel = MidasLoader::loadModel('ResultsRunItem', 'challenge');
     $resultsRunItemDao = $resultsRunItemModel->createResultsItemRun($challengeResultsRunId, $testItemId, $resultsItemId, $outputItemId, $condorDagJobId, $resultKey, $resultValue);
     return $resultsRunItemDao;
     }
@@ -274,8 +261,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('result_run_item_id', 'result_value'), $args);
 
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -290,8 +276,7 @@ class Challenge_ApiComponent extends AppComponent
     $resultsRunItemId = $args['result_run_item_id'];
     $resultValue = $args['result_value'];
       
-    $modelLoad = new MIDAS_ModelLoader();
-    $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
+    $resultsRunItemModel = MidasLoader::loadModel('ResultsRunItem', 'challenge');
 
     
     $resultsRunItem = $resultsRunItemModel->load($resultsRunItemId);
@@ -319,8 +304,7 @@ class Challenge_ApiComponent extends AppComponent
    */
   protected function validateCompetitorResults($userDao, $challengeId, $resultsType, $resultsFolderId = null, $outputFolderId = null)
     {
-    $modelLoad = new MIDAS_ModelLoader();
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
 
     list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
 
@@ -350,8 +334,7 @@ class Challenge_ApiComponent extends AppComponent
   public function competitorValidateResults($args)
     {
     $this->_checkKeys(array('challengeId', 'resultsType', 'resultsFolderId'), $args);
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -382,8 +365,7 @@ class Challenge_ApiComponent extends AppComponent
   public function competitorValidateOutput($args)
     {
     $this->_checkKeys(array('challengeId', 'outputFolderId'), $args);
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -403,9 +385,8 @@ class Challenge_ApiComponent extends AppComponent
 
   protected function generateMatchedResultsItemIds($userDao, $matchedResults, $resultsType, $resultsFolderId, $challengeId)
     {
-    $modelLoad = new MIDAS_ModelLoader();
-    $folderModel = $modelLoad->loadModel('Folder');
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
+    $folderModel = MidasLoader::loadModel('Folder');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
 
     $itemsForExport = array();
 
@@ -499,8 +480,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('challengeId', 'resultsFolderId', 'resultsType'), $args);
 
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -530,10 +510,9 @@ class Challenge_ApiComponent extends AppComponent
 
 
     // add the results folder to the dashboard
-    $modelLoad = new MIDAS_ModelLoader();
-    $dashboardModel = $modelLoad->loadModel('Dashboard', 'validation');
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $folderModel = $modelLoad->loadModel('Folder');
+    $dashboardModel = MidasLoader::loadModel('Dashboard', 'validation');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
+    $folderModel = MidasLoader::loadModel('Folder');
     $resultsFolderDao = $folderModel->load($resultsFolderId);
     $challengeDao = $challengeModel->load($challengeId);
     $dashboardDao = $challengeDao->getDashboard();
@@ -541,14 +520,14 @@ class Challenge_ApiComponent extends AppComponent
 
 
 
-    $executeComponent = $componentLoader->loadComponent('Execute', 'batchmake');
-    $kwbatchmakeComponent = $componentLoader->loadComponent('KWBatchmake', 'batchmake');
+    $executeComponent = MidasLoader::loadComponent('Execute', 'batchmake');
+    $kwbatchmakeComponent = MidasLoader::loadComponent('KWBatchmake', 'batchmake');
 
     // create a task
     $taskDao = $kwbatchmakeComponent->createTask($userDao);
 
     // create a resultsrun
-    $resultsrunModel = $modelLoad->loadModel('ResultsRun', 'challenge');
+    $resultsrunModel = MidasLoader::loadModel('ResultsRun', 'challenge');
     $resultsrunDao = $resultsrunModel->createResultsRun($userDao, $challengeId, $resultsType, $taskDao->getBatchmakeTaskId(), $resultsFolderId, $outputFolderId);
 
     $itemsForExport = $this->generateMatchedResultsItemIds($userDao, $matchedResults, $resultsType, $resultsFolderId, $challengeId);
@@ -560,7 +539,7 @@ class Challenge_ApiComponent extends AppComponent
     // generate definitions of jobs
     $jobsConfig = $this->generateJobsConfig($matchedResults, $itemsPaths);
     
-    $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
+    $resultsRunItemModel = MidasLoader::loadModel('ResultsRunItem', 'challenge');
     $resultsRunItemModel->loadDaoClass('ResultsRunItemDao', 'challenge');
     
     
@@ -683,7 +662,7 @@ class Challenge_ApiComponent extends AppComponent
       }
     else
       {
-      $userModel = $modelLoad->loadModel('User');
+      $userModel = MidasLoader::loadModel('User');
       $adminUserDao = $userModel->load(1);
       $executeComponent->generatePythonConfigParams($taskDao, $userDao, "user");
       $executeComponent->generatePythonConfigParams($taskDao, $adminUserDao, "admin");
@@ -725,13 +704,9 @@ class Challenge_ApiComponent extends AppComponent
    */
   public function competitorListResults($args)
     {
-    // TODO be smarter about joins, see dashboard method
     $this->_checkKeys(array('resultsRunId'), $args);
-    // TODO implementation
-    // TODO figure out what happens if no results or more than one set of results
-
-    $componentLoader = new MIDAS_ComponentLoader();
-    $authComponent = $componentLoader->loadComponent('Authentication', 'api');
+    
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -741,44 +716,22 @@ class Challenge_ApiComponent extends AppComponent
 
     $resultsRunId = $args['resultsRunId'];
     
-
-    $modelLoad = new MIDAS_ModelLoader();
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $itemModel = $modelLoad->loadModel('Item');
-    $resultsrunModel = $modelLoad->loadModel('ResultsRun', 'challenge');
-    $resultsRunItemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
+    $itemModel = MidasLoader::loadModel('Item');
+    $resultsrunModel = MidasLoader::loadModel('ResultsRun', 'challenge');
+    $resultsRunItemModel = MidasLoader::loadModel('ResultsRunItem', 'challenge');
 
     $resultsRun = $resultsrunModel->load($resultsRunId);
     $challengeId = $resultsRun->getChallengeId();
 
-    
     list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
 
     $resultsRunItemsValues = $resultsRunItemModel->loadResultsItemsValues($resultsRun->getChallengeResultsRunId());
-
-//TODO something like this instead
-//select challenge_results_run_id, count(*), result_key, sum(result_value), avg(result_value) from challenge_results_run_item group by challenge_results_run_id, result_key;
     // now that we have the results back, combine them based on the test_item_name
     $subjectScores = array();
-    $metrics = array(
-        'AveDist(A_1, B_1)',
-        'AveDist(A_2, B_2)',
-        'Dice(A_1, B_1)',
-        'Dice(A_2, B_2)',
-        'HausdorffDist(A_1, B_1)',
-        'HausdorffDist(A_2, B_2)',
-        'Kappa(A,B)',
-        'Sensitivity(A_1, B_1)',
-        'Sensitivity(A_2, B_2)',
-        'Specificity(A_1, B_1)',
-        'Specificity(A_2, B_2)');
     $metricSums = array();
-    foreach($metrics as $metric)
-      {
-      $metricSums[$metric] = array('count' => 0, 'sum' => 0);  
-      }
 
-    // assume we are finished unless we encounter a missing value  
+    // assume the dataset has finished processing unless we encounter a missing value  
     $processingComplete = 'true';  
       
     foreach($resultsRunItemsValues as $resultsRunItemsValue)
@@ -798,6 +751,10 @@ class Challenge_ApiComponent extends AppComponent
         else
           {
           $subjectScores[$testItemName][$metricType] = $metricScore;
+          if(!array_key_exists($metricType, $metricSums))
+            {
+            $metricSums[$metricType] = array('count' => 0, 'sum' => 0);  
+            }
           $metricSum = $metricSums[$metricType];
           $metricSum['count'] = $metricSum['count'] + 1;
           $metricSum['sum'] = $metricSum['sum'] + $metricScore;
@@ -819,7 +776,7 @@ class Challenge_ApiComponent extends AppComponent
         $subjectScores['averages'][$metricType] = $totals['sum'] / $totals['count'];  
         }
       }
-    
+    $metrics = array_keys($metricSums);
     $resultRows = array();
     // reverse the array to get averages first
     foreach(array_reverse($subjectScores) as $subject => $scores)
@@ -845,64 +802,7 @@ class Challenge_ApiComponent extends AppComponent
       $resultRows[] = $resultRow;
       }
       
-      
-    /*$returnRows = array();
-    foreach($resultsRunItemsValues as $resultsRunItemsValue)
-      {
-      $test_item_id = $resultsRunItemsValue['test_item_id'];
-      $output_item_id = $resultsRunItemsValue['output_item_id'];
-      $result_item_id = $resultsRunItemsValue['result_item_id'];
-      $testItem = $itemModel->load($test_item_id);
-      $outputItem = $itemModel->load($output_item_id);
-      $resultItem = $itemModel->load($result_item_id);
-      $resultsRunItemsValue['result_item_name'] = $resultItem->getName();
-      $resultsRunItemsValue['output_item_name'] = $outputItem->getName();
-      $resultsRunItemsValue['test_item_name'] = $testItem->getName();
-      $returnRows[] = $resultsRunItemsValue;
-      }
-*/
-
     $responseData = array('results_rows' => $resultRows, 'processing_complete' => $processingComplete);
-/*
-    // TODO this is fake data, uncomment if no condor setup
-    $rows = array();
-    $row1 = array('test_item_name' => 'test1', 'test_item_id' => '1',
-                  'result_item_name' => 'result1', 'result_item_id' => '2',
-                  'output_item_name' => 'output1', 'output_item_id' => '8',
-                  'metric_item_name' => 'metric1', 'metric_item_id' => '3',
-                  'score' => '0.77');
-    $row2 = array('test_item_name' => 'test2', 'test_item_id' => '4',
-                  'result_item_name' => 'result2', 'result_item_id' => '5',
-                  'output_item_name' => 'output2', 'output_item_id' => '9',
-                  'metric_item_name' => 'metric1', 'metric_item_id' => '3',
-                  'score' => '0.65');
-    $row3 = array('test_item_name' => 'test3', 'test_item_id' => '6',
-                  'result_item_name' => 'result3', 'result_item_id' => '7',
-                  'output_item_name' => 'output3', 'output_item_id' => '10',
-                  'metric_item_name' => 'metric1', 'metric_item_id' => '3',
-                  'score' => '0.84');
-
-    // some randomization to pretend like processing is happening
-    $processingComplete = 'false';
-    $randVal = rand(1,3);
-    if($randVal === 1)
-      {
-      $rows[] = $row1;
-      }
-    else if($randVal === 2)
-      {
-      $rows[] = $row1;
-      $rows[] = $row2;
-      }
-    else if($randVal === 3)
-      {
-      $rows[] = $row1;
-      $rows[] = $row2;
-      $rows[] = $row3;
-      $processingComplete = 'true';
-      }
-    $responseData = array('results_rows' => $rows, 'processing_complete' => $processingComplete);
-*/
     return $responseData;
     }
 
@@ -931,13 +831,11 @@ class Challenge_ApiComponent extends AppComponent
     // TODO implementation
     // TODO figure out what happens if no results or more than one set of results
 
-    $componentLoader = new MIDAS_ComponentLoader();
     $challengeId = $args['challengeId'];
     
-    $modelLoad = new MIDAS_ModelLoader();
-    $challengeModel = $modelLoad->loadModel('Challenge', 'challenge');
-    $resultsrunModel = $modelLoad->loadModel('ResultsRun', 'challenge');
-    $resultsrunitemModel = $modelLoad->loadModel('ResultsRunItem', 'challenge');
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
+    $resultsrunModel = MidasLoader::loadModel('ResultsRun', 'challenge');
+    $resultsrunitemModel = MidasLoader::loadModel('ResultsRunItem', 'challenge');
 
     $challengeDao = $challengeModel->load($challengeId);
     if(!$challengeDao)

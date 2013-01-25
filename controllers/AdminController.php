@@ -92,8 +92,7 @@ class Challenge_AdminController extends Challenge_AppController
       $dashboardDao->setDescription($formInfo->getValue('description'));
       $forminfo_trainingStatus = $formInfo->getValue('training_status');
       $forminfo_testingStatus = $formInfo->getValue('testing_status');
-      $modelLoader = new MIDAS_ModelLoader();
-      $dashboardModel = $modelLoader->loadModel('Dashboard', 'validation');
+      $dashboardModel = MidasLoader::loadModel('Dashboard', 'validation');
       $dashboardModel->save($dashboardDao);
       $challengeDao->setTrainingStatus($forminfo_trainingStatus);
       $challengeDao->setTestingStatus($forminfo_testingStatus);
