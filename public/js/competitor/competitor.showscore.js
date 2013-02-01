@@ -15,7 +15,8 @@ midas.challenge.competitor.updateResults = function()
       {
       var processingComplete = results.data.processing_complete;
       var resultsRows = results.data.results_rows;
-      midas.challenge.competitor.updateResultsTable(resultsRows);
+      var rrisInError = results.data.rris_in_error;
+      midas.challenge.competitor.updateResultsTable(resultsRows, rrisInError);
       if(processingComplete !== 'true') 
         { 
         var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
@@ -37,12 +38,22 @@ $(document).ready(function()
 
     // start looping for updates
     var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
+    
+    midas.challenge.competitor.setupErrorDisplay();
+    
   });
  
- 
+midas.challenge.competitor.setupErrorDisplay = function() {
+    $('td.midasChallengeError').unbind('click').click(function () {
+        var id = $(this)[0].id;
+        var rriid = (id.split('_'))[3];
+        midas.loadDialog('errorDetails'+rriid, '/challenge/competitor/errordetails?rriid='+rriid);
+        midas.showDialog('Error details', false);
+    });
+} 
  
 // Fill the results table with any data
-midas.challenge.competitor.updateResultsTable = function(jsonResults)  {
+midas.challenge.competitor.updateResultsTable = function(jsonResults, rrisInError)  {
     $('#tablesorter_scores').hide();
     $('.resultsLoading').show();
     
@@ -58,12 +69,20 @@ midas.challenge.competitor.updateResultsTable = function(jsonResults)  {
         html+='<tr class="resultsRow '+stripeClass+'">';
         $.each(json.tableHeaders, function (col_index, column)  {
             if(value[column] === undefined) {
-                var colVal = 'queued';
+                var colVal = json.unknownStatus;
+                html+=' <td>'+colVal+'</td>';
+            }
+            else if(value[column] === 'error') {
+                var metric = column;
+                var truthItemName = value['Subject'];
+                var rriId = rrisInError[truthItemName][metric];
+                var colVal = 'error';
+                html+=' <td class="midasChallengeError" id="error_cell_rriid_'+rriId+'">'+colVal+'</td>';
             }
             else {
                 var colVal = value[column];
+                html+=' <td>'+colVal+'</td>';
             }
-            html+=' <td>'+colVal+'</td>';
         });
         html+='</tr>';
         $('#tablesorter_scores').append(html);
@@ -72,4 +91,6 @@ midas.challenge.competitor.updateResultsTable = function(jsonResults)  {
     $('#tablesorter_scores').show();
     $('.resultsLoading').hide();
     $('#tablesorter_scores').trigger('update');
+    midas.challenge.competitor.setupErrorDisplay();
+
 }
