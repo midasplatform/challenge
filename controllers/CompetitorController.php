@@ -21,7 +21,7 @@
 class Challenge_CompetitorController extends Challenge_AppController
 {
   public $_moduleComponents = array('Api');
-  public $_moduleModels = array('Challenge', 'Competitor', 'ResultsRun');
+  public $_moduleModels = array('Challenge', 'Competitor', 'ResultsRun', 'ResultsRunItem');
   public $_models = array('Folder', 'User');
   public $_moduleForms = array('Config');
 
@@ -167,6 +167,8 @@ class Challenge_CompetitorController extends Challenge_AppController
     $apiargs['resultsRunId'] = $resultsRunId;
     $tableData = $this->ModuleComponent->Api->competitorListResults($apiargs);
     $this->view->json['processingComplete'] = $tableData['processing_complete'];
+    $this->view->json['rrisInError'] = $tableData['rris_in_error'];
+    $this->view->rrisInError = $tableData['rris_in_error'];
       
 
     $this->view->challengeName = $dashboardDao->getName();
@@ -180,6 +182,7 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->tableData_resultsColumns = $scoredColumns;
     $this->view->tableHeaders = $scoredColumns;
     $this->view->json['tableHeaders'] = $scoredColumns;
+    $this->view->json['unknownStatus'] = MIDAS_CHALLENGE_RRI_STATUS_UNKNOWN;
     $this->view->anonymizedId = $this->getAnonymizedId($userDao, $dashboardDao->getName());
     }
 
@@ -314,6 +317,34 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->header = "Challenge Troubleshooting";
     }
     
+  public function errordetailsAction()
+    {
+    // TODO validation, user auth, layout and further display of errors
+    $this->disableLayout();
+    $resultsRunItemId = $this->_getParam('rriid');
+    if(!isset($resultsRunItemId))
+      {
+      throw new Zend_Exception('Must set rriid parameter');
+      }
+    $resultsRunItem = $this->Challenge_ResultsRunItem->load($resultsRunItemId);
+    if(!$resultsRunItem)
+      {
+      throw new Zend_Exception('ResultsRunItem with that id does not exist', 404);
+      }
+    $condorJobModel = MidasLoader::loadModel('CondorJob', 'batchmake');
+    $condorJob = $condorJobModel->load($resultsRunItem->getCondorDagJobId());
+    $batchmakeTask = $resultsRunItem->getChallengeResultsRun()->getBatchmakeTask();
     
+    $outputFile = $batchmakeTask->getWorkDir() . $condorJob->getOutputFilename();
+    $output = file_get_contents($outputFile);
+    
+    $errorFile = $batchmakeTask->getWorkDir() . $condorJob->getErrorFilename();
+    $error = file_get_contents($errorFile);
+
+    $logFile = $batchmakeTask->getWorkDir() . $condorJob->getLogFilename();
+    $log = file_get_contents($logFile);
+
+    $this->view->errorText = $error;
+    }  
     
 }//end class

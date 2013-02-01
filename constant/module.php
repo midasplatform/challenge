@@ -33,6 +33,14 @@ define("MIDAS_CHALLENGE_TRAINING", "Training");
 define("MIDAS_CHALLENGE_TRUTH", "Truth");
 define("MIDAS_CHALLENGE_IMAGES", "Images");
 
-define("MIDAS_CHALLENGE_WAITING", "running");
+define("MIDAS_CHALLENGE_WAITING", "waiting");
+
+
+define("MIDAS_CHALLENGE_RRI_STATUS_QUEUED", 'queued');
+define("MIDAS_CHALLENGE_RRI_STATUS_RUNNING", 'running');
+define("MIDAS_CHALLENGE_RRI_STATUS_ERROR", 'error');
+define("MIDAS_CHALLENGE_RRI_STATUS_COMPLETE", 'complete');
+define("MIDAS_CHALLENGE_RRI_STATUS_STOPPED", 'stopped');
+define("MIDAS_CHALLENGE_RRI_STATUS_UNKNOWN", 'unknown');
 
 ?>

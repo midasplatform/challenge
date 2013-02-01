@@ -52,6 +52,7 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
             $stripeClasses = array('odd', 'even');
             $stripeClassInd = 0;
             $resultsRows = $this->tableData['results_rows'];
+            $rrisInError = $this->rrisInError;
             foreach($resultsRows as $subject => $scores)
               {
               echo "<tr class='resultsRow ".$stripeClasses[$stripeClassInd++ % 2]."'>";
@@ -60,13 +61,20 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
                 {
                 if(!array_key_exists($column, $scores))
                   {
-                  $colVal = 'queued';  
+                  $colVal = MIDAS_CHALLENGE_RRI_STATUS_UNKNOWN;
+                  echo "<td>".$colVal."</td>";
                   }
+                elseif($scores[$column] == 'error')
+                  {
+                  $truthItemname = $scores['Subject'];
+                  $rriid = $rrisInError[$truthItemname][$column];
+                  echo '<td class="midasChallengeError" id="error_cell_rriid_'.$rriid.'">'.$scores[$column].'</td>';
+                  } 
                 else
                   {
                   $colVal = $scores[$column];
+                  echo "<td>".$colVal."</td>";
                   }
-                echo "<td>".$colVal."</td>";
                 }
               echo "</tr>";
               }

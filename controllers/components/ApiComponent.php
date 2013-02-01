@@ -259,7 +259,7 @@ class Challenge_ApiComponent extends AppComponent
 
   public function adminUpdateResultsRunItem($args)
     {
-    $this->_checkKeys(array('result_run_item_id', 'result_value'), $args);
+    $this->_checkKeys(array('result_run_item_id'), $args);
 
     $authComponent = MidasLoader::loadComponent('Authentication', 'api');
     $userDao = $authComponent->getUser($args,
@@ -274,18 +274,20 @@ class Challenge_ApiComponent extends AppComponent
       }
 
     $resultsRunItemId = $args['result_run_item_id'];
-    $resultValue = $args['result_value'];
-      
     $resultsRunItemModel = MidasLoader::loadModel('ResultsRunItem', 'challenge');
-
-    
     $resultsRunItem = $resultsRunItemModel->load($resultsRunItemId);
     if(!$resultsRunItem)
       {
       throw new Zend_Exception('Invalid results_run_item_id');
       }
-      
-    $resultsRunItem->setResultValue($resultValue); 
+
+    if(array_key_exists('result_value', $args)) { $resultsRunItem->setResultValue($args['result_value']);  }
+    if(array_key_exists('condor_dag_job_id', $args)) { $resultsRunItem->setCondorDagJobId($args['condor_dag_job_id']);  }
+    if(array_key_exists('result_key', $args)) { $resultsRunItem->setResultKey($args['result_key']);  }
+    if(array_key_exists('return_code', $args)) { $resultsRunItem->setReturnCode($args['return_code']);  }
+    if(array_key_exists('process_out', $args)) { $resultsRunItem->setProcessOut($args['process_out']);  }
+    if(array_key_exists('status', $args)) { $resultsRunItem->setStatus($args['status']);  }
+    
     $resultsRunItemModel->save($resultsRunItem);
     return $resultsRunItem;
     }
@@ -592,7 +594,9 @@ class Challenge_ApiComponent extends AppComponent
             $resultsrunItemDao->setResultKey($metric->getMetricDisplayName());
             }
           $resultsrunItemDao->setResultValue(null); 
-          $resultsrunItemDao->setChallengeSelectedMetricId($selectedMetric->getChallengeSelectedMetricId()); 
+          $resultsrunItemDao->setChallengeSelectedMetricId($selectedMetric->getChallengeSelectedMetricId());
+          // for even better status reporting we could let the condor_dag_post_script change these to queued
+          $resultsrunItemDao->setStatus(MIDAS_CHALLENGE_RRI_STATUS_QUEUED);
           $resultsRunItemModel->save($resultsrunItemDao);
           if(!array_key_exists($jobInd, $revised___resultRunItems_configs[$metricConfig]))
             {
@@ -601,7 +605,7 @@ class Challenge_ApiComponent extends AppComponent
             }
           else
             {  
-            $revised___resultRunItems_configs[$metricConfig][$jobInd] .= ';' . $resultsrunItemDao->getKey();
+            $revised___resultRunItems_configs[$metricConfig][$jobInd] .= '_' . $resultsrunItemDao->getKey();
             // create and append together as many rri as scored labels
             }
           }
@@ -635,7 +639,7 @@ class Challenge_ApiComponent extends AppComponent
     
 
     $appTaskConfigProperties = array();
-    $condorPostScriptPath = BASE_PATH . "/modules/challenge/library/challenge_condor_postscript.py";
+    $condorPostScriptPath = BASE_PATH . "/modules/challenge/library/challenge_condor_script.py";
     $condorDagPostScriptPath = BASE_PATH . "/modules/challenge/library/challenge_condor_dag_postscript.py";
 
 
@@ -701,6 +705,7 @@ class Challenge_ApiComponent extends AppComponent
    * metric_item_name
    * metric_item_id
    * score
+   * rris_in_error => list of ids of resultrunitems that were in error
    */
   public function competitorListResults($args)
     {
@@ -726,43 +731,59 @@ class Challenge_ApiComponent extends AppComponent
 
     list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);
 
-    $resultsRunItemsValues = $resultsRunItemModel->loadResultsItemsValues($resultsRun->getChallengeResultsRunId());
+    $resultsRunItems = $resultsRunItemModel->findBy('challenge_results_run_id',$resultsRun->getChallengeResultsRunId());
     // now that we have the results back, combine them based on the test_item_name
     $subjectScores = array();
     $metricSums = array();
 
     // assume the dataset has finished processing unless we encounter a missing value  
-    $processingComplete = 'true';  
+    $processingComplete = 'true';
+    $rrisInError = array();
       
-    foreach($resultsRunItemsValues as $resultsRunItemsValue)
+    foreach($resultsRunItems as $resultsRunItem)
       {
-      $testItemName = $resultsRunItemsValue['test_item_name'];
+      // group the outputs by the test item
+      $testItemName = $resultsRunItem->getTestItem()->getName();
       if(!array_key_exists($testItemName, $subjectScores))
         {
         $subjectScores[$testItemName] = array();  
         }
-        $metricType = $resultsRunItemsValue['result_key'];
-        $metricScore = $resultsRunItemsValue['result_value'];
-        if($metricScore === null)
+        $metricType = $resultsRunItem->getResultKey();
+        if(!array_key_exists($metricType, $metricSums))
           {
-          $subjectScores[$testItemName][$metricType] = MIDAS_CHALLENGE_WAITING;
-          $processingComplete = 'false';
+          $metricSums[$metricType] = array('count' => 0, 'sum' => 0);  
           }
-        else
+        // now deal with the result of this testitem based on its status
+        if($resultsRunItem->getStatus() == MIDAS_CHALLENGE_RRI_STATUS_COMPLETE)
           {
+          $metricScore = $resultsRunItem->getResultValue();
           $subjectScores[$testItemName][$metricType] = $metricScore;
-          if(!array_key_exists($metricType, $metricSums))
-            {
-            $metricSums[$metricType] = array('count' => 0, 'sum' => 0);  
-            }
           $metricSum = $metricSums[$metricType];
           $metricSum['count'] = $metricSum['count'] + 1;
           $metricSum['sum'] = $metricSum['sum'] + $metricScore;
           $metricSums[$metricType] = $metricSum;
           }
-      }
-    
-    
+        else
+          {
+          if($resultsRunItem->getStatus() == MIDAS_CHALLENGE_RRI_STATUS_QUEUED ||
+             $resultsRunItem->getStatus() == MIDAS_CHALLENGE_RRI_STATUS_RUNNING ||
+             $resultsRunItem->getStatus() == MIDAS_CHALLENGE_RRI_STATUS_UNKNOWN)
+            {
+            $subjectScores[$testItemName][$metricType] = $resultsRunItem->getStatus();
+            $processingComplete = 'false';
+            }
+          elseif($resultsRunItem->getStatus() == MIDAS_CHALLENGE_RRI_STATUS_ERROR)
+            {
+            $subjectScores[$testItemName][$metricType] = $resultsRunItem->getStatus();
+            $rrisInError[$testItemName][$metricType] = $resultsRunItem->getKey(); 
+            }
+          elseif($resultsRunItem->getStatus() == MIDAS_CHALLENGE_RRI_STATUS_STOPPED)
+            {
+            $subjectScores[$testItemName][$metricType] = $resultsRunItem->getStatus();
+            }
+          }
+        }
+       
     // now compute an average for each metric type
     $subjectScores['averages'] = array();
     foreach($metricSums as $metricType => $totals)
@@ -796,13 +817,13 @@ class Challenge_ApiComponent extends AppComponent
           }
         else
           {
-          $resultRow[$metric] = MIDAS_CHALLENGE_WAITING;
+          $resultRow[$metric] = $scores[$metric];
           }
         }
       $resultRows[] = $resultRow;
       }
       
-    $responseData = array('results_rows' => $resultRows, 'processing_complete' => $processingComplete);
+    $responseData = array('results_rows' => $resultRows, 'rris_in_error' => $rrisInError, 'processing_complete' => $processingComplete);
     return $responseData;
     }
 
