@@ -319,8 +319,14 @@ class Challenge_CompetitorController extends Challenge_AppController
     
   public function errordetailsAction()
     {
-    // TODO validation, user auth, layout and further display of errors
+    if(!$this->logged)
+      {
+      $this->haveToBeLogged();
+      return false;
+      }
     $this->disableLayout();
+
+    $userDao = $this->userSession->Dao;
     $resultsRunItemId = $this->_getParam('rriid');
     if(!isset($resultsRunItemId))
       {
@@ -335,6 +341,13 @@ class Challenge_CompetitorController extends Challenge_AppController
     $condorJob = $condorJobModel->load($resultsRunItem->getCondorDagJobId());
     $batchmakeTask = $resultsRunItem->getChallengeResultsRun()->getBatchmakeTask();
     
+    // check privileges
+    if($userDao->getUserId() !== $batchmakeTask->getUserId() &&
+       !$this->Challenge_Challenge->isChallengeModerator($userDao, $resultsRunItem->getChallengeResultsRun()->getChallenge()))
+      {
+      throw new Zend_Exception("You are not authorized to see these results.");
+      }
+    
     $outputFile = $batchmakeTask->getWorkDir() . $condorJob->getOutputFilename();
     $output = file_get_contents($outputFile);
     
@@ -343,8 +356,10 @@ class Challenge_CompetitorController extends Challenge_AppController
 
     $logFile = $batchmakeTask->getWorkDir() . $condorJob->getLogFilename();
     $log = file_get_contents($logFile);
-
+    
     $this->view->errorText = $error;
+    $this->view->outputText = $output;
+    $this->view->logText = $log;
     }  
     
 }//end class
