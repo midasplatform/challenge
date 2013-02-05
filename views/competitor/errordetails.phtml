@@ -10,5 +10,27 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
 ?>
+<script type="text/javascript" src="<?php echo $this->moduleWebroot?>/public/js/competitor/competitor.errordetails.js" />
 
-<?php echo $this->errorText; ?>
+<div class="tabs" id='tabsErrordetails'>
+  <ul>
+    <li><a href="#tabs-log">Condor Log</a></li>
+    <li><a href="#tabs-output">Standard Output</a></li>
+    <li><a href="#tabs-error">Standard Error</a></li>
+  </ul>
+  <div id="tabs-log">
+     <textarea rows="20" style="width:100%;">
+     <?php echo $this->logText; ?>
+     </textarea>
+  </div>
+  <div id="tabs-output">
+     <textarea rows="20" style="width:100%;">
+     <?php echo $this->outputText; ?>
+     </textarea>
+  </div>
+  <div id="tabs-error">
+     <textarea rows="20" style="width:100%;">
+     <?php echo $this->errorText; ?>
+     </textarea>
+  </div>      
+</div>      
