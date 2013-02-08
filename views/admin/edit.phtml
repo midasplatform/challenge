@@ -22,6 +22,11 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
     <label for="description"><?php echo $this->t('Description')?></label>
     <?php echo $this->infoForm['description']?>
   </div>
+  <div>
+    <label for="number_scored_labels"><?php echo $this->t('Number of Scored Labels')?></label>
+    <?php echo $this->infoForm['number_scored_labels']?>
+  </div>
+  <h3>Set Status of Challenge Stages</h3>
   <div class="radioElement">
     <h4><?php echo $this->t('Training Status')?></h4>
     <?php echo $this->infoForm['training_status']?>
@@ -30,6 +35,18 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
     <h4><?php echo $this->t('Testing Status')?></h4>
     <?php echo $this->infoForm['testing_status']?>
   </div>
+  <h3>Select Enabled Metrics</h3>
+  <?php
+  foreach($this->allMetrics as $metric)
+    { ?>
+    <div class="radioElement">
+      <h4><?php echo $this->t($metric->getMetricName())?></h4>
+      <?php echo $this->infoForm[$metric->getMetricExeName()]?>
+    </div>
+    <?php
+    }
+  ?>
+  
   <div>
     <?php echo $this->infoForm['submit']?>
   </div>

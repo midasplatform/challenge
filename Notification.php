@@ -194,7 +194,8 @@ class Challenge_Notification extends ApiEnabled_Notification
       $moduleWebroot = $fc->getBaseUrl().'/challenge';
       $moduleFileroot =  $fc->getBaseUrl().'/modules/'.$this->moduleName;
       return array($this->t('Create a challenge') => 
-                   array("property" => 'onclick=midas.challenge.admin.createChallenge('.$apiargs['communityId'].');', "image" => $moduleFileroot.'/public/images/competitors.png') );
+             array("property" => 'href="'.$moduleWebroot .'/admin/create?communityId='.$apiargs['communityId'].'"',
+                   "image" => $moduleFileroot.'/public/images/competitors.png'));
       }
     }
   

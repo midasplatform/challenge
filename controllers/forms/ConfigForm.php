@@ -43,7 +43,7 @@ class Challenge_ConfigForm extends AppForm
     }
 
   /** create create challenge form */
-  public function createEditChallengeForm($community_id, $action)
+  public function createEditChallengeForm($community_id, $action, $allMetrics)
     {
     $form = new Zend_Form;
 
@@ -55,6 +55,9 @@ class Challenge_ConfigForm extends AppForm
           ->addValidator('NotEmpty', true);
 
     $description = new Zend_Form_Element_Textarea('description');
+    $numberScoredLabels = new Zend_Form_Element_Textarea('number_scored_labels');
+    $numberScoredLabels->setRequired(true)
+                       ->addValidator('Digits');
 
     $trainingStatus = new Zend_Form_Element_Radio('training_status');
     $trainingStatus->addMultiOptions(array(
@@ -71,10 +74,24 @@ class Challenge_ConfigForm extends AppForm
             ->setRequired(true)
             ->setValue(MIDAS_CHALLENGE_STATUS_CLOSED);
 
+    $formElements = array($name, $description, $numberScoredLabels, $trainingStatus, $testingStatus);
+    foreach($allMetrics as $metric)
+      {
+      $testingStatus = new Zend_Form_Element_Radio($metric->getMetricExeName());
+      $testingStatus->addMultiOptions(array(
+                 '0' => $this->t("not selected"),
+                 '1' => $this->t("selected"),
+                  ))
+            ->setRequired(true)
+            ->setValue('0');
+      $formElements[] = $testingStatus;
+      }
+    
     $submit = new  Zend_Form_Element_Submit('submit');
     $submit ->setLabel($this->t("Save"));
+    $formElements[] = $submit;
 
-    $form->addElements(array($name, $description, $trainingStatus, $testingStatus, $submit));
+    $form->addElements($formElements);
     return $form;
     }
 
