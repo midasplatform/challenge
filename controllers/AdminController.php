@@ -24,7 +24,7 @@ class Challenge_AdminController extends Challenge_AppController
   public $_moduleModels = array('Challenge');
   public $_moduleForms = array('Config');
 
-  /** Create a challenge (ajax)*/
+  /** Create a challenge, set simple defaults*/
   function createAction()
     {
     if(!$this->logged)
@@ -33,27 +33,17 @@ class Challenge_AdminController extends Challenge_AppController
       }
     $community_id = $this->_getParam('communityId');
     $this->view->communityId = $community_id;
-    $action = 'create';
-    $form = $this->ModuleForm->Config->createEditChallengeForm($community_id, $action);
-
-    if($this->_request->isPost() && $form->isValid($this->getRequest()->getPost()))
-      {
-      $args = array();
-      $args['communityId'] = $community_id;
-      $args['useSession'] = true;
-      $args['challengeName'] = $form->getValue('name');
-      $args['challengeDescription'] =  $form->getValue('description');
-      $args['trainingStatus'] =  $form->getValue('training_status');
-      $args['testingStatus'] =  $form->getValue('testing_status');
-      $challengeId = $this->ModuleComponent->Api->adminCreateChallenge($args);
-      $this->_redirect("/community/".$community_id);
-      }
-    else
-      {
-      $this->requireAjaxRequest();
-      $this->_helper->layout->disableLayout();
-      $this->view->form = $this->getFormAsArray($form);
-      }
+    $challengeMetricModel = MidasLoader::loadModel('Metric', 'challenge');
+    $args = array();
+    $args['communityId'] = $community_id;
+    $args['useSession'] = true;
+    $args['challengeName'] = "Default Challenge Name";
+    $args['challengeDescription'] =  "Default Challenge Description";
+    $args['trainingStatus'] =  MIDAS_CHALLENGE_STATUS_CLOSED;
+    $args['testingStatus'] =  MIDAS_CHALLENGE_STATUS_CLOSED;
+    $args['numberScoredLabels'] =  '0';
+    $challengeId = $this->ModuleComponent->Api->adminCreateChallenge($args);
+    $this->_redirect("/community/manage?communityId=".$community_id);
     }//end create
 
 
@@ -81,7 +71,9 @@ class Challenge_AdminController extends Challenge_AppController
     $challengeDao = $this->Challenge_Challenge->load($challengeId);
     $dashboardDao = $challengeDao->getDashboard();
     $action = 'edit';
-    $formInfo = $this->ModuleForm->Config->createEditChallengeForm($community_id, $action);
+    $challengeMetricModel = MidasLoader::loadModel('Metric', 'challenge');
+    $allMetrics = $challengeMetricModel->fetchAll();
+    $formInfo = $this->ModuleForm->Config->createEditChallengeForm($community_id, $action, $allMetrics);
 
     //ajax posts
     if($this->_request->isPost() && $formInfo->isValid($this->getRequest()->getPost()))
@@ -96,7 +88,37 @@ class Challenge_AdminController extends Challenge_AppController
       $dashboardModel->save($dashboardDao);
       $challengeDao->setTrainingStatus($forminfo_trainingStatus);
       $challengeDao->setTestingStatus($forminfo_testingStatus);
+      $challengeDao->setNumberScoredLabels($formInfo->getValue('number_scored_labels'));
       $this->Challenge_Challenge->save($challengeDao);
+      
+      $selectedMetricModel = MidasLoader::loadModel('SelectedMetric', 'challenge');
+      $selectedMetrics = $selectedMetricModel->findBy('challenge_id', $challengeId);
+      foreach($allMetrics as $metric)
+        {
+        $metricSelected = $formInfo->getValue($metric->getMetricExeName());
+        $selectedMetricExists = false;
+        foreach($selectedMetrics as $selectedMetric)
+          {
+          if($selectedMetric->getChallengeMetricId() == $metric->getChallengeMetricId())
+            {
+            $selectedMetricExists = true;
+            if(!$metricSelected)
+              {
+              $selectedMetricModel->delete($selectedMetric);
+              }
+            break;
+            }
+          }
+        if($metricSelected && !$selectedMetricExists)
+          {
+          // need to create the selected metric  
+          $selectedMetric = MidasLoader::newDao('SelectedMetricDao', 'challenge');
+          $selectedMetric->setChallengeMetricId($metric->getChallengeMetricId());
+          $selectedMetric->setChallengeId($challengeDao->getChallengeId());
+          $selectedMetricModel->save($selectedMetric);
+          }
+        }
+      
       if($challengeDao !== false)
         {
         echo JsonComponent::encode(array(true, $this->t('Changes saved')));
@@ -117,6 +139,29 @@ class Challenge_AdminController extends Challenge_AppController
     $testingStatus = $formInfo->getElement('testing_status');
     $trainingStatus->setValue($challengeDao->getTrainingStatus());
     $testingStatus->setValue($challengeDao->getTestingStatus());
+    $numberScoredLabels = $formInfo->getElement('number_scored_labels');
+    $numberScoredLabels->setValue($challengeDao->getNumberScoredLabels());
+    
+    // get the currently selected metrics for this challenge
+    $selectedMetricModel = MidasLoader::loadModel('SelectedMetric', 'challenge');
+    $selectedMetrics = $selectedMetricModel->findBy('challenge_id', $challengeId);
+    
+    // list the metrics
+    foreach($allMetrics as $metric)
+      {
+      $metricRadio = $formInfo->getElement($metric->getMetricExeName());
+      $metricSelected = false;
+      foreach($selectedMetrics as $selectedMetric)
+        {
+        if($selectedMetric->getChallengeMetricId() == $metric->getChallengeMetricId())
+          {
+          $metricSelected = true;
+          break;
+          }
+        }
+      $metricRadio->setValue($metricSelected == false ? '0' : '1');  
+      }
+    $this->view->allMetrics = $allMetrics;
     $this->view->infoForm = $this->getFormAsArray($formInfo);
 
     }//

@@ -216,7 +216,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
 
   /** Create a challenge
    * @return ChallengeDao */
-  function createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $trainingStatus = MIDAS_CHALLENGE_STATUS_CLOSED, $testingStatus = MIDAS_CHALLENGE_STATUS_CLOSED, $folderId)
+  function createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $numberScoredLabels, $trainingStatus = MIDAS_CHALLENGE_STATUS_CLOSED, $testingStatus = MIDAS_CHALLENGE_STATUS_CLOSED, $folderId)
     {
     if(!$userDao)
       {
@@ -257,9 +257,9 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $challengeDao = new Challenge_ChallengeDao();
     $challengeDao->setValidationDashboardId($dashboardDao->getDashboardId());
     $challengeDao->setCommunityId($communityDao->getCommunityId());
+    $challengeDao->setNumberScoredLabels($numberScoredLabels);
     $challengeDao->setTrainingStatus($trainingStatus);
     $challengeDao->setTestingStatus($testingStatus);
-
     $challengeDao->setTrainingFolderStem(MIDAS_CHALLENGE_TRAINING);
     $challengeDao->setTestingFolderStem(MIDAS_CHALLENGE_TESTING);
     $challengeModel->save($challengeDao);

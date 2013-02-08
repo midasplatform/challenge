@@ -60,6 +60,7 @@ class Challenge_ApiComponent extends AppComponent
     $challengeDescription = $args['challengeDescription'];
     $trainingStatus = $args['trainingStatus'];
     $testingStatus = $args['testingStatus'];
+    $numberScoredLabels = $args['numberScoredLabels'];
     $folderId = false;
     if(array_key_exists('folderId', $args))
       {
@@ -71,7 +72,7 @@ class Challenge_ApiComponent extends AppComponent
     $communityDao = $communityModel->load($communityId);
 
     $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
-    $challengeDao = $challengeModel->createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $trainingStatus, $testingStatus, $folderId);
+    $challengeDao = $challengeModel->createChallenge($userDao, $communityDao, $challengeName, $challengeDescription, $numberScoredLabels, $trainingStatus, $testingStatus, $folderId);
     // return the challengeId
     return $challengeDao->getKey();
     }

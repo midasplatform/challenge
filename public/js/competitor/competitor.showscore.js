@@ -45,6 +45,11 @@ $(document).ready(function()
  
 midas.challenge.competitor.setupErrorDisplay = function() {
     $('td.midasChallengeError').unbind('click').click(function () {
+        if(!json.global.logged) {
+            midas.showOrHideDynamicBar('login');
+            midas.loadAjaxDynamicBar('login','/user/login');
+            return;
+        }
         var id = $(this)[0].id;
         var rriid = (id.split('_'))[3];
         midas.loadDialog('errorDetails'+rriid, '/challenge/competitor/errordetails?rriid='+rriid);
