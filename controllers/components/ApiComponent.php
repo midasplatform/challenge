@@ -799,6 +799,10 @@ class Challenge_ApiComponent extends AppComponent
         if($resultsRunItem->getStatus() == MIDAS_CHALLENGE_RRI_STATUS_COMPLETE)
           {
           $metricScore = $resultsRunItem->getResultValue();
+          if($metricScore == MIDAS_CHALLENGE_ARBITRARILY_LARGE_DOUBLE)
+            {
+            $metricScore = INF;
+            }
           $subjectScores[$testItemName][$metricType] = $metricScore;
           $metricSum = $metricSums[$metricType];
           $metricSum['count'] = $metricSum['count'] + 1;
@@ -837,7 +841,14 @@ class Challenge_ApiComponent extends AppComponent
         }
       else
         {
-        $subjectScores['averages'][$metricType] = $totals['sum'] / $totals['count'];  
+        if(is_infinite($totals['sum']))
+          {
+          $subjectScores['averages'][$metricType] = INF;  
+          }
+        else
+          {
+          $subjectScores['averages'][$metricType] = $totals['sum'] / $totals['count'];  
+          }
         }
       }
     $metrics = array_keys($metricSums);
@@ -856,7 +867,14 @@ class Challenge_ApiComponent extends AppComponent
         {
         if(array_key_exists($metric, $scores) && is_numeric($scores[$metric]))
           {
-          $resultRow[$metric] = round($scores[$metric], 3);
+          if(is_infinite($scores[$metric]))
+            {
+            $resultRow[$metric] = MIDAS_CHALLENGE_ARBITRARILY_LARGE_DOUBLE;
+            }
+          else
+            {
+            $resultRow[$metric] = round($scores[$metric], 3);
+            }
           }
         else
           {
