@@ -169,7 +169,8 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->json['processingComplete'] = $tableData['processing_complete'];
     $this->view->json['rrisInError'] = $tableData['rris_in_error'];
     $this->view->rrisInError = $tableData['rris_in_error'];
-      
+    $this->view->json['rrisComplete'] = $tableData['rris_complete'];
+    $this->view->rrisComplete = $tableData['rris_complete'];
 
     $this->view->challengeName = $dashboardDao->getName();
     $this->view->resultsRun = $resultsRun;
@@ -317,7 +318,7 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->header = "Challenge Troubleshooting";
     }
     
-  public function errordetailsAction()
+  public function jobdetailsAction()
     {
     if(!$this->logged)
       {
@@ -347,19 +348,26 @@ class Challenge_CompetitorController extends Challenge_AppController
       {
       throw new Zend_Exception("You are not authorized to see these results.");
       }
-    
-    $outputFile = $batchmakeTask->getWorkDir() . $condorJob->getOutputFilename();
-    $output = file_get_contents($outputFile);
-    
-    $errorFile = $batchmakeTask->getWorkDir() . $condorJob->getErrorFilename();
-    $error = file_get_contents($errorFile);
 
-    $logFile = $batchmakeTask->getWorkDir() . $condorJob->getLogFilename();
-    $log = file_get_contents($logFile);
+    $tmpDir = $batchmakeTask->getWorkDir();
+    
+    $outputFile = $tmpDir . $condorJob->getOutputFilename();
+    $output = file_exists($outputFile) ? file_get_contents($outputFile) : "std out " .MIDAS_CHALLENGE_FILE_NOT_FOUND;
+    
+    $errorFile = $tmpDir . $condorJob->getErrorFilename();
+    $error = file_exists($errorFile) ? file_get_contents($errorFile) : "std err " .MIDAS_CHALLENGE_FILE_NOT_FOUND;
+
+    $logFile = $tmpDir . $condorJob->getLogFilename();
+    $log = file_exists($logFile) ? file_get_contents($logFile) : "log " .MIDAS_CHALLENGE_FILE_NOT_FOUND;
+
+    $processOutputFile = $tmpDir . $resultsRunItem->getProcessOut();
+    $processOutput = file_exists($processOutputFile) ? file_get_contents($processOutputFile) : "output " .MIDAS_CHALLENGE_FILE_NOT_FOUND;
+    
     
     $this->view->errorText = $error;
     $this->view->outputText = $output;
     $this->view->logText = $log;
+    $this->view->processOutputText = $processOutput;
     }  
     
 }//end class

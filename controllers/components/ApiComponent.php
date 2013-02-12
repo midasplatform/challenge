@@ -282,7 +282,16 @@ class Challenge_ApiComponent extends AppComponent
       throw new Zend_Exception('Invalid results_run_item_id');
       }
 
-    if(array_key_exists('result_value', $args)) { $resultsRunItem->setResultValue($args['result_value']);  }
+    if(array_key_exists('result_value', $args))
+      {
+      $resultValue = $args['result_value'];
+      if($resultValue == 'inf')
+        {
+        $resultValue = MIDAS_CHALLENGE_ARBITRARILY_LARGE_DOUBLE;  
+        }
+      $resultsRunItem->setResultValue($resultValue);
+      }
+    
     if(array_key_exists('condor_dag_job_id', $args)) { $resultsRunItem->setCondorDagJobId($args['condor_dag_job_id']);  }
     if(array_key_exists('result_key', $args)) { $resultsRunItem->setResultKey($args['result_key']);  }
     if(array_key_exists('return_code', $args)) { $resultsRunItem->setReturnCode($args['return_code']);  }
@@ -707,6 +716,7 @@ class Challenge_ApiComponent extends AppComponent
    * metric_item_id
    * score
    * rris_in_error => list of ids of resultrunitems that were in error
+   * rris_complete' => list of ids of resultrunitems that are complete
    */
   public function competitorListResults($args)
     {
@@ -740,6 +750,7 @@ class Challenge_ApiComponent extends AppComponent
     // assume the dataset has finished processing unless we encounter a missing value  
     $processingComplete = 'true';
     $rrisInError = array();
+    $rrisComplete = array();
       
     foreach($resultsRunItems as $resultsRunItem)
       {
@@ -763,6 +774,7 @@ class Challenge_ApiComponent extends AppComponent
           $metricSum['count'] = $metricSum['count'] + 1;
           $metricSum['sum'] = $metricSum['sum'] + $metricScore;
           $metricSums[$metricType] = $metricSum;
+          $rrisComplete[$testItemName][$metricType] = $resultsRunItem->getKey();
           }
         else
           {
@@ -824,7 +836,8 @@ class Challenge_ApiComponent extends AppComponent
       $resultRows[] = $resultRow;
       }
       
-    $responseData = array('results_rows' => $resultRows, 'rris_in_error' => $rrisInError, 'processing_complete' => $processingComplete);
+    $responseData = array('results_rows' => $resultRows, 'rris_in_error' => $rrisInError, 'processing_complete' => $processingComplete,
+        'rris_complete' => $rrisComplete);
     return $responseData;
     }
 

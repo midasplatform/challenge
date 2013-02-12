@@ -151,6 +151,10 @@ def post_script():
         # parse output and upload value
         lines = open(outputParseFile,'r')
         for ind, line in enumerate(lines):
+            # in the case where there are more lines in the outputfile than there
+            # are scored labels, ignore the remaining lines
+            if ind >= len(result_run_item_ids):
+                break
             line = line.strip()
             cols = line.split('=')
             value = cols[-1]
