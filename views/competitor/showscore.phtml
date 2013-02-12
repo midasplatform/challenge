@@ -33,7 +33,8 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
     </div>
 <?php 
   echo '<h3>Results for ID '.$this->anonymizedId .' from '.$this->challengeName.', '.$this->resultsRun->getResultsType().' run on '. $this->resultsRun->getDate().'</h3>';
-  echo '<img style="display: none" class="resultsLoading" alt="Loading..." src="'.$this->coreWebroot.'/public/images/icons/loading.gif" />';
+  echo '<div class="resultsLoading">Results currently processing <img alt="Loading..." src="'.$this->coreWebroot.'/public/images/icons/loading.gif" /></div>';
+  echo '<div style="display: none;" class="resultsComplete">Results complete</div>';
 ?>
     <table class="tablesorter" id="tablesorter_scores">
       <thead>
@@ -46,50 +47,8 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
           }
         ?>
         </tr>
-        </thead>
-        <tbody>
-          <?php       
-            $stripeClasses = array('odd', 'even');
-            $stripeClassInd = 0;
-            $resultsRows = $this->tableData['results_rows'];
-            $rrisInError = $this->rrisInError;
-            $rrisComplete = $this->rrisComplete;
-            foreach($resultsRows as $subject => $scores)
-              {
-              echo "<tr class='resultsRow ".$stripeClasses[$stripeClassInd++ % 2]."'>";
-              $resultsColumns = $this->tableData_resultsColumns;
-              foreach($resultsColumns as $column)
-                {
-                if(!array_key_exists($column, $scores))
-                  {
-                  $colVal = MIDAS_CHALLENGE_RRI_STATUS_UNKNOWN;
-                  echo "<td>".$colVal."</td>";
-                  }
-                elseif($scores[$column] == 'error')
-                  {
-                  $truthItemname = $scores['Subject'];
-                  $rriid = $rrisInError[$truthItemname][$column];
-                  echo '<td class="midasChallengeError" id="error_cell_rriid_'.$rriid.'">'.$scores[$column].'</td>';
-                  } 
-                else
-                  {
-                  $truthItemname = $scores['Subject'];
-                  $colVal = $scores[$column];
-                  if(array_key_exists($truthItemname, $rrisComplete) &&
-                     array_key_exists($column, $rrisComplete[$truthItemname]))
-                    {
-                    $rriid = $rrisComplete[$truthItemname][$column];
-                    echo '<td class="midasChallengeJob" id="job_cell_rriid_'.$rriid.'">'.$colVal.'</td>';
-                    }
-                  else
-                    {
-                    echo "<td>".$colVal."</td>";
-                    }
-                  }
-                }
-              echo "</tr>";
-              }
-          ?> 
+      </thead>
+      <tbody>
       </tbody>
     </table>
     <br/>
