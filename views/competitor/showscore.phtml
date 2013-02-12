@@ -75,14 +75,15 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
                   {
                   $truthItemname = $scores['Subject'];
                   $colVal = $scores[$column];
-                  $rriid = $rrisComplete[$truthItemname][$column];
-                  if(empty($rriid))
+                  if(array_key_exists($truthItemname, $rrisComplete) &&
+                     array_key_exists($column, $rrisComplete[$truthItemname]))
                     {
-                    echo "<td>".$colVal."</td>";
+                    $rriid = $rrisComplete[$truthItemname][$column];
+                    echo '<td class="midasChallengeJob" id="job_cell_rriid_'.$rriid.'">'.$colVal.'</td>';
                     }
                   else
                     {
-                    echo '<td class="midasChallengeJob" id="job_cell_rriid_'.$rriid.'">'.$colVal.'</td>';
+                    echo "<td>".$colVal."</td>";
                     }
                   }
                 }
