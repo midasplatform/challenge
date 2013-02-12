@@ -53,6 +53,7 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
             $stripeClassInd = 0;
             $resultsRows = $this->tableData['results_rows'];
             $rrisInError = $this->rrisInError;
+            $rrisComplete = $this->rrisComplete;
             foreach($resultsRows as $subject => $scores)
               {
               echo "<tr class='resultsRow ".$stripeClasses[$stripeClassInd++ % 2]."'>";
@@ -72,8 +73,17 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
                   } 
                 else
                   {
+                  $truthItemname = $scores['Subject'];
                   $colVal = $scores[$column];
-                  echo "<td>".$colVal."</td>";
+                  $rriid = $rrisComplete[$truthItemname][$column];
+                  if(empty($rriid))
+                    {
+                    echo "<td>".$colVal."</td>";
+                    }
+                  else
+                    {
+                    echo '<td class="midasChallengeJob" id="job_cell_rriid_'.$rriid.'">'.$colVal.'</td>';
+                    }
                   }
                 }
               echo "</tr>";

@@ -16,7 +16,8 @@ midas.challenge.competitor.updateResults = function()
       var processingComplete = results.data.processing_complete;
       var resultsRows = results.data.results_rows;
       var rrisInError = results.data.rris_in_error;
-      midas.challenge.competitor.updateResultsTable(resultsRows, rrisInError);
+      var rrisComplete = results.data.rris_complete;
+      midas.challenge.competitor.updateResultsTable(resultsRows, rrisInError, rrisComplete);
       if(processingComplete !== 'true') 
         { 
         var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
@@ -39,11 +40,11 @@ $(document).ready(function()
     // start looping for updates
     var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
     
-    midas.challenge.competitor.setupErrorDisplay();
+    midas.challenge.competitor.setupJobDetailsDisplay();
     
   });
  
-midas.challenge.competitor.setupErrorDisplay = function() {
+midas.challenge.competitor.setupJobDetailsDisplay = function() {
     $('td.midasChallengeError').unbind('click').click(function () {
         if(!json.global.logged) {
             midas.showOrHideDynamicBar('login');
@@ -52,13 +53,24 @@ midas.challenge.competitor.setupErrorDisplay = function() {
         }
         var id = $(this)[0].id;
         var rriid = (id.split('_'))[3];
-        midas.loadDialog('errorDetails'+rriid, '/challenge/competitor/errordetails?rriid='+rriid);
+        midas.loadDialog('errorDetails'+rriid, '/challenge/competitor/jobdetails?rriid='+rriid);
         midas.showDialog('Error details', false);
+    });
+    $('td.midasChallengeJob').unbind('click').click(function () {
+        if(!json.global.logged) {
+            midas.showOrHideDynamicBar('login');
+            midas.loadAjaxDynamicBar('login','/user/login');
+            return;
+        }
+        var id = $(this)[0].id;
+        var rriid = (id.split('_'))[3];
+        midas.loadDialog('jobDetails'+rriid, '/challenge/competitor/jobdetails?rriid='+rriid);
+        midas.showDialog('Job details', false);
     });
 } 
  
 // Fill the results table with any data
-midas.challenge.competitor.updateResultsTable = function(jsonResults, rrisInError)  {
+midas.challenge.competitor.updateResultsTable = function(jsonResults, rrisInError, rrisComplete)  {
     $('#tablesorter_scores').hide();
     $('.resultsLoading').show();
     
@@ -85,8 +97,16 @@ midas.challenge.competitor.updateResultsTable = function(jsonResults, rrisInErro
                 html+=' <td class="midasChallengeError" id="error_cell_rriid_'+rriId+'">'+colVal+'</td>';
             }
             else {
-                var colVal = value[column];
-                html+=' <td>'+colVal+'</td>';
+                var metric = column;
+                var truthItemName = value['Subject'];
+                var colVal = value[metric];
+                if(truthItemName in rrisComplete && metric in rrisComplete[truthItemName]) {
+                    var rriId = rrisComplete[truthItemName][metric];
+                    html+=' <td class="midasChallengeJob" id="job_cell_rriid_'+rriId+'">'+colVal+'</td>';
+                }
+                else {
+                    html+=' <td>'+colVal+'</td>';
+                }
             }
         });
         html+='</tr>';
@@ -96,6 +116,6 @@ midas.challenge.competitor.updateResultsTable = function(jsonResults, rrisInErro
     $('#tablesorter_scores').show();
     $('.resultsLoading').hide();
     $('#tablesorter_scores').trigger('update');
-    midas.challenge.competitor.setupErrorDisplay();
+    midas.challenge.competitor.setupJobDetailsDisplay();
 
 }

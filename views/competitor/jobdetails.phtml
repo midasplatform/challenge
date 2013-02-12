@@ -10,13 +10,14 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 =========================================================================*/
 ?>
-<script type="text/javascript" src="<?php echo $this->moduleWebroot?>/public/js/competitor/competitor.errordetails.js" />
+<script type="text/javascript" src="<?php echo $this->moduleWebroot?>/public/js/competitor/competitor.jobdetails.js" />
 
-<div class="tabs" id='tabsErrordetails'>
+<div class="tabs" id='tabsJobdetails'>
   <ul>
+    <li><a href="#tabs-output">Std Output</a></li>
+    <li><a href="#tabs-error">Std Error</a></li>
+    <li><a href="#tabs-processOutput">Output File</a></li>
     <li><a href="#tabs-log">Condor Log</a></li>
-    <li><a href="#tabs-output">Standard Output</a></li>
-    <li><a href="#tabs-error">Standard Error</a></li>
   </ul>
   <div id="tabs-log">
      <textarea readonly rows="20" style="width:100%;">
@@ -32,5 +33,10 @@ PURPOSE.  See the above copyright notices for more information.
      <textarea readonly rows="20" style="width:100%;">
      <?php echo $this->errorText; ?>
      </textarea>
-  </div>      
+  </div>    
+  <div id="tabs-processOutput">
+     <textarea readonly rows="20" style="width:100%;">
+     <?php echo $this->processOutputText; ?>
+     </textarea>
+  </div>    
 </div>      
