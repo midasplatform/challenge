@@ -37,7 +37,7 @@ class Challenge_AdminController extends Challenge_AppController
     $args = array();
     $args['communityId'] = $community_id;
     $args['useSession'] = true;
-    $args['challengeName'] = "Default Challenge Name";
+    $args['challengeName'] = "Challenge";
     $args['challengeDescription'] =  "Default Challenge Description";
     $args['trainingStatus'] =  MIDAS_CHALLENGE_STATUS_CLOSED;
     $args['testingStatus'] =  MIDAS_CHALLENGE_STATUS_CLOSED;

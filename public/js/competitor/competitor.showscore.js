@@ -22,6 +22,10 @@ midas.challenge.competitor.updateResults = function()
         { 
         var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
         }
+      else {
+          $('.resultsLoading').hide();
+          $('.resultsComplete').show();
+        }  
       },
       error: function() {}
     });
@@ -31,17 +35,10 @@ midas.challenge.competitor.updateResults = function()
 
 $(document).ready(function() 
   { 
-    
-    // Set up sortable table
-    $('#tablesorter_scores').tablesorter({
-        sortList: [[0,0]] 
-    });
+    midas.challenge.competitor.setupJobDetailsDisplay();
 
     // start looping for updates
-    var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
-    
-    midas.challenge.competitor.setupJobDetailsDisplay();
-    
+    var t = setTimeout(midas.challenge.competitor.updateResults, 0);
   });
  
 midas.challenge.competitor.setupJobDetailsDisplay = function() {
@@ -56,7 +53,7 @@ midas.challenge.competitor.setupJobDetailsDisplay = function() {
         midas.loadDialog('errorDetails'+rriid, '/challenge/competitor/jobdetails?rriid='+rriid);
         midas.showDialog('Error details', false);
     });
-    $('td.midasChallengeJob').unbind('click').click(function () {
+    $('td.midasChallengeComplete').unbind('click').click(function () {
         if(!json.global.logged) {
             midas.showOrHideDynamicBar('login');
             midas.loadAjaxDynamicBar('login','/user/login');
@@ -72,7 +69,6 @@ midas.challenge.competitor.setupJobDetailsDisplay = function() {
 // Fill the results table with any data
 midas.challenge.competitor.updateResultsTable = function(jsonResults, rrisInError, rrisComplete)  {
     $('#tablesorter_scores').hide();
-    $('.resultsLoading').show();
     
     // remove existing rows
     $('#tablesorter_scores .resultsRow').remove();
@@ -89,6 +85,18 @@ midas.challenge.competitor.updateResultsTable = function(jsonResults, rrisInErro
                 var colVal = json.unknownStatus;
                 html+=' <td>'+colVal+'</td>';
             }
+            else if(value[column] === 'waiting') {
+                var colVal = 'waiting';
+                html+=' <td class="midasChallengeWaiting">'+colVal+'</td>';
+            }
+            else if(value[column] === 'queued') {
+                var colVal = 'queued';
+                html+=' <td class="midasChallengeQueued">'+colVal+'</td>';
+            }
+            else if(value[column] === 'running') {
+                var colVal = 'running';
+                html+=' <td class="midasChallengeRunning">'+colVal+'</td>';
+            }
             else if(value[column] === 'error') {
                 var metric = column;
                 var truthItemName = value['Subject'];
@@ -102,7 +110,7 @@ midas.challenge.competitor.updateResultsTable = function(jsonResults, rrisInErro
                 var colVal = value[metric];
                 if(truthItemName in rrisComplete && metric in rrisComplete[truthItemName]) {
                     var rriId = rrisComplete[truthItemName][metric];
-                    html+=' <td class="midasChallengeJob" id="job_cell_rriid_'+rriId+'">'+colVal+'</td>';
+                    html+=' <td class="midasChallengeComplete" id="job_cell_rriid_'+rriId+'">'+colVal+'</td>';
                 }
                 else {
                     html+=' <td>'+colVal+'</td>';
@@ -114,7 +122,6 @@ midas.challenge.competitor.updateResultsTable = function(jsonResults, rrisInErro
     });
 
     $('#tablesorter_scores').show();
-    $('.resultsLoading').hide();
     $('#tablesorter_scores').trigger('update');
     midas.challenge.competitor.setupJobDetailsDisplay();
 

@@ -191,6 +191,31 @@ class Challenge_ApiComponent extends AppComponent
     return $includedChallenge;
     }
 
+  /**
+   * Get the status of a challenge for a competitor
+   * @param challengeId
+   * @return 
+   * ('training_status' => $trainingStatus, 'testing_status' => $testingStatus)
+   */
+  public function competitorGetChallengeStatus($args)
+    {
+    $this->_checkKeys(array('challengeId'), $args);
+
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $userDao = $authComponent->getUser($args,
+                                       Zend_Registry::get('userSession')->Dao);
+    if(!$userDao)
+      {
+      throw new Zend_Exception('You must be logged in to view a challenge');
+      }
+
+    $challengeId = $args['challengeId'];
+
+    $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
+    list($challengeDao, $communityDao, $memberGroupDao) = $challengeModel->validateChallengeUser($userDao, $challengeId);  
+    return array('training_status' => $challengeDao->getTrainingStatus(),
+                 'testing_status' => $challengeDao->getTestingStatus());
+    }
 
   /**
    * Display the testing data along with expected results filenames for
@@ -756,6 +781,11 @@ class Challenge_ApiComponent extends AppComponent
       {
       // group the outputs by the test item
       $testItemName = $resultsRunItem->getTestItem()->getName();
+      $pos = strpos($testItemName, '_truth');
+      if($pos > -1)
+        {
+        $subjectName = substr($testItemName, 0, $pos);  
+        }
       if(!array_key_exists($testItemName, $subjectScores))
         {
         $subjectScores[$testItemName] = array();  
@@ -774,7 +804,7 @@ class Challenge_ApiComponent extends AppComponent
           $metricSum['count'] = $metricSum['count'] + 1;
           $metricSum['sum'] = $metricSum['sum'] + $metricScore;
           $metricSums[$metricType] = $metricSum;
-          $rrisComplete[$testItemName][$metricType] = $resultsRunItem->getKey();
+          $rrisComplete[$subjectName][$metricType] = $resultsRunItem->getKey();
           }
         else
           {
@@ -788,7 +818,7 @@ class Challenge_ApiComponent extends AppComponent
           elseif($resultsRunItem->getStatus() == MIDAS_CHALLENGE_RRI_STATUS_ERROR)
             {
             $subjectScores[$testItemName][$metricType] = $resultsRunItem->getStatus();
-            $rrisInError[$testItemName][$metricType] = $resultsRunItem->getKey(); 
+            $rrisInError[$subjectName][$metricType] = $resultsRunItem->getKey(); 
             }
           elseif($resultsRunItem->getStatus() == MIDAS_CHALLENGE_RRI_STATUS_STOPPED)
             {
@@ -816,7 +846,7 @@ class Challenge_ApiComponent extends AppComponent
     foreach(array_reverse($subjectScores) as $subject => $scores)
       {
       $resultRow = array();
-      $pos = strpos($subject, '_truth.mha');
+      $pos = strpos($subject, '_truth');
       if($pos > -1)
         {
         $subject = substr($subject, 0, $pos);  

@@ -33,12 +33,28 @@ th.scorecol {
 div#showscores {
 }
 
+td.midasChallengeError {
+    background-color: #FC8D62!important;
+}
+
+td.midasChallengeWaiting {
+    background-color: #8DA0CB!important;
+}
+
+td.midasChallengeQueued {
+    background-color: #8DA0CB!important;
+}
+
+td.midasChallengeRunning {
+    background-color: #66C2A5!important;
+}
+
 td.midasChallengeError:hover {
-    background-color: #e5e5e5;
+    background-color: #9BA5A2!important;
     cursor: pointer;
 }
 
-td.midasChallengeJob:hover {
-    background-color: #e5e5e5;
+td.midasChallengeComplete:hover {
+    background-color: #9BA5A2!important;
     cursor: pointer;
 }

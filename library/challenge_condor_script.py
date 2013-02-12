@@ -78,8 +78,8 @@ result_key_map = {
 'PositivePredictiveValue(A_1, B_1)' : 'ppv 1',
 'PositivePredictiveValue(A_2, B_2)' : 'ppv 2',
 'Dice(A_1, B_1)' : 'dice 1',
-'Dice(A_2, B_2)' : 'dice 2'}
-
+'Dice(A_2, B_2)' : 'dice 2',
+'Kappa(A,B)' : 'kapp'}
 
 def add_children(dag, node, children):
     if node not in dag:
