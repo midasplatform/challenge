@@ -21,7 +21,7 @@ $(document).ready(function()  {
     
     // event handler on challenge selection combo   
     $('#midas_challenge_competitor_challengeId').change(function() {
-        midas.challenge.competitor.updateUISelection();
+        midas.challenge.competitor.updateSelectedChallenge();
     });
     
     // event handler on resultsType selection combo   
@@ -80,6 +80,35 @@ midas.challenge.competitor.enableScoring = function() {
         })
     });
 };
+
+
+midas.challenge.competitor.updateSelectedChallenge = function() {
+    var challenge_id = $('#midas_challenge_competitor_challengeId').val();
+    ajaxWebApi.ajax({
+        method: 'midas.challenge.competitor.get.challenge.status',
+        args: 'challengeId=' + challenge_id,
+        success: function(results) {
+            var stages = {'training_status' : 'Training', 'testing_status' : 'Testing'};
+            $.each(stages, function(stage_status, option_value) {
+                if(stage_status in results.data && results.data[stage_status] == 'open') {
+                    if($("#midas_challenge_competitor_resultsType option[value='"+option_value+"']").length == 0) {
+                        $('#midas_challenge_competitor_resultsType').append($("<option/>", { value: option_value, text: option_value }));
+                    }
+                }
+                else {
+                    if($("#midas_challenge_competitor_resultsType option[value='"+option_value+"']").length > 0) {
+                        $("#midas_challenge_competitor_resultsType option[value='"+option_value+"']").remove();
+                    }
+                }
+            });
+            midas.challenge.competitor.updateUISelection();
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            console.log(testStatus, errorThrown);
+        }
+    });
+};
+
 
 midas.challenge.competitor.updateUISelection = function() {
     var challenge_id = $('#midas_challenge_competitor_challengeId').val();
