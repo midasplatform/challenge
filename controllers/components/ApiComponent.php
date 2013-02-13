@@ -326,6 +326,60 @@ class Challenge_ApiComponent extends AppComponent
     $resultsRunItemModel->save($resultsRunItem);
     return $resultsRunItem;
     }
+    
+  public function competitorUpdateResultsRun($args)
+    {
+    $this->_checkKeys(array('results_run_id', 'status'), $args);
+
+    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $userDao = $authComponent->getUser($args,
+                                       Zend_Registry::get('userSession')->Dao);
+    if(!$userDao)
+      {
+      throw new Zend_Exception('You must be logged in to update a results run');
+      }
+
+    $resultsRunId = $args['results_run_id'];
+    $resultsRunModel = MidasLoader::loadModel('ResultsRun', 'challenge');
+    $resultsRun = $resultsRunModel->load($resultsRunId);
+    if(!$resultsRun)
+      {
+      throw new Zend_Exception('Invalid results_run_id');
+      }
+      
+    $taskModel = MidasLoader::loadModel('Task', 'batchmake');  
+    if($userDao->getUserId() != $resultsRun->getBatchmakeTask()->getUserId())
+      {
+      throw new Zend_Exception('You must be the owner of this results run.');
+      }
+      
+    $status = $args['status'];
+    if($status == MIDAS_CHALLENGE_RR_STATUS_RUNNING)
+      {
+      $resultsRun->setStatus(MIDAS_CHALLENGE_RR_STATUS_RUNNING);
+      $resultsRunModel->save($resultsRun);
+      }
+    else if($status == MIDAS_CHALLENGE_RR_STATUS_COMPLETE)
+      {
+      // send a notification email
+      $utilityComponent = MidasLoader::loadComponent('Utility');
+      $subject = "Midas Challenge alert of processing completion";
+      $fc = Zend_Controller_Front::getInstance();
+      $baseURL = $fc->getBaseUrl();
+      $link = UtilityComponent::getServerURL() . $baseURL . '/challenge/competitor/showscore?resultsRunId=' . $resultsRunId;
+      $text = 'The dataset you submitted for processing has completed.<br/></br>' .
+              '<a href="'.$link.'">Click here</a> to view your results.';
+      $utilityComponent::sendEmail($userDao->getEmail(), $subject, $text);
+      $resultsRun->setStatus(MIDAS_CHALLENGE_RR_STATUS_COMPLETE);
+      $resultsRunModel->save($resultsRun);
+      }
+    else
+      {
+      throw new Zend_Exception('status param must have value of ['.MIDAS_CHALLENGE_RR_STATUS_RUNNING.'|'.MIDAS_CHALLENGE_RR_STATUS_COMPLETE.']');
+      }
+
+    return array('email' => $userDao->getEmail(), 'status' => $resultsRun->getStatus());
+    }    
 
     
   /**
@@ -717,7 +771,10 @@ class Challenge_ApiComponent extends AppComponent
     $kwbatchmakeComponent->compileBatchMakeScript($taskDao->getWorkDir(), $bmScript);
     $dagScript = $kwbatchmakeComponent->generateCondorDag($taskDao->getWorkDir(), $bmScript);
     $kwbatchmakeComponent->condorSubmitDag($taskDao->getWorkDir(), $dagScript);
-
+    
+    $resultsrunDao->setStatus(MIDAS_CHALLENGE_RR_STATUS_QUEUED);
+    $resultsrunModel->save($resultsrunDao);
+    
     // return a notion of success
     return array("challenge_results_run_id" => $resultsrunDao->getKey());
     }
