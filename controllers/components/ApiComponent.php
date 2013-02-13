@@ -878,7 +878,14 @@ class Challenge_ApiComponent extends AppComponent
           }
         else
           {
-          $resultRow[$metric] = $scores[$metric];
+          if(array_key_exists($metric, $scores))
+            {
+            $resultRow[$metric] = $scores[$metric];
+            }
+          else
+            {
+            $resultRow[$metric] = MIDAS_CHALLENGE_RRI_STATUS_UNKNOWN;
+            } 
           }
         }
       $resultRows[] = $resultRow;
