@@ -35,6 +35,10 @@ define("MIDAS_CHALLENGE_IMAGES", "Images");
 
 define("MIDAS_CHALLENGE_WAITING", "waiting");
 
+define("MIDAS_CHALLENGE_RR_STATUS_QUEUED", 'queued');
+define("MIDAS_CHALLENGE_RR_STATUS_RUNNING", 'running');
+define("MIDAS_CHALLENGE_RR_STATUS_CREATED", 'created');
+define("MIDAS_CHALLENGE_RR_STATUS_COMPLETE", 'complete');
 
 define("MIDAS_CHALLENGE_RRI_STATUS_QUEUED", 'queued');
 define("MIDAS_CHALLENGE_RRI_STATUS_RUNNING", 'running');

@@ -34,6 +34,7 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
       'results_folder_id' => array('type' => MIDAS_DATA),
       'output_folder_id' => array('type' => MIDAS_DATA),
       'challenge_competitor_id' => array('type' => MIDAS_DATA),
+      'status' => array('type' => MIDAS_DATA),
       'challenge' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'challenge',
                         'model' => 'Challenge',
@@ -80,6 +81,7 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
     $resultsrunDao->setChallengeCompetitorId($competitor->getChallengeCompetitorId());
     $resultsrunDao->setBatchmakeTaskId($batchmakeTaskId);
     $resultsrunDao->setResultsFolderId($resultsFolderId);
+    $resultsrunDao->setStatus(MIDAS_CHALLENGE_RR_STATUS_CREATED);
 
     $this->save($resultsrunDao);
 
