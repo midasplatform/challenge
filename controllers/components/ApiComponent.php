@@ -369,7 +369,33 @@ class Challenge_ApiComponent extends AppComponent
       $link = UtilityComponent::getServerURL() . $baseURL . '/challenge/competitor/showscore?resultsRunId=' . $resultsRunId;
       $text = 'The dataset you submitted for processing has completed.<br/></br>' .
               '<a href="'.$link.'">Click here</a> to view your results.';
-      $utilityComponent::sendEmail($userDao->getEmail(), $subject, $text);
+      $email = $userDao->getEmail();
+      // get the from email address if set in config
+      if(file_exists(BASE_PATH."/core/configs/challenge.local.ini"))
+        {
+        $applicationConfig = parse_ini_file(BASE_PATH."/core/configs/challenge.local.ini", true);
+        }
+      else
+        {
+        $applicationConfig = parse_ini_file(BASE_PATH.'/modules/challenge/configs/module.ini', true);
+        }
+      if(empty($applicationConfig['global']['from']))
+        {
+        $from = 'midas@localhost'; 
+        }
+      else
+        {
+        $from = $applicationConfig['global']['from'];  
+        }
+      $headers = "From: Midas <".$from.">\nReply-To: no-reply\nX-Mailer: PHP/".phpversion()."\nMIME-Version: 1.0\nContent-type: text/html; charset = UTF-8";
+      if(mail($email, $subject, $text, $headers))
+        {
+        self::getLogger()->info('Sent email to '.$email.' with subject '.$subject);
+        }
+      else
+        {
+        self::getLogger()->crit('Error sending email to '.$email.' with subject '.$subject);
+        }
       $resultsRun->setStatus(MIDAS_CHALLENGE_RR_STATUS_COMPLETE);
       $resultsRunModel->save($resultsRun);
       }
