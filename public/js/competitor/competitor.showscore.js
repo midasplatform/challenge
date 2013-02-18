@@ -100,9 +100,14 @@ midas.challenge.competitor.updateResultsTable = function(jsonResults, rrisInErro
             else if(value[column] === 'error') {
                 var metric = column;
                 var truthItemName = value['Subject'];
-                var rriId = rrisInError[truthItemName][metric];
                 var colVal = 'error';
-                html+=' <td class="midasChallengeError" id="error_cell_rriid_'+rriId+'">'+colVal+'</td>';
+                if(truthItemName in rrisInError && metric in rrisInError[truthItemName]) {
+                    var rriId = rrisInError[truthItemName][metric];
+                    html+=' <td class="midasChallengeError" id="error_cell_rriid_'+rriId+'">'+colVal+'</td>';
+                }
+                else {
+                    html+=' <td>'+colVal+'</td>';
+                }
             }
             else {
                 var metric = column;

@@ -113,7 +113,32 @@ midas.challenge.competitor.updateSelectedChallenge = function() {
 midas.challenge.competitor.updateUISelection = function() {
     var challenge_id = $('#midas_challenge_competitor_challengeId').val();
     var results_type = $('#midas_challenge_competitor_resultsType').val();
-    var submission_folder_id = $('#midas_challenge_competitor_selectedResultsFolderId').val();
+    
+    var id_keys = {'Training' : 'training_submission_folder_id', 'Testing' : 'testing_submission_folder_id'};
+    var name_keys = {'Training' : 'training_submission_folder_name', 'Testing' : 'testing_submission_folder_name'};
+    
+    var submission_folder_id = undefined;
+    var submission_folder_name = undefined;
+    if(challenge_id in json.challengeResultsFolders && 
+       results_type in id_keys &&
+       id_keys[results_type] in json.challengeResultsFolders[challenge_id]) {
+           submission_folder_id = json.challengeResultsFolders[challenge_id][id_keys[results_type]];
+    }
+    if(challenge_id in json.challengeResultsFolders && 
+       results_type in name_keys &&
+       name_keys[results_type] in json.challengeResultsFolders[challenge_id]) {
+           submission_folder_name = json.challengeResultsFolders[challenge_id][name_keys[results_type]];
+    }
+    if(submission_folder_id === undefined) {
+        submission_folder_id = '';    
+    }
+    if(submission_folder_name === undefined) {
+        submission_folder_name = '';    
+    }
+    
+    $('#midas_challenge_competitor_selectedResultsFolderId').val(submission_folder_id);
+    $('#midas_challenge_competitor_selectedResultsFolder').text(submission_folder_name);
+
     if(submission_folder_id !== null && submission_folder_id !== undefined & submission_folder_id !== '') {
         midas.challenge.competitor.validateResultsFolder(challenge_id, submission_folder_id, results_type);          
     }
