@@ -477,6 +477,36 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     }
 
   /**
+   * utility function to generate the expected result item name from a passed
+   * in truth item name, will return a pair of names (truthName, resultName)
+   * where the two names have extensions removed and are matched according to
+   * the current scheme.
+   * @param type $truthName 
+   */  
+  function generateResultNameFromTruthName($truthName)
+    {
+    $truthNameWithoutExtension = pathinfo($truthName, PATHINFO_FILENAME);
+    // currently just replace _truth with _result in the name  
+    $resultNameWithoutExtension = str_replace("_truth", "_result", $truthNameWithoutExtension);
+    return array($truthNameWithoutExtension, $resultNameWithoutExtension);
+    }
+    
+  /**
+   * utility function to generate the expected truth item name from a passed
+   * in result item name, will return a pair of names (truthName, resultName)
+   * where the two names have extensions removed and are matched according to
+   * the current scheme.
+   * @param type $resultName 
+   */  
+  function generateTruthNameFromResultName($resultName)
+    {
+    $resultNameWithoutExtension = pathinfo($resultName, PATHINFO_FILENAME);
+    // currently just replace _truth with _result in the name  
+    $truthNameWithoutExtension = str_replace("_result", "_truth", $resultNameWithoutExtension);
+    return array($truthNameWithoutExtension, $resultNameWithoutExtension);
+    }
+    
+  /**
    * generate the names of expected results items based on Truth items.
    * @param userDao
    * @param challengeDao
@@ -512,11 +542,13 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $truthResults = array();
     foreach($truthItems as $item)
       {
-      $name = $item->getName();
-      // ignore files with _complete_truth in their name
-      if(strpos($name, '_complete_truth') === false)
+      $truthName = $item->getName();
+      // ignore files with _complete_truth in their name,
+      // although this is specific to BRATS 2012 and should be generalized
+      if(strpos($truthName, '_complete_truth') === false)
         {
-        $truthResults[$name] = str_replace("_truth", "_result", $name);
+        list($truthName, $resultName) = $this->generateResultNameFromTruthName($truthName);
+        $truthResults[$truthName] = $resultName;
         }
       }
 
@@ -538,6 +570,8 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       foreach($resultsItems as $item)
         {
         $resultsItemName = $item->getName();
+        list($truthName, $resultsItemName) = $this->generateTruthNameFromResultName($resultsItemName);
+        
         $resultsItemNames[$resultsItemName] = $resultsItemName;
         if(!in_array($resultsItemName, $truthResults))
           {

@@ -517,7 +517,8 @@ class Challenge_ApiComponent extends AppComponent
     foreach($resultsItems as $item)
       {
       $resultsItemName = $item->getName();
-      if(in_array($resultsItemName, $matchedResults))
+      list($truthNameMatch, $resultNameMatch) = $challengeModel->generateTruthNameFromResultName($resultsItemName);
+      if(in_array($resultNameMatch, $matchedResults))
         {
         $itemsForExport[$resultsItemName] = $item->getItemId();
         }
@@ -549,7 +550,8 @@ class Challenge_ApiComponent extends AppComponent
     foreach($truthItems as $item)
       {
       $truthItemName = $item->getName();
-      if(array_key_exists($truthItemName, $matchedResults))
+      list($truthNameMatch, $resultNameMatch) = $challengeModel->generateResultNameFromTruthName($truthItemName);
+      if(array_key_exists($truthNameMatch, $matchedResults))
         {
         $itemsForExport[$truthItemName] = $item->getItemId();
         }
@@ -571,11 +573,17 @@ class Challenge_ApiComponent extends AppComponent
     $jobConfigParams['cfg_truthItems'] = array();
     $jobConfigParams['cfg_resultItems'] = array();
     $jobInd = 0;
+    // add itemPaths keys without extensions
+    $itemNamesWithoutExtension = array();
+    foreach($itemsPaths as $itemName => $itemPath)
+      {
+      $itemNamesWithoutExtension[pathinfo($itemName, PATHINFO_FILENAME)] = $itemsPaths[$itemName];  
+      }
     foreach($matchedResults as $testName => $resultName)
       {
       $jobConfigParams['cfg_jobInds'][] = $jobInd++;
-      $jobConfigParams['cfg_truthItems'][] = $itemsPaths[$testName];
-      $jobConfigParams['cfg_resultItems'][] = $itemsPaths[$resultName];
+      $jobConfigParams['cfg_truthItems'][] = $itemNamesWithoutExtension[$testName];
+      $jobConfigParams['cfg_resultItems'][] = $itemNamesWithoutExtension[$resultName];
       }
 
     return $jobConfigParams;
@@ -864,6 +872,7 @@ class Challenge_ApiComponent extends AppComponent
       {
       // group the outputs by the test item
       $testItemName = $resultsRunItem->getTestItem()->getName();
+      $testItemName = pathinfo($testItemName, PATHINFO_FILENAME);
       $pos = strpos($testItemName, '_truth');
       if($pos > -1)
         {
@@ -940,12 +949,14 @@ class Challenge_ApiComponent extends AppComponent
     foreach(array_reverse($subjectScores) as $subject => $scores)
       {
       $resultRow = array();
+      $subject = pathinfo($subject, PATHINFO_FILENAME);
       $pos = strpos($subject, '_truth');
       if($pos > -1)
         {
         $subject = substr($subject, 0, $pos);  
         }
       $resultRow['Subject'] = $subject;
+
       foreach($metrics as $metric)
         {
         if(array_key_exists($metric, $scores) && is_numeric($scores[$metric]))
