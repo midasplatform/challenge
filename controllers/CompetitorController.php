@@ -157,6 +157,14 @@ class Challenge_CompetitorController extends Challenge_AppController
       {
       throw new Zend_Exception("You are not authorized to see these results.");
       }
+
+    $breadcrumbComponent = MidasLoader::loadComponent('Breadcrumb');  
+    $breadcrumbs[] = array('type' => 'user', 'object' => $userDao);
+    // TODO: this is assuming my challenge scores will be ui-tabs-1, but this is
+    // dynamically set by javascript upon adding tabs, i.e. this isn't reliable
+    $myscoresLink = $this->view->webroot . '/user/' . $userDao->getUserId() . '#ui-tabs-1';
+    $breadcrumbs[] = array('type' => 'custom', 'text' => 'My challenge scores', 'icon' => '', 'href' => $myscoresLink);
+    $breadcrumbComponent->setBreadcrumbHeader($breadcrumbs, $this->view);
       
     // show scores for an individual challenge
     $dashboardDao = $resultsRun->getChallenge()->getDashboard();

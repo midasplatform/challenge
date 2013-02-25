@@ -21,16 +21,7 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
 
 
 <div id="showscores" class="viewMain" >
-      <div class ="genericWrapperTopRight">
-         <?php
-          echo '<div style="float:right;margin-right:-200px;" class="genericBigButton ">';
-            echo "<a  href='{$this->webroot}/user/userpage#ui-tabs-1'><img style='float:left;margin-right:2px;' alt='' src='{$this->coreWebroot}/public/images/icons/back.png'/>";
-            echo $this->t('Back');  
-            echo "</a>";
-          echo '</div>';
-          
-        ?>
-    </div>
+
 <?php 
   echo '<h3>Results for ID '.$this->anonymizedId .' from '.$this->challengeName.', '.$this->resultsRun->getResultsType().' run on '. $this->resultsRun->getDate().'</h3>';
   echo '<div class="resultsLoading">Results currently processing <img alt="Loading..." src="'.$this->coreWebroot.'/public/images/icons/loading.gif" /></div>';
