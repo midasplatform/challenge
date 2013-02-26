@@ -393,11 +393,25 @@ class Challenge_CompetitorController extends Challenge_AppController
 
     $tmpDir = $batchmakeTask->getWorkDir();
     
+    $error = $this->_getParam('error');
+    if(!empty($error))
+      {
+      $this->view->errorJob = true; 
+      }
+             
     $outputFile = $tmpDir . $condorJob->getOutputFilename();
     $output = file_exists($outputFile) ? file_get_contents($outputFile) : "std out " .MIDAS_CHALLENGE_FILE_NOT_FOUND;
-    
+    if(empty($output))
+      {
+      $output = "No Standard Output data produced.";
+      }
+      
     $errorFile = $tmpDir . $condorJob->getErrorFilename();
     $error = file_exists($errorFile) ? file_get_contents($errorFile) : "std err " .MIDAS_CHALLENGE_FILE_NOT_FOUND;
+    if(empty($error))
+      {
+      $error = "No Standard Error data produced.";
+      }
 
     $logFile = $tmpDir . $condorJob->getLogFilename();
     $log = file_exists($logFile) ? file_get_contents($logFile) : "log " .MIDAS_CHALLENGE_FILE_NOT_FOUND;
