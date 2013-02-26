@@ -13,6 +13,7 @@ midas.challenge.competitor.updateResults = function()
     args: 'resultsRunId=' + json.resultsRunId,
     success: function(results) 
       {
+      $('.resultsLoading').hide();
       var processingComplete = results.data.processing_complete;
       var resultsRows = results.data.results_rows;
       var rrisInError = results.data.rris_in_error;
@@ -21,10 +22,12 @@ midas.challenge.competitor.updateResults = function()
       if(processingComplete !== 'true') 
         { 
         var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
+        $('.resultsProcessing').show();
         }
-      else {
-          $('.resultsLoading').hide();
-          $('.resultsComplete').show();
+      else
+        {
+        $('.resultsProcessing').hide();
+        $('.resultsComplete').show();
         }  
       },
       error: function() {}

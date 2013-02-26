@@ -22,10 +22,12 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
 
 <div id="showscores" class="viewMain" >
 
-<?php 
-  echo '<h3>Results for ID '.$this->anonymizedId .' from '.$this->challengeName.', '.$this->resultsRun->getResultsType().' run on '. $this->resultsRun->getDate().'</h3>';
-  echo '<div class="resultsLoading">Results currently processing <img alt="Loading..." src="'.$this->coreWebroot.'/public/images/icons/loading.gif" /></div>';
-  echo '<div style="display: none;" class="resultsComplete">Results complete</div>';
+<?php
+  echo 'Results for <a href="' . $this->datasetFolderLink . '">' . $this->resultsRun->getResultsType() . ' dataset</a> of <a href="' . $this->challengeLink . '">' . $this->challengeName . '</a><br/>';
+  echo 'Submitted at ' . $this->resultsRun->getDate();
+  echo '<div class="resultsLoading">Retrieving results <img alt="Loading..." src="'.$this->coreWebroot.'/public/images/icons/loading.gif" /></div>';
+  echo '<div style="display: none;" class="resultsProcessing">Results are currently processing.<br/>When the results are complete, an email will be sent to the submitting user.</div>';
+  echo '<div style="display: none;" class="resultsComplete">Results have completed processing.<br/>An email has been sent to the submitting user.</div>';
 ?>
     <table class="tablesorter" id="tablesorter_scores">
       <thead>

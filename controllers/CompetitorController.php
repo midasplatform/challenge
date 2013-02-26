@@ -168,6 +168,21 @@ class Challenge_CompetitorController extends Challenge_AppController
       
     // show scores for an individual challenge
     $dashboardDao = $resultsRun->getChallenge()->getDashboard();
+    
+    $resultsType = $resultsRun->getResultsType();
+    if($resultsType === MIDAS_CHALLENGE_TRAINING)
+      {
+      $datasetFolderId = $dashboardDao->getTraining()->getFolderId();  
+      }
+    else
+      {
+      $datasetFolderId = $dashboardDao->getTesting()->getFolderId();  
+      }        
+    $datasetFolderLink = $this->view->webroot . '/folder/' . $datasetFolderId;
+    $this->view->datasetFolderLink = $datasetFolderLink; 
+            
+    $this->view->challengeLink = $this->view->webroot . '/community/' . $resultsRun->getChallenge()->getCommunityId() . '#tabs-info';
+    
     $this->view->json['resultsRunId'] = $resultsRunId;
    
     $apiargs = array();
