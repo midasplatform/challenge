@@ -67,6 +67,12 @@ midas.challenge.competitor.setupJobDetailsDisplay = function() {
         midas.loadDialog('jobDetails'+rriid, '/challenge/competitor/jobdetails?rriid='+rriid);
         midas.showDialog('Job details', false);
     });
+    $('th.midasChallengeMetricCol').unbind('click').click(function () {
+        var id = $(this)[0].id;
+        var metricId = (id.split('_'))[1];
+        midas.loadDialog('metricDetails'+metricId, '/challenge/competitor/metricdetails?metricId='+metricId);
+        midas.showDialog('Metric details', false);
+    });
 } 
  
 // Fill the results table with any data

@@ -200,11 +200,11 @@ class Challenge_CompetitorController extends Challenge_AppController
     
     $this->view->tableData = $tableData;
     $this->view->user = $this->userSession->Dao;
-    $scoredColumns = $this->Challenge_Challenge->getScoredColumns($resultsRun->getChallenge());
+    list($scoredColumns, $metricIds) = $this->Challenge_Challenge->getScoredColumns($resultsRun->getChallenge());
     // set the table headers to be Subject plus the scored columns
     array_unshift($scoredColumns, 'Subject');
-    $this->view->tableData_resultsColumns = $scoredColumns;
     $this->view->tableHeaders = $scoredColumns;
+    $this->view->metricIds = $metricIds;
     $this->view->json['tableHeaders'] = $scoredColumns;
     $this->view->json['unknownStatus'] = MIDAS_CHALLENGE_RRI_STATUS_UNKNOWN;
     $this->view->anonymizedId = $this->getAnonymizedId($userDao, $dashboardDao->getName());
@@ -425,5 +425,26 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->logText = $log;
     $this->view->processOutputText = $processOutput;
     }  
+    
+    
+  public function metricdetailsAction()
+    {
+    // no need to check session, this is public info
+    
+    $metricId = $this->_getParam('metricId');
+    if(!isset($metricId))
+      {
+      throw new Zend_Exception('Must set metricId parameter');
+      }  
+      
+    $metricModel = MidasLoader::loadModel('Metric', 'challenge');
+    $metric = $metricModel->load($metricId);
+    if(!$metric)
+      {
+      throw new Zend_Exception('Invalid metricId parameter');
+      }
+    $this->disableLayout();  
+    $this->view->metric = $metric;
+    }
     
 }//end class

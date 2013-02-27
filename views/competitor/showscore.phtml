@@ -36,7 +36,14 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
         $tableHeaders = $this->tableHeaders;
         foreach($tableHeaders as $header)
           {
-          echo "<th class='scorecol'>".ucfirst($header)."</th>";
+          if(array_key_exists($header, $this->metricIds))
+            {
+            echo "<th class='scorecol midasChallengeMetricCol' id='challengeMetric_".$this->metricIds[$header]."' >".ucfirst($header)."</th>";
+            }
+          else
+            {
+            echo "<th class='scorecol'>".ucfirst($header)."</th>";
+            }
           }
         ?>
         </tr>

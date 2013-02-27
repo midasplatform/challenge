@@ -59,6 +59,17 @@ td.midasChallengeComplete:hover {
     cursor: pointer;
 }
 
+th.midasChallengeMetricCol:hover {
+    background-color: #9BA5A2!important;
+    cursor: pointer;
+}
+
+div#midasChallengeMetricName {
+    text-align: center;
+    font-size: 14px;
+}
+
+
 div.resultsComplete {
     margin: 10px 0;
     padding: 10px 15px;
