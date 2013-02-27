@@ -45,13 +45,10 @@ $this->headScript()->appendFile($this->apiWebroot . '/public/js/common/common.aj
               echo "<tr class='resultsRow ".$stripeClasses[$stripeClassInd++ % 2]."'>";
               foreach($this->tableColumns as $column)
                 {
-                $colVal = $scorelistingRow[$column];
-                echo "<td>".$colVal."</td>";
+                $link = $scorelistingRow[$column]['link'];
+                $text = $scorelistingRow[$column]['text'];
+                echo "<td><a href=" . $link . ">" . $text . '</a></td>';
                 }
-              // last column displays date with link to resultsrunid
-              echo "<td><a href=" .
-                   $this->webroot. "/challenge/competitor/showscore?resultsRunId=".$scorelistingRow["results_run_id"].">" .
-                   $scorelistingRow["run_date"] . '</a></td>';
               echo "</tr>";
               }
           ?> 

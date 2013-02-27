@@ -680,24 +680,29 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
     $selectedMetricModel = MidasLoader::loadModel('SelectedMetric', 'challenge');
     $selectedMetrics = $selectedMetricModel->findBy('challenge_id', $challenge->getKey());
     $columns = array();
+    $colsToIds = array();
     foreach($selectedMetrics as $selectedMetric)
       {
       $metric = $selectedMetric->getMetric();
       $metricExeName = $metric->getMetricExeName();
-      if($selectedMetric->getMetric()->getScorePerLabel())
+      if($metric->getScorePerLabel())
           {
           $numLabels = $challenge->getNumberScoredLabels();  
           for($labelIter = 0; $labelIter < $numLabels; $labelIter++)
             {
-            $columns[] = $metric->getMetricDisplayName() . " " . ($labelIter+1);
+            $displayName = $metric->getMetricDisplayName() . " " . ($labelIter+1);  
+            $columns[] = $displayName;
+            $colsToIds[$displayName] = $metric->getChallengeMetricId();
             }
           }
         else
           {
-          $columns[] = $metric->getMetricDisplayName();
+          $displayName = $metric->getMetricDisplayName();
+          $columns[] = $displayName;
+          $colsToIds[$displayName] = $metric->getChallengeMetricId();
           }
       }
-    return $columns;
+    return array($columns, $colsToIds);
     }
     
     

@@ -31,10 +31,14 @@ abstract class Challenge_MetricModelBase extends Challenge_AppModel {
       'metric_display_name' => array('type' => MIDAS_DATA),
       'score_per_label' => array('type' => MIDAS_DATA),
       'lowest_score_best' => array('type' => MIDAS_DATA),
-      'metric_exe_name' => array('type' => MIDAS_DATA));
+      'metric_exe_name' => array('type' => MIDAS_DATA),
+      'reference_link' => array('type' => MIDAS_DATA),
+      'description' => array('type' => MIDAS_DATA),
+      'source_link' => array('type' => MIDAS_DATA));
     $this->initialize(); // required
     }
 
+    
   abstract function fetchAll();
 
 }  // end class Challenge_MetricModelBase

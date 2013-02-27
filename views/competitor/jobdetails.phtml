@@ -20,23 +20,17 @@ PURPOSE.  See the above copyright notices for more information.
     <li><a href="#tabs-log">Condor Log</a></li>
   </ul>
   <div id="tabs-log">
-     <textarea readonly rows="20" style="width:100%;">
-     <?php echo $this->logText; ?>
-     </textarea>
+     <textarea readonly rows="20" style="width:100%;"><?php echo $this->logText; ?></textarea>
   </div>
   <div id="tabs-output">
-     <textarea readonly rows="20" style="width:100%;">
-     <?php echo $this->outputText; ?>
-     </textarea>
+     <textarea readonly rows="20" style="width:100%;"><?php echo $this->outputText; ?></textarea>
   </div>
   <div id="tabs-error">
-     <textarea readonly rows="20" style="width:100%;">
-     <?php echo $this->errorText; ?>
-     </textarea>
+     <textarea readonly rows="20" style="width:100%;"><?php echo $this->errorText; ?></textarea>
   </div>    
   <div id="tabs-processOutput">
-     <textarea readonly rows="20" style="width:100%;">
-     <?php echo $this->processOutputText; ?>
-     </textarea>
+     <textarea readonly rows="20" style="width:100%;"><?php echo $this->processOutputText; ?></textarea>
   </div>    
+  <div id="jobDetailsInError" style="display:none;"><?php echo $this->errorJob ?></div>
+
 </div>      

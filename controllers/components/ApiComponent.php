@@ -871,8 +871,16 @@ class Challenge_ApiComponent extends AppComponent
     foreach($resultsRunItems as $resultsRunItem)
       {
       // group the outputs by the test item
-      $testItemName = $resultsRunItem->getTestItem()->getName();
-      $testItemName = pathinfo($testItemName, PATHINFO_FILENAME);
+      $testItem = $resultsRunItem->getTestItem();
+      if($testItem == false)
+        {
+        $testItemName = 'Missing Item ['.$resultsRunItem->getTestItemId().']';
+        }
+      else
+        {
+        $testItemName = $resultsRunItem->getTestItem()->getName();
+        $testItemName = pathinfo($testItemName, PATHINFO_FILENAME);
+        }
       $pos = strpos($testItemName, '_truth');
       if($pos > -1)
         {

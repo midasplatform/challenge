@@ -58,3 +58,36 @@ td.midasChallengeComplete:hover {
     background-color: #9BA5A2!important;
     cursor: pointer;
 }
+
+th.midasChallengeMetricCol:hover {
+    background-color: #9BA5A2!important;
+    cursor: pointer;
+}
+
+div#midasChallengeMetricName {
+    text-align: center;
+    font-size: 14px;
+}
+
+
+div.resultsComplete {
+    margin: 10px 0;
+    padding: 10px 15px;
+    background: #E6F1f6;
+    border: #C5D5DD 1px solid;
+    border-radius: 4 px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+}
+
+div.resultsProcessing {
+    margin: 10px 0;
+    padding: 10px 15px;
+    background: #66C2A5;
+    border: #3F9D7F 1px solid;
+    border-radius: 4 px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+}

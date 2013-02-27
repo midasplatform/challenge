@@ -13,6 +13,7 @@ midas.challenge.competitor.updateResults = function()
     args: 'resultsRunId=' + json.resultsRunId,
     success: function(results) 
       {
+      $('.resultsLoading').hide();
       var processingComplete = results.data.processing_complete;
       var resultsRows = results.data.results_rows;
       var rrisInError = results.data.rris_in_error;
@@ -21,10 +22,12 @@ midas.challenge.competitor.updateResults = function()
       if(processingComplete !== 'true') 
         { 
         var t = setTimeout(midas.challenge.competitor.updateResults, delayMillis);
+        $('.resultsProcessing').show();
         }
-      else {
-          $('.resultsLoading').hide();
-          $('.resultsComplete').show();
+      else
+        {
+        $('.resultsProcessing').hide();
+        $('.resultsComplete').show();
         }  
       },
       error: function() {}
@@ -50,8 +53,8 @@ midas.challenge.competitor.setupJobDetailsDisplay = function() {
         }
         var id = $(this)[0].id;
         var rriid = (id.split('_'))[3];
-        midas.loadDialog('errorDetails'+rriid, '/challenge/competitor/jobdetails?rriid='+rriid);
-        midas.showDialog('Error details', false);
+        midas.loadDialog('errorDetails'+rriid, '/challenge/competitor/jobdetails?rriid='+rriid+'&error=true');
+        midas.showDialog('Job details', false);
     });
     $('td.midasChallengeComplete').unbind('click').click(function () {
         if(!json.global.logged) {
@@ -63,6 +66,12 @@ midas.challenge.competitor.setupJobDetailsDisplay = function() {
         var rriid = (id.split('_'))[3];
         midas.loadDialog('jobDetails'+rriid, '/challenge/competitor/jobdetails?rriid='+rriid);
         midas.showDialog('Job details', false);
+    });
+    $('th.midasChallengeMetricCol').unbind('click').click(function () {
+        var id = $(this)[0].id;
+        var metricId = (id.split('_'))[1];
+        midas.loadDialog('metricDetails'+metricId, '/challenge/competitor/metricdetails?metricId='+metricId);
+        midas.showDialog('Metric details', false);
     });
 } 
  

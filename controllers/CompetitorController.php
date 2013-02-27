@@ -157,9 +157,32 @@ class Challenge_CompetitorController extends Challenge_AppController
       {
       throw new Zend_Exception("You are not authorized to see these results.");
       }
+
+    $breadcrumbComponent = MidasLoader::loadComponent('Breadcrumb');  
+    $breadcrumbs[] = array('type' => 'user', 'object' => $userDao);
+    // TODO: this is assuming my challenge scores will be ui-tabs-1, but this is
+    // dynamically set by javascript upon adding tabs, i.e. this isn't reliable
+    $myscoresLink = $this->view->webroot . '/user/' . $userDao->getUserId() . '#ui-tabs-1';
+    $breadcrumbs[] = array('type' => 'custom', 'text' => 'My challenge scores', 'icon' => '', 'href' => $myscoresLink);
+    $breadcrumbComponent->setBreadcrumbHeader($breadcrumbs, $this->view);
       
     // show scores for an individual challenge
     $dashboardDao = $resultsRun->getChallenge()->getDashboard();
+    
+    $resultsType = $resultsRun->getResultsType();
+    if($resultsType === MIDAS_CHALLENGE_TRAINING)
+      {
+      $datasetFolderId = $dashboardDao->getTraining()->getFolderId();  
+      }
+    else
+      {
+      $datasetFolderId = $dashboardDao->getTesting()->getFolderId();  
+      }        
+    $datasetFolderLink = $this->view->webroot . '/folder/' . $datasetFolderId;
+    $this->view->datasetFolderLink = $datasetFolderLink; 
+            
+    $this->view->challengeLink = $this->view->webroot . '/community/' . $resultsRun->getChallenge()->getCommunityId() . '#tabs-info';
+    
     $this->view->json['resultsRunId'] = $resultsRunId;
    
     $apiargs = array();
@@ -177,11 +200,11 @@ class Challenge_CompetitorController extends Challenge_AppController
     
     $this->view->tableData = $tableData;
     $this->view->user = $this->userSession->Dao;
-    $scoredColumns = $this->Challenge_Challenge->getScoredColumns($resultsRun->getChallenge());
+    list($scoredColumns, $metricIds) = $this->Challenge_Challenge->getScoredColumns($resultsRun->getChallenge());
     // set the table headers to be Subject plus the scored columns
     array_unshift($scoredColumns, 'Subject');
-    $this->view->tableData_resultsColumns = $scoredColumns;
     $this->view->tableHeaders = $scoredColumns;
+    $this->view->metricIds = $metricIds;
     $this->view->json['tableHeaders'] = $scoredColumns;
     $this->view->json['unknownStatus'] = MIDAS_CHALLENGE_RRI_STATUS_UNKNOWN;
     $this->view->anonymizedId = $this->getAnonymizedId($userDao, $dashboardDao->getName());
@@ -273,25 +296,44 @@ class Challenge_CompetitorController extends Challenge_AppController
     $userDao = $this->userSession->Dao;
     $resultsRuns = $this->Challenge_ResultsRun->getAllUsersResultsRuns($userDao->getUserId());
 
-    $tableHeaders = array("Challenge", "Anonymized ID", "Dataset", "Run Date", );
-    $tableColumns = array("challenge_name", "anonymized_id", "results_type");
+    $tableHeaders = array("Challenge", "Dataset", "Run Date", );
+    $tableColumns = array("challenge_name", "dataset", "run_date");
     $scorelistingRows = array();
     
     
-    // need rundate and runid
-    
+    $fc = Zend_Controller_Front::getInstance();
+    $webRoot = $fc->getBaseUrl();
     foreach($resultsRuns as $resultRun)
       {
       $scorelistingRow = array();
-      $scorelistingRow["challenge_name"] = $resultRun->getChallenge()->getDashboard()->getName();
-      $scorelistingRow["anonymized_id"] =  $this->getAnonymizedId($userDao, $scorelistingRow["challenge_name"]);
-      $scorelistingRow["results_type"] =  $resultRun->getResultsType();
-      $scorelistingRow["run_date"] =  $resultRun->getDate();
-      $scorelistingRow["results_run_id"] =  $resultRun->getChallengeResultsRunId();
+      
+      $challenge = $resultRun->getChallenge();
+      $challengeName = $resultRun->getChallenge()->getDashboard()->getName();
+      $dashboard = $resultRun->getChallenge()->getDashboard();
+      
+      $scorelistingRow["challenge_name"] =
+        array('text' => $challengeName,
+              'link' => $webRoot  . '/community/' . $challenge->getCommunityId() . '#tabs-info');
+
+      $resultsType = $resultRun->getResultsType();
+      if($resultsType === MIDAS_CHALLENGE_TRAINING)
+        {
+        $datasetFolderId = $dashboard->getTraining()->getFolderId();  
+        }
+      else
+        {
+        $datasetFolderId = $dashboard->getTesting()->getFolderId();  
+        }
+      $scorelistingRow["dataset"] =
+        array('text' => $resultsType,
+              'link' => $webRoot  . '/folder/' . $datasetFolderId);
+      
+      $scorelistingRow["run_date"] =
+        array('text' => $resultRun->getDate(),
+              'link' => $webRoot  . "/challenge/competitor/showscore?resultsRunId=" . $resultRun->getChallengeResultsRunId());
+      
       $scorelistingRows[] = $scorelistingRow;
-      // challengename, results type, run id for linking, date  
       }
-    
     
     $this->view->tableHeaders = $tableHeaders;
     $this->view->tableColumns = $tableColumns;
@@ -351,11 +393,25 @@ class Challenge_CompetitorController extends Challenge_AppController
 
     $tmpDir = $batchmakeTask->getWorkDir();
     
+    $error = $this->_getParam('error');
+    if(!empty($error))
+      {
+      $this->view->errorJob = true; 
+      }
+             
     $outputFile = $tmpDir . $condorJob->getOutputFilename();
     $output = file_exists($outputFile) ? file_get_contents($outputFile) : "std out " .MIDAS_CHALLENGE_FILE_NOT_FOUND;
-    
+    if(empty($output))
+      {
+      $output = "No Standard Output data produced.";
+      }
+      
     $errorFile = $tmpDir . $condorJob->getErrorFilename();
     $error = file_exists($errorFile) ? file_get_contents($errorFile) : "std err " .MIDAS_CHALLENGE_FILE_NOT_FOUND;
+    if(empty($error))
+      {
+      $error = "No Standard Error data produced.";
+      }
 
     $logFile = $tmpDir . $condorJob->getLogFilename();
     $log = file_exists($logFile) ? file_get_contents($logFile) : "log " .MIDAS_CHALLENGE_FILE_NOT_FOUND;
@@ -369,5 +425,26 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->view->logText = $log;
     $this->view->processOutputText = $processOutput;
     }  
+    
+    
+  public function metricdetailsAction()
+    {
+    // no need to check session, this is public info
+    
+    $metricId = $this->_getParam('metricId');
+    if(!isset($metricId))
+      {
+      throw new Zend_Exception('Must set metricId parameter');
+      }  
+      
+    $metricModel = MidasLoader::loadModel('Metric', 'challenge');
+    $metric = $metricModel->load($metricId);
+    if(!$metric)
+      {
+      throw new Zend_Exception('Invalid metricId parameter');
+      }
+    $this->disableLayout();  
+    $this->view->metric = $metric;
+    }
     
 }//end class

@@ -1,0 +1,43 @@
+<?php
+/*=========================================================================
+MIDAS Server
+Copyright (c) Kitware SAS. 20 rue de la Villette. All rights reserved.
+69328 Lyon, FRANCE.
+
+See Copyright.txt for details.
+This software is distributed WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the above copyright notices for more information.
+=========================================================================*/
+?>
+<div>
+ 
+  <div id="midasChallengeMetricName"><?php echo $this->metric->getMetricName(); ?></div><br/>
+  <?php
+  $description = $this->metric->getDescription();
+  if(!empty($description))
+    {
+    echo '<div id="midasChallengeMetricDescription">'.$description.'</div><br/>';  
+    }
+  $lowestScoreBest = $this->metric->getLowestScoreBest();
+  if($lowestScoreBest)
+    {
+    echo "A lower score is better (zero is best).<br/><br/>";  
+    }
+  else
+    {
+    echo "A higher score is better.<br/><br/>";  
+    }
+  $referenceLink = $this->metric->getReferenceLink();
+  if(!empty($referenceLink))
+    {
+    echo '<div id="midasChallengeMetricReference"><a href="'.$referenceLink.'">View reference</a></div><br/>';  
+    }
+  $sourceLink = $this->metric->getSourceLink();
+  if(!empty($sourceLink))
+    {
+    echo '<div id="midasChallengeMetricSource"><a href="'.$sourceLink.'">View source code</a></div><br/>';  
+    }
+  ?>
+    
+</div>
