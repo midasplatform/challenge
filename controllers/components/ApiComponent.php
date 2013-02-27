@@ -361,14 +361,29 @@ class Challenge_ApiComponent extends AppComponent
       }
     else if($status == MIDAS_CHALLENGE_RR_STATUS_COMPLETE)
       {
-      // send a notification email
-      $utilityComponent = MidasLoader::loadComponent('Utility');
-      $subject = "Midas Challenge alert of processing completion";
       $fc = Zend_Controller_Front::getInstance();
       $baseURL = $fc->getBaseUrl();
-      $link = UtilityComponent::getServerURL() . $baseURL . '/challenge/competitor/showscore?resultsRunId=' . $resultsRunId;
-      $text = 'The dataset you submitted for processing has completed.<br/></br>' .
-              '<a href="'.$link.'">Click here</a> to view your results.';
+      $utilityComponent = MidasLoader::loadComponent('Utility');
+      $serverURL = UtilityComponent::getServerURL();
+      
+      $dashboardDao = $resultsRun->getChallenge()->getDashboard();
+      $resultsType = $resultsRun->getResultsType();
+      if($resultsType === MIDAS_CHALLENGE_TRAINING)
+        {
+        $datasetFolderId = $dashboardDao->getTraining()->getFolderId();  
+        }
+      else
+        {
+        $datasetFolderId = $dashboardDao->getTesting()->getFolderId();  
+        }        
+      $datasetFolderLink = $serverURL . $baseURL . '/folder/' . $datasetFolderId;
+      $challengeLink = $serverURL . $baseURL . '/community/' . $resultsRun->getChallenge()->getCommunityId() . '#tabs-info';
+      $subject = "Midas Challenge scoring complete on ".$resultsType." dataset for ".$dashboardDao->getName()." challenge";
+      $link =  $serverURL . $baseURL . '/challenge/competitor/showscore?resultsRunId=' . $resultsRunId;
+      $text = 'You submitted results for the <a href="'.$datasetFolderLink.'">'.$resultsType.' dataset</a> ';
+      $text .= 'of the <a href="'.$challengeLink.'">'.$dashboardDao->getName().' challenge</a>';
+      $text .= ' at '. $resultsRun->getDate().'.<br/>';
+      $text .= 'These results have been scored.  <a href="'.$link.'">Click here</a> to view your scores.';
       $email = $userDao->getEmail();
       // get the from email address if set in config
       if(file_exists(BASE_PATH."/core/configs/challenge.local.ini"))
