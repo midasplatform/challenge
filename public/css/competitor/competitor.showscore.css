@@ -69,6 +69,17 @@ div#midasChallengeMetricName {
     font-size: 14px;
 }
 
+a.github {
+    background: url(../../images/octocat24.png) center left no-repeat;
+    padding: 10px 0px 10px 25px;
+}
+
+a.wikipedia {
+    background: url(../../images/wikipedia24.png) center left no-repeat;
+    padding: 10px 0px 10px 25px;
+}
+
+
 
 div.resultsComplete {
     margin: 10px 0;

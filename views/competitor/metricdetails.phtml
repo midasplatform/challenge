@@ -31,12 +31,12 @@ PURPOSE.  See the above copyright notices for more information.
   $referenceLink = $this->metric->getReferenceLink();
   if(!empty($referenceLink))
     {
-    echo '<div id="midasChallengeMetricReference"><a href="'.$referenceLink.'">View reference</a></div><br/>';  
+    echo '<div id="midasChallengeMetricReference"><a target="_blank" class="wikipedia" href="'.$referenceLink.'">View reference in Wikipedia</a></div><br/>';  
     }
   $sourceLink = $this->metric->getSourceLink();
   if(!empty($sourceLink))
     {
-    echo '<div id="midasChallengeMetricSource"><a href="'.$sourceLink.'">View source code</a></div><br/>';  
+    echo '<div id="midasChallengeMetricSource"><a target="_blank" class="github" href="'.$sourceLink.'">View source code in GitHub</a></div><br/>';  
     }
   ?>
     
