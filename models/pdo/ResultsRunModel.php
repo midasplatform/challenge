@@ -65,19 +65,26 @@ class Challenge_ResultsRunModel extends Challenge_ResultsRunModelBase {
     }
 
     
-  public function getAllUsersResultsRuns($userId)
+  public function getAllUsersResultsRuns($userId = false)
     {
     $sql = $this->database->select()->setIntegrityCheck(false);
     $sql->from(array('crr' => 'challenge_results_run'));
     $sql->join(array('cc' => 'challenge_competitor'), 'crr.challenge_competitor_id=cc.challenge_competitor_id');
-    $sql->where('cc.user_id=?', $userId);
+    if($userId != false)
+      { 
+      $sql->where('cc.user_id=?', $userId);
+      }
     $sql->order(array('challenge_results_run_id DESC'));
 
     $rowset = $this->database->fetchAll($sql);
     $rows = array();
     foreach($rowset as $row)
       {
-      $rows[] = $this->load($row['challenge_results_run_id']);  
+      if(!array_key_exists($row['user_id'], $rows))
+        {
+        $rows[$row['user_id']] = array();  
+        }
+      $rows[$row['user_id']][] = $this->load($row['challenge_results_run_id']);  
       }
     return $rows;
     }
