@@ -158,13 +158,27 @@ class Challenge_CompetitorController extends Challenge_AppController
       throw new Zend_Exception("You are not authorized to see these results.");
       }
 
+      
     $breadcrumbComponent = MidasLoader::loadComponent('Breadcrumb');  
-    $breadcrumbs[] = array('type' => 'user', 'object' => $userDao);
-    // TODO: this is assuming my challenge scores will be ui-tabs-1, but this is
-    // dynamically set by javascript upon adding tabs, i.e. this isn't reliable
-    $myscoresLink = $this->view->webroot . '/user/' . $userDao->getUserId() . '#ui-tabs-1';
-    $breadcrumbs[] = array('type' => 'custom', 'text' => 'My challenge scores', 'icon' => '', 'href' => $myscoresLink);
-    $breadcrumbComponent->setBreadcrumbHeader($breadcrumbs, $this->view);
+    $referer = $this->_getParam("referer");
+    if(!$referer || $referer != 'allscores')
+      {
+      $breadcrumbs[] = array('type' => 'user', 'object' => $userDao);
+      // TODO: this is assuming my challenge scores will be ui-tabs-1, but this is
+      // dynamically set by javascript upon adding tabs, i.e. this isn't reliable
+      $myscoresLink = $this->view->webroot . '/user/' . $userDao->getUserId() . '#ui-tabs-1';
+      $breadcrumbs[] = array('type' => 'custom', 'text' => 'My challenge scores', 'icon' => '', 'href' => $myscoresLink);
+      $breadcrumbComponent->setBreadcrumbHeader($breadcrumbs, $this->view);
+      }
+    else
+      {
+      $breadcrumbs[] = array('type' => 'community', 'object' => $resultsRun->getChallenge()->getCommunity());
+      $allscoresLink = $this->view->webroot . '/community/' . $resultsRun->getChallenge()->getCommunityId() . '#Challenge_Scores';
+      $breadcrumbs[] = array('type' => 'custom', 'text' => 'Challenge scores', 'icon' => '', 'href' => $allscoresLink);
+      $breadcrumbComponent->setBreadcrumbHeader($breadcrumbs, $this->view);
+      }
+      
+     
       
     // show scores for an individual challenge
     $dashboardDao = $resultsRun->getChallenge()->getDashboard();
@@ -200,6 +214,7 @@ class Challenge_CompetitorController extends Challenge_AppController
     
     $this->view->tableData = $tableData;
     $this->view->user = $this->userSession->Dao;
+    $this->view->submitterEmail = $resultsRun->getCompetitor()->getUser()->getEmail();
     list($scoredColumns, $metricIds) = $this->Challenge_Challenge->getScoredColumns($resultsRun->getChallenge());
     // set the table headers to be Subject plus the scored columns
     array_unshift($scoredColumns, 'Subject');
@@ -280,9 +295,6 @@ class Challenge_CompetitorController extends Challenge_AppController
     }
 
     
-    
-    
-    
   /** listing of all user's scoring runs */
   public function scorelistingAction()
     {
@@ -295,7 +307,7 @@ class Challenge_CompetitorController extends Challenge_AppController
 
     $userDao = $this->userSession->Dao;
     $resultsRuns = $this->Challenge_ResultsRun->getAllUsersResultsRuns($userDao->getUserId());
-
+    $resultsRuns = $resultsRuns[$userDao->getUserId()];
     $tableHeaders = array("Challenge", "Dataset", "Run Date", );
     $tableColumns = array("challenge_name", "dataset", "run_date");
     $scorelistingRows = array();
@@ -341,6 +353,98 @@ class Challenge_CompetitorController extends Challenge_AppController
     
   }
 
+  /** listing of all users' scoring runs, need to be a challenge moderator */
+  public function allscoresAction()
+    {
+    if(!$this->logged)
+      {
+      $this->haveToBeLogged();
+      return false;
+      }
+    $this->disableLayout();
+
+    $userDao = $this->userSession->Dao;
+    $challengeId = $this->_getParam('challengeId');
+    if(!isset($challengeId))
+      {
+      throw new Zend_Exception('Must set challengeId parameter');
+      }
+    $challenge = $this->Challenge_Challenge->load($challengeId);
+    if(!$challenge)
+      {
+      throw new Zend_Exception('Challenge with that id does not exist');
+      }
+    if(!$this->Challenge_Challenge->isChallengeModerator($userDao, $challenge))
+      {
+      throw new Zend_Exception("You are not authorized to see these results.");  
+      }
+    
+    $resultsRuns = $this->Challenge_ResultsRun->getAllUsersResultsRuns();
+
+    $tableHeaders = array("User", "Dataset", "Run Date", );
+    $tableColumns = array("user", "dataset", "run_date");
+    $scorelistingRows = array();   
+    
+    $fc = Zend_Controller_Front::getInstance();
+    $webRoot = $fc->getBaseUrl();
+    $competitors = array();
+    foreach($resultsRuns as $competitorUserId => $competitorResultRuns)
+      {
+      foreach($competitorResultRuns as $resultRun)
+        {
+        $scorelistingRow = array();
+        $dashboard = $resultRun->getChallenge()->getDashboard();
+      
+        if(array_key_exists($competitorUserId, $competitors))
+          {
+          $competitorUser = $competitors[$competitorUserId];
+          }
+        else
+          {
+          $competitorUser = $this->User->load($competitorUserId);
+          $competitors[$competitorUserId] = $competitorUser; 
+          }
+        
+        if(!$competitorUser)
+          {
+          $scorelistingRow["user"] =
+            array('text' => 'missing user',
+                  'link' => '');
+              }
+        else
+          {
+          $scorelistingRow["user"] =
+            array('text' => $competitorUser->getEmail(),
+                  'link' => $webRoot  . '/user/' . $competitorUserId);
+          }
+      
+        $resultsType = $resultRun->getResultsType();
+        if($resultsType === MIDAS_CHALLENGE_TRAINING)
+          {
+          $datasetFolderId = $dashboard->getTraining()->getFolderId();  
+          }
+        else
+          {
+          $datasetFolderId = $dashboard->getTesting()->getFolderId();  
+          }
+        $scorelistingRow["dataset"] =
+          array('text' => $resultsType,
+                'link' => $webRoot  . '/folder/' . $datasetFolderId);
+      
+        $scorelistingRow["run_date"] =
+          array('text' => $resultRun->getDate(),
+                'link' => $webRoot  . "/challenge/competitor/showscore?referer=allscores&resultsRunId=" . $resultRun->getChallengeResultsRunId());
+        
+        $scorelistingRows[] = $scorelistingRow;
+        }
+      }
+    
+    $this->view->tableHeaders = $tableHeaders;
+    $this->view->tableColumns = $tableColumns;
+    $this->view->scorelistingRows = $scorelistingRows;
+    
+  }  
+  
   
   function getAnonymizedId($userDao, $challengeName)
     {

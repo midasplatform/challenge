@@ -148,7 +148,23 @@ class Challenge_Notification extends ApiEnabled_Notification
       {
       $fc = Zend_Controller_Front::getInstance();
       $moduleWebroot = $fc->getBaseUrl().'/challenge';
-      return array('Challenge dashboard' => $moduleWebroot.'/competitor/dashboard?communityId='.$apiargs['communityId']);
+      // TODO probably want to have this sending challenge ID
+      $tabs = array('Challenge dashboard' => $moduleWebroot.'/competitor/dashboard?communityId='.$apiargs['communityId']);
+      
+      if(isset($this->userSession->Dao))
+        {
+        // get the challengeId
+        // use the first, should be the only...
+        reset($challenges);
+        $challengeId = key($challenges);  
+        $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
+        $challenge = $challengeModel->load($challengeId);
+        if($challenge && $challengeModel->isChallengeModerator($this->userSession->Dao, $challenge))
+          {
+          $tabs['Challenge Scores'] = $moduleWebroot . '/competitor/allscores?challengeId='.$challenge->getChallengeId();
+          }
+        }
+      return $tabs;
       }
     else
       {

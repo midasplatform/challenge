@@ -31,7 +31,7 @@ midas.challenge.competitor.dashboardSetup = function (){
 }
 
 $(document).ready(function() 
-  { console.log("blara");
+  { 
     /*$("table.dashboardDisplay").dataTable(
       {
       "bPaginate": true,
