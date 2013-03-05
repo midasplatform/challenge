@@ -50,6 +50,7 @@ class Challenge_ResultsRunModel extends Challenge_ResultsRunModelBase {
     $sql->join(array('bt' => 'batchmake_task'), 'crr.batchmake_task_id=bt.batchmake_task_id');
     $sql->where('crr.challenge_id=?', $challengeId);
     $sql->where('crr.results_type=?', MIDAS_CHALLENGE_TESTING);
+    $sql->where('crr.status=?', MIDAS_CHALLENGE_RRI_STATUS_COMPLETE);
 
     $rowset = $this->database->fetchAll($sql);
     $rows = array();
@@ -77,16 +78,22 @@ class Challenge_ResultsRunModel extends Challenge_ResultsRunModelBase {
     $sql->order(array('challenge_results_run_id DESC'));
 
     $rowset = $this->database->fetchAll($sql);
-    $rows = array();
+    $byUserId = array();
+    $combined = array();
+    $resultsRunIdToUserId = array();
     foreach($rowset as $row)
       {
-      if(!array_key_exists($row['user_id'], $rows))
+      $userId = $row['user_id']; 
+      if(!array_key_exists($userId, $byUserId))
         {
-        $rows[$row['user_id']] = array();  
+        $byUserId[$userId] = array();  
         }
-      $rows[$row['user_id']][] = $this->load($row['challenge_results_run_id']);  
+      $resultsRun = $this->load($row['challenge_results_run_id']);
+      $byUserId[$userId][] = $resultsRun;
+      $combined[] = $resultsRun;
+      $resultsRunIdToUserId[$resultsRun->getChallengeResultsRunId()] = $userId;
       }
-    return $rows;
+    return array('by_user_id' => $byUserId, 'combined' => $combined, 'by_results_run_id' => $resultsRunIdToUserId);
     }
 
     
