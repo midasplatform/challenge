@@ -17,11 +17,12 @@ $this->headScript()->appendFile($this->apiWebroot . '/public/js/common/common.aj
 $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/competitor.showscore.js');
 ?>
 <link type="text/css" rel="stylesheet" href="<?php echo $this->coreWebroot?>/public/css/jquery/jquery.tablesorter.css" />
+<link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.common.css" />
 <link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
 
 
-<div id="showscores" class="viewMain" >
-
+<div id="showscores" style="width: 805px!important;" class="viewMain" >
+    <div class="aboutThisPage" id="challengeCompetitorScoreAbout"><a>about this page</a></div><br/>
 <?php
   echo 'Results for <a href="' . $this->datasetFolderLink . '">' . $this->resultsRun->getResultsType() . ' dataset</a> of <a href="' . $this->challengeLink . '">' . $this->challengeName . '</a><br/>';
   echo 'Submitted at ' . $this->resultsRun->getDate() . ' by ' . $this->submitterEmail;

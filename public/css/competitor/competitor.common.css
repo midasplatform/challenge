@@ -1,0 +1,19 @@
+th.midasChallengeMetricCol:hover {
+    background-color: #9BA5A2!important;
+    cursor: pointer;
+}
+
+div#midasChallengeMetricName {
+    text-align: center;
+    font-size: 14px;
+}
+
+a.github {
+    background: url(../../images/octocat24.png) center left no-repeat;
+    padding: 10px 0px 10px 25px;
+}
+
+a.wikipedia {
+    background: url(../../images/wikipedia24.png) center left no-repeat;
+    padding: 10px 0px 10px 25px;
+}

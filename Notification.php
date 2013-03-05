@@ -149,7 +149,7 @@ class Challenge_Notification extends ApiEnabled_Notification
       $fc = Zend_Controller_Front::getInstance();
       $moduleWebroot = $fc->getBaseUrl().'/challenge';
       // TODO probably want to have this sending challenge ID
-      $tabs = array('Challenge dashboard' => $moduleWebroot.'/competitor/dashboard?communityId='.$apiargs['communityId']);
+      $tabs = array('Participant Scoreboards' => $moduleWebroot.'/competitor/dashboard?communityId='.$apiargs['communityId']);
       
       if(isset($this->userSession->Dao))
         {
@@ -161,7 +161,7 @@ class Challenge_Notification extends ApiEnabled_Notification
         $challenge = $challengeModel->load($challengeId);
         if($challenge && $challengeModel->isChallengeModerator($this->userSession->Dao, $challenge))
           {
-          $tabs['Challenge Scores'] = $moduleWebroot . '/competitor/allscores?challengeId='.$challenge->getChallengeId();
+          $tabs['Scoring Log'] = $moduleWebroot . '/competitor/allscores?challengeId='.$challenge->getChallengeId();
           }
         }
       return $tabs;

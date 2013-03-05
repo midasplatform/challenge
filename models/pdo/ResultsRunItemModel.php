@@ -39,6 +39,8 @@ class Challenge_ResultsRunItemModel extends Challenge_ResultsRunItemModelBase {
     
   function loadLatestResultsRunSummary($resultRunId) 
     {
+    // TODO Investigate how this works in the presence of errors
+    // or infinite/arbitrarily large values
     $sql = $this->database->select()->setIntegrityCheck(false);
     $sql->from(array("ccri" => "challenge_results_run_item"));
     $sql->where('challenge_results_run_id=?', $resultRunId);

@@ -161,24 +161,35 @@ class Challenge_CompetitorController extends Challenge_AppController
       
     $breadcrumbComponent = MidasLoader::loadComponent('Breadcrumb');  
     $referer = $this->_getParam("referer");
-    if(!$referer || $referer != 'allscores')
+    if(!$referer || !isset($referer))
       {
       $breadcrumbs[] = array('type' => 'user', 'object' => $userDao);
       // TODO: this is assuming my challenge scores will be ui-tabs-1, but this is
       // dynamically set by javascript upon adding tabs, i.e. this isn't reliable
       $myscoresLink = $this->view->webroot . '/user/' . $userDao->getUserId() . '#ui-tabs-1';
       $breadcrumbs[] = array('type' => 'custom', 'text' => 'My challenge scores', 'icon' => '', 'href' => $myscoresLink);
+      $breadcrumbs[] = array('type' => 'custom', 'text' => 'Individual scored submission', 'icon' => '');
       $breadcrumbComponent->setBreadcrumbHeader($breadcrumbs, $this->view);
       }
     else
       {
-      $breadcrumbs[] = array('type' => 'community', 'object' => $resultsRun->getChallenge()->getCommunity());
-      $allscoresLink = $this->view->webroot . '/community/' . $resultsRun->getChallenge()->getCommunityId() . '#Challenge_Scores';
-      $breadcrumbs[] = array('type' => 'custom', 'text' => 'Challenge scores', 'icon' => '', 'href' => $allscoresLink);
-      $breadcrumbComponent->setBreadcrumbHeader($breadcrumbs, $this->view);
+      if($referer == MIDAS_CHALLENGE_REFERER_SCORELOG)
+        {
+        $breadcrumbs[] = array('type' => 'community', 'object' => $resultsRun->getChallenge()->getCommunity());
+        $allscoresLink = $this->view->webroot . '/community/' . $resultsRun->getChallenge()->getCommunityId() . '#Scoring_Log';
+        $breadcrumbs[] = array('type' => 'custom', 'text' => 'Challenge Scoring Log', 'icon' => '', 'href' => $allscoresLink);
+        $breadcrumbs[] = array('type' => 'custom', 'text' => 'Individual scored submission', 'icon' => '');
+        $breadcrumbComponent->setBreadcrumbHeader($breadcrumbs, $this->view);
+        }
+      elseif($referer == MIDAS_CHALLENGE_REFERER_SCOREBOARD)
+        {
+        $breadcrumbs[] = array('type' => 'community', 'object' => $resultsRun->getChallenge()->getCommunity());
+        $allscoresLink = $this->view->webroot . '/community/' . $resultsRun->getChallenge()->getCommunityId() . '#Participant_Scoreboards';
+        $breadcrumbs[] = array('type' => 'custom', 'text' => 'Challenge Scoreboard', 'icon' => '', 'href' => $allscoresLink);
+        $breadcrumbs[] = array('type' => 'custom', 'text' => 'Individual scored submission', 'icon' => '');
+        $breadcrumbComponent->setBreadcrumbHeader($breadcrumbs, $this->view);
+        }
       }
-      
-     
       
     // show scores for an individual challenge
     $dashboardDao = $resultsRun->getChallenge()->getDashboard();
@@ -233,65 +244,74 @@ class Challenge_CompetitorController extends Challenge_AppController
     $challenges = $this->ModuleComponent->Api->anonymousGetChallenge($args);
     $tableHeaders = array();
     $tableData = array();
-    foreach($challenges as $challengeId => $statuses)
+    // there should be at most one challenge
+    reset($challenges);
+    $challengeId = key($challenges);  
+
+    $challenge = $this->Challenge_Challenge->load($challengeId);
+    $dashboardDao = $challenge->getDashboard();
+    $challengeName = $dashboardDao->getName();
+    $challengeDesc = $dashboardDao->getDescription();
+    $challengeInfo[$challengeId] = array('name' => $challengeName, 'description' => $challengeDesc);
+
+    $apiargs = array();
+    $apiargs['useSession'] = true;
+    $apiargs['challengeId'] = $challengeId;
+    $apiResults = $this->ModuleComponent->Api->anonymousListDashboard($apiargs);
+
+    if(array_key_exists('no_results', $apiResults))
       {
-      $dashboardDao = $this->Challenge_Challenge->load($challengeId)->getDashboard();
-      $challengeName = $dashboardDao->getName();
-      $challengeDesc = $dashboardDao->getDescription();
-      $challengeInfo[$challengeId] = array('name' => $challengeName, 'description' => $challengeDesc);
-
-      $apiargs = array();
-      $apiargs['useSession'] = true;
-      $apiargs['challengeId'] = $challengeId;
-      $apiResults = array();
-      $apiResults = $this->ModuleComponent->Api->anonymousListDashboard($apiargs);
-
+      $this->view->noResults = true;    
+      }
+    else
+      {
       // key of apiResults is user id
-      // change this to be an anonymized id
+      // change this to be an anonymized id as needed
       $anonymizedResults = array();
+      $userResultsRuns = $apiResults['user_results_runs'];
+      $userResultsLinks = array();
+      $fc = Zend_Controller_Front::getInstance();
+      $webRoot = $fc->getBaseUrl();
+    
+      if($this->logged)
+        {
+        $userDao = $this->userSession->Dao;  
+        $isModerator = $this->Challenge_Challenge->isChallengeModerator($userDao, $challenge);
+        $competitorId = $userDao->getUserId();
+        }
+      else
+        {
+        $isModerator = false;
+        $competitorId = false;
+        }
+    
       foreach($apiResults['competitor_scores'] as $userId => $results)
         {
         $competitorDao = $this->User->load($userId);
-        $anonymizedId = $this->getAnonymizedId($competitorDao, $challengeName);
-        $anonymizedResults[$anonymizedId] = $results;
+        if($isModerator || $userId == $competitorId)
+          {
+          // no need to anonymize
+          // moderators can see all names and links
+          // users can see their own names and links
+          $anonymizedId = $competitorDao->getEmail();
+          $anonymizedResults[$anonymizedId] = $results;
+          $userResultsLinks[$anonymizedId] = $webRoot  . "/challenge/competitor/showscore?referer=".MIDAS_CHALLENGE_REFERER_SCOREBOARD."&resultsRunId=" . $userResultsRuns[$userId];
+          }
+        else
+          {
+          $anonymizedId = $this->getAnonymizedId($competitorDao, $challengeName);
+          $anonymizedResults[$anonymizedId] = $results;
+          }
         }
-      
-      $tableHeaders[$challengeId] = array(
-        'Competitor', 
-        'Ave Dist 1',
-        'Ave Dist 2',
-        'Dice 1',
-        'Dice 2',
-        'Hausdorff Dist 1',
-        'Hausdorff Dist 2',
-        'Kappa',
-        'Sensitivity 1',
-        'Sensitivity 2',
-        'Specificity 1',
-        'Specificity 2',
-        'Average Rank');
-      $resultColumns = array(
-        'AveDist(A_1, B_1)',
-        'AveDist(A_2, B_2)',
-        'Dice(A_1, B_1)',
-        'Dice(A_2, B_2)',
-        'HausdorffDist(A_1, B_1)',
-        'HausdorffDist(A_2, B_2)',
-        'Kappa(A,B)',
-        'Sensitivity(A_1, B_1)',
-        'Sensitivity(A_2, B_2)',
-        'Specificity(A_1, B_1)',
-        'Specificity(A_2, B_2)',
-        'Average Rank');
-        
-      break;
+      $this->view->noResults = false;  
+      $this->view->tableData = $anonymizedResults;
+      $this->view->resultColumns = array_keys($results);
+      list($scoredColumns, $metricIds) = $this->Challenge_Challenge->getScoredColumns($challenge);
+      $this->view->metricIds = $metricIds;
+      $this->view->userResultsLinks = $userResultsLinks;
       }
+      
     $this->view->challengeInfo = $challengeInfo;
-    $this->view->tableData = array();
-    $this->view->tableData[$challengeId] = $anonymizedResults;
-    $this->view->resultColumns = $resultColumns;
-    $this->view->tableHeaders = $tableHeaders;
-    $this->view->resultColumns = $resultColumns;
     }
 
     
@@ -433,8 +453,8 @@ class Challenge_CompetitorController extends Challenge_AppController
       
         $scorelistingRow["run_date"] =
           array('text' => $resultRun->getDate(),
-                'link' => $webRoot  . "/challenge/competitor/showscore?referer=allscores&resultsRunId=" . $resultRun->getChallengeResultsRunId());
-        
+                'link' => $webRoot  . "/challenge/competitor/showscore?referer=".MIDAS_CHALLENGE_REFERER_SCORELOG."&resultsRunId=" . $resultRun->getChallengeResultsRunId());
+
         $scorelistingRows[] = $scorelistingRow;
         }
       }

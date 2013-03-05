@@ -73,6 +73,38 @@ midas.challenge.competitor.setupJobDetailsDisplay = function() {
         midas.loadDialog('metricDetails'+metricId, '/challenge/competitor/metricdetails?metricId='+metricId);
         midas.showDialog('Metric details', false);
     });
+    
+    
+    $("div#challengeCompetitorScoreAbout a").qtip({
+        content: {
+            text: function(api) {
+                var text = 'This page will display the scores for an individual submission by a competitor, for a specific stage of a challenge.<br/><br/>';
+                text += 'An alert box will indicate whether the results sumitted for scoring are still processing or have completed processing. ';
+                text += 'When processing completes, the submitting user will be alerted via email.<br/><br/>';
+                text += 'The score table will list the input cases for this dataset that are matched between the truth items and the competitor submitted result items.  The name of the case ';
+                text += 'is listed under the Subject column.<br/><br/>';
+                text += 'Each of the other columns will be a metric+label.  The cells in that column will be the scores for that case for that metric+label.  You can click on the ';
+                text += 'metric+label column headers for more information about the metric.  You can click on the individual table cells once the case has been scored for the given metric, this ';
+                text += 'will show you the actual command line output of the metric executable, or error information if the executable run was in error.<br/><br/>';
+                text += 'The top row will be an averaged value of the scores of all cases for each metric+label column.<br/><br/>';
+                text += 'If any of the distance metrics return Infinity, this value will be represented as an arbitrarily large value, and the column average will be this same arbitrarily large value.'
+                return text;
+            }
+        },
+        style: {
+	    classes: 'ui-tooltip-dark scoreAboutStyle'
+	},				
+        position: {
+	    my: 'top left',
+	    at: 'bottom left'
+	},
+	show: {
+	    event: 'click'
+	},
+        hide: {
+            event: 'click unfocus'
+        }
+    });    
 } 
  
 // Fill the results table with any data
