@@ -673,7 +673,8 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
    * or else for metrics that provide a score for each label, will return a 
    * column per scored label.
    * @param type $challenge
-   * @return type 
+   * @return an array, the first element is a list of scored metric labels,
+   * the second element is a mapping of the scored metric label to challenge_metric_id 
    */
   function getScoredColumns($challenge)
     {

@@ -1013,30 +1013,79 @@ class Challenge_ApiComponent extends AppComponent
     return $responseData;
     }
 
+  /**
+   * helper function, will sort and rank the passed in array, if lowestScoreBest
+   * is true then a lower score will have a better (lower) rank.  The best rank
+   * is 1, any scores that are tied will have the same rank.
+   * @param array $idsToScores a mapping from ids to scores
+   * @param boolean $lowestScoreBest
+   * @return array a mapping of the ids passed in as the keys of $idsToScores to
+   * the ranking calculated for that id. 
+   */
+  protected function sortAndRank($idsToScores, $lowestScoreBest = false)
+    {
+    if(!$lowestScoreBest)
+      {
+      arsort($idsToScores, SORT_NUMERIC);
+      }
+    else
+      {
+      asort($idsToScores, SORT_NUMERIC);
+      }
+    // assign ranks to ids
+    $sortedIds = array_keys($idsToScores);
+    $rank = 1;
+    $rankCount = 1;
+    $numIds = sizeof($sortedIds);
+    $ranks = array();
+    foreach($sortedIds as $ind => $id)
+      {
+      $ranks[$id] = $rank;
+      if($ind+1 < $numIds)
+        {
+        // only need to look ahead for ties if there are more users  
+        $currentScore = round($idsToScores[$id], MIDAS_CHALLENGE_NUM_ROUNDING_DIGITS);
+        $nextId = $sortedIds[$ind+1];
+        $nextScore = round($idsToScores[$nextId], MIDAS_CHALLENGE_NUM_ROUNDING_DIGITS);
+        if($currentScore === $nextScore)
+          {
+          // a tie, should have the same rank
+          // don't increment the rank, but do keep track of how many at this rank
+          $rankCount = $rankCount + 1;
+          }
+        else
+          {
+          // increment the rank by however many at this rank, reset rankCount
+          $rank = $rank + $rankCount;
+          $rankCount = 1;
+          }
+        }
+      }
+
+    return $ranks;
+    }
+    
 
 
   /**
-   * Get the dashboard of results for an entire challenge.
-   * @param challengeId the id of the challenge to display testing inputs for
-   * @return find the most recent (TBD???) set of results for each competitor for
-   * the challenge, a set of rows, one row per competitor who has at least one
-   * result folder scored
-   * (anonymized id of competitor,
-   * for every testing item a column with the competitors score on that item,
-   * aggregated competitor score)
-   *
-   * FOR NOW, probably will change
-   *
-   * returns value is an array, with each row having:
-   * competitor_id : a randomized id
-   * test_items: an array with keys being the test item id and values of score
+   * Get the scoreboards for an entire challenge.  This will find the most recent
+   * set of results for each competitor for the challenge, then average and rank
+   * the competitors.  Each individual metric+label will be averaged, and each
+   * competitor will be given a ranking for each individual metric+label across
+   * all of their cases.  Then an average ranking will be calculated across all
+   * metric+label average values, and this average ranking will be used to compute
+   * an overall ranking for each competitor.
+   * // TODO return more than one stage, i.e. not just Testing
+   * @param challengeId the id of the challenge to get scoring data for
+   * @return array('no_results' => 'true') if there are no results
+   * if there are results, two arrays will be returned, 
+   * 'competitor_scores' => $metricResultsByUser (mapping user ids to their results)
+   * 'user_results_runs' => $usersTestingResults (mapping user ids to challenge_results_run_id).
    *
    */
   public function anonymousListDashboard($args)
     {
     $this->_checkKeys(array('challengeId'), $args);
-    // TODO implementation
-    // TODO figure out what happens if no results or more than one set of results
 
     $challengeId = $args['challengeId'];
     
@@ -1049,28 +1098,27 @@ class Challenge_ApiComponent extends AppComponent
       {
       throw new Zend_Exception('You must enter a valid challenge.');
       }
-    
+   
     $usersTestingResults = $resultsrunModel->getUsersLatestTestingResults($challengeId);
-
     $resultsPerCompetitor = array();
     $usersToScoreByMetric = array();
-    $metrics = array(
-        'AveDist(A_1, B_1)',
-        'AveDist(A_2, B_2)',
-        'Dice(A_1, B_1)',
-        'Dice(A_2, B_2)',
-        'HausdorffDist(A_1, B_1)',
-        'HausdorffDist(A_2, B_2)',
-        'Kappa(A,B)',
-        'Sensitivity(A_1, B_1)',
-        'Sensitivity(A_2, B_2)',
-        'Specificity(A_1, B_1)',
-        'Specificity(A_2, B_2)');
-    if(!isset($usersTestingResults) || sizeof($usersTestingResults) !== 0)
+
+    list($metricLabels, $scoreColumnsToMetricIds) = $challengeModel->getScoredColumns($challengeDao);
+    // load each of the metrics
+    $metrics = array();
+    $metricModel = MidasLoader::loadModel('Metric', 'challenge');
+    foreach($scoreColumnsToMetricIds as $metricId)
+      {
+      if(!array_key_exists($metricId, $metrics))
+        {
+        $metric = $metricModel->load($metricId);
+        $metrics[$metricId] = $metric;
+        }
+      }
+    
+    if(sizeof($usersTestingResults) > 0)
       {
       //  for each user, for this latest results run, get all averaged score values
-      //  
-      //  get the latest resultsRun, and all items
       $userRanksByMetric = array();
       $metricResultsByUser = array();
       foreach($usersTestingResults as $userId => $latestTestingResultRunId)
@@ -1078,62 +1126,39 @@ class Challenge_ApiComponent extends AppComponent
         $userRanksByMetric[$userId] = array();
         $resultsByMetric = $resultsrunitemModel->loadLatestResultsRunSummary($latestTestingResultRunId);  
         $metricResultsByUser[$userId] = $resultsByMetric;
-        foreach($metrics as $metric)
+        foreach($metricLabels as $metricLabel)
           {
-          if(!array_key_exists($metric, $usersToScoreByMetric))
+          if(!array_key_exists($metricLabel, $usersToScoreByMetric))
             {
-            $usersToScoreByMetric[$metric] = array();  
+            $usersToScoreByMetric[$metricLabel] = array();  
             }
-          if(array_key_exists($metric, $resultsByMetric))
-            {
-            $usersToScoreByMetric[$metric][$userId] = $resultsByMetric[$metric]['metric_average'];
-            }
+          $usersToScoreByMetric[$metricLabel][$userId] = $resultsByMetric[$metricLabel]['metric_average'];
           }
         }
       }
     else
       {
-      // TODO now what?
-      // THis will actually happen
+      // No users have any scores
+      $returnVal = array('no_results' => 'true');
+      return $returnVal;
       }
 
-    // now for each metric, sort the results
-    foreach($metrics as $metric)
+    // now for each metricLabel we have a mapping of userIds to their avg score
+    // give a ranking to each user for each metricLabel
+    foreach($metricLabels as $metricLabel)
       {
-      if(array_key_exists($metric, $usersToScoreByMetric))
+      if(array_key_exists($metricLabel, $usersToScoreByMetric))
         {
-        asort($usersToScoreByMetric[$metric], SORT_NUMERIC);
-        // now assign ranks to each user for this metric
-        $sortedUsers = array_keys($usersToScoreByMetric[$metric]);
-        $rank = 1;
-        $rankCount = 1;
-        $sortedUserSize = sizeof($sortedUsers);
-        foreach($sortedUsers as $ind => $user)
+        $metric = $metrics[$scoreColumnsToMetricIds[$metricLabel]];
+        $ranks = $this->sortAndRank($usersToScoreByMetric[$metricLabel], $metric->getLowestScoreBest());
+        foreach($ranks as $userId => $rank)
           {
-          $userRanksByMetric[$user][$metric] = $rank;
-          if($ind+1 < sizeof($sortedUsers))
-            {
-            //TODO how much to round for ranking  
-            // only need to look ahead for ties if there are more users  
-            $currentScore = round($usersToScoreByMetric[$metric][$user], 3);
-            $nextUser = $sortedUsers[$ind+1];
-            $nextScore = round($usersToScoreByMetric[$metric][$nextUser], 3);
-            if($currentScore === $nextScore)
-              {
-              // a tie, should have the same rank
-              // don't increment the rank, but do keep track of how many at this rank
-              $rankCount = $rankCount + 1;
-              }
-            else
-              {
-              // increment the rank by however many at this rank, reset rankCount
-              $rank = $rank + $rankCount;
-              $rankCount = 1;
-              }
-            }
+          $userRanksByMetric[$userId][$metricLabel] = $rank;  
           }
         }
       }
+      
+      
       
     // get the number of items in the challenge's testing folder's truth folder
     // get all the items in the correct subfolder's Truth subfolder
@@ -1176,8 +1201,8 @@ class Challenge_ApiComponent extends AppComponent
         {
         $rankAvg = $rankSum/$rankCount;
         $metricResultsByUser[$user]['Average Rank'] = array();
-        $metricResultsByUser[$user]['Average Rank']['metric_average'] = round($rankAvg,3);
-        $usersToAverageRank[$user] =  round($rankAvg,3);
+        $metricResultsByUser[$user]['Average Rank']['metric_average'] = round($rankAvg, MIDAS_CHALLENGE_NUM_ROUNDING_DIGITS);
+        $usersToAverageRank[$user] =  round($rankAvg, MIDAS_CHALLENGE_NUM_ROUNDING_DIGITS);
         $usersAsterisks[$user] = $asterisk;
         }
       else
@@ -1195,43 +1220,9 @@ class Challenge_ApiComponent extends AppComponent
           $metricResultsByUser[$userId]['Average Rank']['rank'] = 'X';
         }
       }
-      
-      
-    // now sort by average rank to get overall rank  
-    asort($usersToAverageRank, SORT_NUMERIC);
-    $usersToOverallRank = array();
-    $rank = 1;
-    $rankCount = 1;
-    $rankedUserSize = sizeof($usersToAverageRank);
-    $rankedUsers = array_keys($usersToAverageRank);
-    foreach($rankedUsers as $ind => $userId)
-      {
-      $avgRank = $usersToAverageRank[$userId];
-      if(!array_key_exists($userId, $usersToOverallRank))
-        {
-        $usersToOverallRank[$userId] = $rank;
-        }
-      if($ind+1 < sizeof($usersToAverageRank))
-        {
-        // only need to look ahead for ties if there are more users  
-        $currentAvgRank = $avgRank;
-        $nextUser = $rankedUsers[$ind+1];
-        $nextAvgRank = $usersToAverageRank[$nextUser];
-        if($currentAvgRank === $nextAvgRank)
-          {
-          // a tie, should have the same rank
-          // don't increment the rank, but do keep track of how many at this rank
-          $rankCount = $rankCount + 1;
-          $usersToOverallRank[$nextUser] = $rank;
-          }
-        else
-          {
-          // increment the rank by however many at this rank, reset rankCount
-          $rank = $rank + $rankCount;
-          $rankCount = 1;
-          }
-        }
-      }
+    
+    // lowest score is best because a lower ranking is better
+    $usersToOverallRank = $this->sortAndRank($usersToAverageRank, true);
       
     foreach($usersToOverallRank as $userId => $overallRank)
       {
@@ -1242,7 +1233,20 @@ class Challenge_ApiComponent extends AppComponent
       $metricResultsByUser[$userId]['Average Rank']['rank'] = $overallRank;
       }
       
-    $returnVal = array('competitor_scores' => $metricResultsByUser);
+    function cmpByOverallRank($a, $b)
+      {
+      // trim out any *
+      $overallRankA = (float)(str_replace('*', '', $a['Average Rank']['rank']));  
+      $overallRankB = (float)(str_replace('*', '', $b['Average Rank']['rank']));  
+      if ($overallRankA == $overallRankB)
+        {
+        return 0;
+        }
+      return ($overallRankA < $overallRankB) ? -1 : 1;
+      }  
+      
+    uasort($metricResultsByUser, cmpByOverallRank);
+    $returnVal = array('competitor_scores' => $metricResultsByUser, 'user_results_runs' => $usersTestingResults);
     return $returnVal;
     }
 

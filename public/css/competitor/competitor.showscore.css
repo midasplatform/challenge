@@ -102,3 +102,10 @@ div.resultsProcessing {
     -webkit-border-radius: 4px;
     -khtml-border-radius: 4px;
 }
+
+
+.scoreAboutStyle {
+    	max-width: 805px;
+	min-width: 0px;
+        background-color: #4A4A4A!important;
+}

@@ -17,3 +17,9 @@ div.dashboardHeading:hover{
 
 div.dashboardContent{
 }
+
+.dashboardAboutStyle {
+    	max-width: 570px;
+	min-width: 0px;
+        background-color: #4A4A4A!important;
+}
