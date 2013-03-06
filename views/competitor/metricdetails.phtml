@@ -29,15 +29,17 @@ PURPOSE.  See the above copyright notices for more information.
     echo "A higher score is better.<br/><br/>";  
     }
   $referenceLink = $this->metric->getReferenceLink();
+  echo '<div style="padding: 20px; 0px; 20px; 0px;">';
   if(!empty($referenceLink))
     {
-    echo '<div id="midasChallengeMetricReference"><a target="_blank" class="wikipedia" href="'.$referenceLink.'">View reference in Wikipedia</a></div><br/>';  
+    echo '<div style="width: 103px; float: left; margin-left: 103px;" id="midasChallengeMetricReference"><a target="_blank" class="wikipedia" href="'.$referenceLink.'">reference</a></div>';
     }
   $sourceLink = $this->metric->getSourceLink();
   if(!empty($sourceLink))
     {
-    echo '<div id="midasChallengeMetricSource"><a target="_blank" class="github" href="'.$sourceLink.'">View source code in GitHub</a></div><br/>';  
+    echo '<div style="width: 103px; float: left;" id="midasChallengeMetricSource"><a target="_blank" class="github" href="'.$sourceLink.'">source code</a></div><br/>';  
     }
+  echo "</div>";
   ?>
     
 </div>
