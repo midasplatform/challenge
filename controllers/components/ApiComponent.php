@@ -1245,7 +1245,7 @@ class Challenge_ApiComponent extends AppComponent
       return ($overallRankA < $overallRankB) ? -1 : 1;
       }  
       
-    uasort($metricResultsByUser, cmpByOverallRank);
+    uasort($metricResultsByUser, 'cmpByOverallRank');
     $returnVal = array('competitor_scores' => $metricResultsByUser, 'user_results_runs' => $usersTestingResults);
     return $returnVal;
     }
