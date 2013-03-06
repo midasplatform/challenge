@@ -21,7 +21,7 @@ $this->headScript()->appendFile($this->moduleWebroot . '/public/js/competitor/co
 <link type="text/css" rel="stylesheet" href="<?php echo $this->moduleWebroot?>/public/css/competitor/competitor.showscore.css" />
 
 
-<div id="showscores" style="width: 805px!important;" class="viewMain" >
+<div id="showscores" class="viewMain" >
     <div class="aboutThisPage" id="challengeCompetitorScoreAbout"><a>about this page</a></div><br/>
 <?php
   echo 'Results for <a href="' . $this->datasetFolderLink . '">' . $this->resultsRun->getResultsType() . ' dataset</a> of <a href="' . $this->challengeLink . '">' . $this->challengeName . '</a><br/>';

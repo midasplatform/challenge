@@ -103,6 +103,9 @@ div.resultsProcessing {
     -khtml-border-radius: 4px;
 }
 
+div#showscores {
+    width: 805px!important;
+}
 
 .scoreAboutStyle {
     	max-width: 805px;

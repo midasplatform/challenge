@@ -39,25 +39,51 @@ class Challenge_ResultsRunItemModel extends Challenge_ResultsRunItemModelBase {
     
   function loadLatestResultsRunSummary($resultRunId) 
     {
-    // TODO Investigate how this works in the presence of errors
-    // or infinite/arbitrarily large values
     $sql = $this->database->select()->setIntegrityCheck(false);
-    $sql->from(array("ccri" => "challenge_results_run_item"));
+    $sql->from(array("ccri" => "challenge_results_run_item"), array('result_key', 'result_value'));
     $sql->where('challenge_results_run_id=?', $resultRunId);
-    $sql->columns   (array("result_count" => "COUNT(*)", "metric_sum" => "sum(result_value)", "metric_average" => "avg(result_value)"));
-    $sql->group('ccri.result_key');
-    $sql_out = (string)$sql;  
+    $sql->where('status=?', MIDAS_CHALLENGE_RR_STATUS_COMPLETE);
 
-    $results = $this->database->fetchAll($sql);
     $runResults = array();
+    
+    $results = $this->database->fetchAll($sql);
     foreach($results as $row)
       {
-      $runResults[$row['result_key']] = array(
-          'result_count' => $row['result_count'],
-          'metric_sum' => $row['metric_sum'],
-          'metric_average' => $row['metric_average']);
+      $resultKey = $row['result_key'];
+      if(!array_key_exists($resultKey, $runResults))
+        {
+        $runResults[$resultKey] = array('result_count' => 0, 'metric_sum' => 0, 'metric_average' => 0);  
+        }
+      $runResults[$resultKey]['result_count'] += 1;
+      $resultValue = $row['result_value'];
+      // if a value is infinity, then the column average is infinity
+      if(!is_infinite($runResults[$resultKey]['metric_sum']))
+        {
+        if($resultValue == MIDAS_CHALLENGE_ARBITRARILY_LARGE_DOUBLE)
+          {
+          $runResults[$resultKey]['metric_sum'] = INF;  
+          $runResults[$resultKey]['metric_average'] = INF;  
+          }
+        else
+          {
+          // TODO: worry about overflow?
+          $runResults[$resultKey]['metric_sum'] += $resultValue;  
+          }
+        }
       }
-    return $runResults;     
+      
+    foreach($runResults as $resultKey => $resultsSummary)
+      {
+      if(!is_infinite($resultsSummary['metric_sum']))
+        {
+        $sum = (float)$resultsSummary['metric_sum'];
+        $count = (float)$resultsSummary['result_count'];
+        $average = $sum / $count;
+        $runResults[$resultKey]['metric_average'] = $average; 
+        }
+      }
+        
+    return $runResults;        
     }
     
 }

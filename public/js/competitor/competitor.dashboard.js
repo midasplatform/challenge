@@ -15,7 +15,7 @@ midas.challenge.competitor.dashboardSetup = function () {
         content: {
             text: function(api) {
                 var text = 'This page will display combined rankings of competitors for the stages of a challenge.<br/><br/>';
-                text += 'For any user that has submitted results for a given stage, we find the average value ';
+                text += 'For any user that has submitted results for a given stage and these results have been completely scored, we find the average value ';
                 text += 'for all metric+label combinations.  This is the top score reported in the table ';
                 text += 'cell for each user for a metric+label.  The bottom score reported in the table ';
                 text += 'cell for each user is the ranking of that average metric score among all the ';
@@ -45,6 +45,30 @@ midas.challenge.competitor.dashboardSetup = function () {
             event: 'click unfocus'
         }
     });
+    
+    $("div.metricAverage").qtip({
+        content: "row's average value for the column",
+        position: {
+	    my: 'top left',
+	    at: 'bottom left'
+	},
+        style: {
+	    classes: 'ui-tooltip-dark dashboardAboutStyle'
+        }			
+    });
+
+    $("div.metricRank").qtip({
+        content: "row's rank among all rows for the column",
+        position: {
+	    my: 'top left',
+	    at: 'bottom left'
+	},
+        style: {
+	    classes: 'ui-tooltip-dark dashboardAboutStyle'
+        }			
+    });
+
+
 }
 
 $(document).ready(function() 

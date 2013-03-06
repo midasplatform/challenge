@@ -986,7 +986,7 @@ class Challenge_ApiComponent extends AppComponent
           {
           if(is_infinite($scores[$metric]))
             {
-            $resultRow[$metric] = MIDAS_CHALLENGE_ARBITRARILY_LARGE_DOUBLE;
+            $resultRow[$metric] = MIDAS_CHALLENGE_INFINITY_STRING;
             }
           else
             {
@@ -1173,14 +1173,14 @@ class Challenge_ApiComponent extends AppComponent
     $expectedResultCount = sizeof($truthFolder->getItems());  
       
     // now we can combine the ranks for each user for each metric with the metric scores
-    // then average the ranks for an overal rank
+    // then average the ranks for an overall rank
     $usersToAverageRank = array();
     $usersAsterisks = array();
-    $asterisk = false;
     foreach($metricResultsByUser as $user => $metricResults)
       {
       $rankSum = 0;
       $rankCount = 0;
+      $asterisk = false;
       foreach($metricResults as $metric => $scores)
         {
         $rank = $userRanksByMetric[$user][$metric];
