@@ -45,6 +45,30 @@ midas.challenge.competitor.dashboardSetup = function () {
             event: 'click unfocus'
         }
     });
+    
+    $("div.metricAverage").qtip({
+        content: "row's average value for the column",
+        position: {
+	    my: 'top left',
+	    at: 'bottom left'
+	},
+        style: {
+	    classes: 'ui-tooltip-dark dashboardAboutStyle'
+        }			
+    });
+
+    $("div.metricRank").qtip({
+        content: "row's rank among all rows for the column",
+        position: {
+	    my: 'top left',
+	    at: 'bottom left'
+	},
+        style: {
+	    classes: 'ui-tooltip-dark dashboardAboutStyle'
+        }			
+    });
+
+
 }
 
 $(document).ready(function() 

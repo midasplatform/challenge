@@ -87,7 +87,7 @@ midas.challenge.competitor.setupJobDetailsDisplay = function() {
                 text += 'metric+label column headers for more information about the metric.  You can click on the individual table cells once the case has been scored for the given metric, this ';
                 text += 'will show you the actual command line output of the metric executable, or error information if the executable run was in error.<br/><br/>';
                 text += 'The top row will be an averaged value of the scores of all cases for each metric+label column.<br/><br/>';
-                text += 'If any of the distance metrics return Infinity, this value will be represented as an arbitrarily large value, and the column average will be this same arbitrarily large value.'
+                text += 'If any of the distance metrics return infinity, the column average will be infinity.'
                 return text;
             }
         },
