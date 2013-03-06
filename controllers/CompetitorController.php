@@ -399,64 +399,72 @@ class Challenge_CompetitorController extends Challenge_AppController
       throw new Zend_Exception("You are not authorized to see these results.");  
       }
     
-    $resultsRuns = $this->Challenge_ResultsRun->getAllUsersResultsRuns();
-    $resultsRunIdToUserId = $resultsRuns['by_results_run_id'];
-    $competitorResultsRuns = $resultsRuns['combined'];
-    $tableHeaders = array("User", "Dataset", "Run Date", );
-    $tableColumns = array("user", "dataset", "run_date");
-    $scorelistingRows = array();   
-    
-    $fc = Zend_Controller_Front::getInstance();
-    $webRoot = $fc->getBaseUrl();
-    $competitors = array();
-    
-    foreach($competitorResultsRuns as $resultRun)
+    $resultsRuns = $this->Challenge_ResultsRun->getAllUsersResultsRuns(false, $challengeId);
+    if(empty($resultsRuns) || empty($resultsRuns['combined']))
       {
-      $scorelistingRow = array();
-      $dashboard = $resultRun->getChallenge()->getDashboard();
-      $competitorUserId = $resultsRunIdToUserId[$resultRun->getKey()];
+      $this->view->noResults = true;    
+      }
+    else
+      {
+      $this->view->noResults = false;     
+      $resultsRunIdToUserId = $resultsRuns['by_results_run_id'];
+      $competitorResultsRuns = $resultsRuns['combined'];
+      $tableHeaders = array("User", "Dataset", "Run Date", );
+      $tableColumns = array("user", "dataset", "run_date");
+      $scorelistingRows = array();   
+    
+      $fc = Zend_Controller_Front::getInstance();
+      $webRoot = $fc->getBaseUrl();
+      $competitors = array();
+    
+      foreach($competitorResultsRuns as $resultRun)
+        {
+        $scorelistingRow = array();
+        $dashboard = $resultRun->getChallenge()->getDashboard();
+        $competitorUserId = $resultsRunIdToUserId[$resultRun->getKey()];
       
-      if(array_key_exists($competitorUserId, $competitors))
-        {
-        $competitorUser = $competitors[$competitorUserId];
-        }
-      else
-        {
-        $competitorUser = $this->User->load($competitorUserId);
-        $competitors[$competitorUserId] = $competitorUser; 
-        }
+        if(array_key_exists($competitorUserId, $competitors))
+          {
+          $competitorUser = $competitors[$competitorUserId];
+          }
+        else
+          {
+          $competitorUser = $this->User->load($competitorUserId);
+          $competitors[$competitorUserId] = $competitorUser; 
+          }
         
-      if(!$competitorUser)
-        {
-        $scorelistingRow["user"] =
-          array('text' => 'missing user',
-                'link' => '');
-        }
-      else
-        {
-        $scorelistingRow["user"] =
-          array('text' => $competitorUser->getEmail(),
-                'link' => $webRoot  . '/user/' . $competitorUserId);
-        }
+        if(!$competitorUser)
+          {
+          $scorelistingRow["user"] =
+            array('text' => 'missing user',
+                  'link' => '');
+          }
+        else
+          {
+          $scorelistingRow["user"] =
+            array('text' => $competitorUser->getEmail(),
+                  'link' => $webRoot  . '/user/' . $competitorUserId);
+          }
+        
+        $resultsType = $resultRun->getResultsType();
+        if($resultsType === MIDAS_CHALLENGE_TRAINING)
+          {
+          $datasetFolderId = $dashboard->getTraining()->getFolderId();  
+          }
+        else
+          {
+          $datasetFolderId = $dashboard->getTesting()->getFolderId();  
+          }
+        $scorelistingRow["dataset"] =
+          array('text' => $resultsType,
+                'link' => $webRoot  . '/folder/' . $datasetFolderId);
       
-      $resultsType = $resultRun->getResultsType();
-      if($resultsType === MIDAS_CHALLENGE_TRAINING)
-        {
-        $datasetFolderId = $dashboard->getTraining()->getFolderId();  
+        $scorelistingRow["run_date"] =
+          array('text' => $resultRun->getDate(),
+                'link' => $webRoot  . "/challenge/competitor/showscore?referer=".MIDAS_CHALLENGE_REFERER_SCORELOG."&resultsRunId=" . $resultRun->getChallengeResultsRunId());
+  
+        $scorelistingRows[] = $scorelistingRow;
         }
-      else
-        {
-        $datasetFolderId = $dashboard->getTesting()->getFolderId();  
-        }
-      $scorelistingRow["dataset"] =
-        array('text' => $resultsType,
-              'link' => $webRoot  . '/folder/' . $datasetFolderId);
-      
-      $scorelistingRow["run_date"] =
-        array('text' => $resultRun->getDate(),
-              'link' => $webRoot  . "/challenge/competitor/showscore?referer=".MIDAS_CHALLENGE_REFERER_SCORELOG."&resultsRunId=" . $resultRun->getChallengeResultsRunId());
-
-      $scorelistingRows[] = $scorelistingRow;
       }
       
     $this->view->tableHeaders = $tableHeaders;
