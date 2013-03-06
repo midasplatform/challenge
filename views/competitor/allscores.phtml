@@ -23,7 +23,14 @@ $this->headScript()->appendFile($this->apiWebroot . '/public/js/common/common.aj
 
       
 <div id="scorelisting" >
-    
+
+<?php if($this->noResults)
+        {
+        echo "There are no posted results for this challenge.";
+        }
+      else
+        { 
+?>    
     <table id="scorelistingtable" class="tablesorter">
       <thead>
         <tr class="header">
@@ -62,6 +69,10 @@ $this->headScript()->appendFile($this->apiWebroot . '/public/js/common/common.aj
       </tbody>
     </table>
     <br/>
+<?php
+        } // $this->noResults == true
+?>    
+    
 </div>
 
 
