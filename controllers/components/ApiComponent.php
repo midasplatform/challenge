@@ -611,6 +611,7 @@ class Challenge_ApiComponent extends AppComponent
    * @param challengeId the id of the challenge to display testing inputs for
    * @param resultsFolderId id of folder owned by the user and containing results
    * @param resultsType one of [Testing|Training]
+   * @param submissionName, optional, defaults to user's first and last name if blank
    * @param outputFolderId, optional, id of folder writable by the user, will be the parent
    * directory for a newly created directory that will contain any outputs
    * created by the scoring process
@@ -648,6 +649,15 @@ class Challenge_ApiComponent extends AppComponent
     $allResults = $this->validateCompetitorResults($userDao, $challengeId, $resultsType, $resultsFolderId, $outputFolderId);
     $matchedResults = $allResults['matchedTruthResults'];
 
+    if(!isset($args['submissionName']) || empty($args['submissionName']))
+      {
+      // if blank, default to user's first and last name
+      $submissionName = $userDao->getFirstname() . ' ' . $userDao->getLastname();  
+      }
+    else
+      {
+      $submissionName = $args['submissionName'];  
+      }
 
     // add the results folder to the dashboard
     $dashboardModel = MidasLoader::loadModel('Dashboard', 'validation');
@@ -668,7 +678,7 @@ class Challenge_ApiComponent extends AppComponent
 
     // create a resultsrun
     $resultsrunModel = MidasLoader::loadModel('ResultsRun', 'challenge');
-    $resultsrunDao = $resultsrunModel->createResultsRun($userDao, $challengeId, $resultsType, $taskDao->getBatchmakeTaskId(), $resultsFolderId, $outputFolderId);
+    $resultsrunDao = $resultsrunModel->createResultsRun($userDao, $challengeId, $resultsType, $taskDao->getBatchmakeTaskId(), $resultsFolderId, $outputFolderId, $submissionName);
 
     $itemsForExport = $this->generateMatchedResultsItemIds($userDao, $matchedResults, $resultsType, $resultsFolderId, $challengeId);
 

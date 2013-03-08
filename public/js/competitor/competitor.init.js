@@ -28,6 +28,24 @@ $(document).ready(function()  {
     $('#midas_challenge_competitor_resultsType').change(function() {
         midas.challenge.competitor.updateUISelection();
     });
+    
+    
+    var qtipText = "The name associated with your submission on a scoreboard.";
+    qtipText += "<br/><br/>";
+    qtipText += "E.g. your name, group name, or algorithm name.<br/><br/>";
+    qtipText += "Defaults to your user's first and last name if left blank.";
+    $("#midas_challenge_competitor_submissionName").qtip({
+        content: qtipText,
+        position: {
+	    my: 'top left',
+	    at: 'bottom left'
+	},
+        style: {
+	    classes: 'ui-tooltip-dark submissionNameStyle'
+        }			
+    });
+
+    
 });
 
 
@@ -63,12 +81,13 @@ midas.challenge.competitor.enableScoring = function() {
         var challenge_id = $('#midas_challenge_competitor_challengeId').val();
         var results_type = $('#midas_challenge_competitor_resultsType').val();
         var submission_folder_id = $('#midas_challenge_competitor_selectedResultsFolderId').val();
+        var submission_name = $('#midas_challenge_competitor_submissionName').val();
         $('#midas_challenge_competitor_scoreResults_anchor').removeClass('buttonScoreSubmission').addClass('buttonScoreSubmissionDisabled');
         $('#midas_challenge_competitor_scoreResults_anchor').text("Generating Batch Jobs");
         $('#generatingJobs').show();
         ajaxWebApi.ajax({
             method: 'midas.challenge.competitor.score.results',  
-            args: 'challengeId=' + challenge_id + '&resultsFolderId=' + submission_folder_id + '&resultsType=' + results_type,
+            args: 'challengeId=' + challenge_id + '&resultsFolderId=' + submission_folder_id + '&resultsType=' + results_type + '&submissionName=' + submission_name,
             success: function(results) {
                 window.location.replace($('.webroot').val() + '/challenge/competitor/showscore?resultsRunId=' + results.data.challenge_results_run_id); 
             },

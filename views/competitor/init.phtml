@@ -70,9 +70,16 @@ $this->headScript()->appendFile($this->apiWebroot.'/public/js/common/common.ajax
           }
         echo '</div>'.
         '<span id="midas_challenge_competitor_selectedResultsFolder" style="padding-left: 15px;">'.$defaultFolderName.'</span>';
+        echo '</td></tr>';
         
-        echo '</td></tr></table>'.
+        echo '<tr><td><h3>Submission Scoreboard Display Name:</h3></td><td><input type="text" id="midas_challenge_competitor_submissionName" value="'.$this->userName.'"/></td></tr>';         
+        
+        echo '</table>'.
         '<input type="hidden" id="midas_challenge_competitor_selectedResultsFolderId" value="'.$defaultFolderId.'"/>';
+        
+        
+        
+        
         echo 
         '<br/>'.
         '<br/>'.

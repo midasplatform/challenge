@@ -35,6 +35,8 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
       'output_folder_id' => array('type' => MIDAS_DATA),
       'challenge_competitor_id' => array('type' => MIDAS_DATA),
       'status' => array('type' => MIDAS_DATA),
+      'submission_name' => array('type' => MIDAS_DATA),
+      'scoreboard_name' => array('type' => MIDAS_DATA),
       'challenge' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'challenge',
                         'model' => 'Challenge',
@@ -64,7 +66,7 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
 
   /** Create a ResultsRun
    * @return ResultsRunDao */
-  function createResultsRun($userDao, $challengeId, $resultsType, $batchmakeTaskId, $resultsFolderId, $outputFolderId)
+  function createResultsRun($userDao, $challengeId, $resultsType, $batchmakeTaskId, $resultsFolderId, $outputFolderId, $submissionName)
     {
     $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
     $competitorModel = MidasLoader::loadModel('Competitor', 'challenge');
@@ -82,6 +84,7 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
     $resultsrunDao->setBatchmakeTaskId($batchmakeTaskId);
     $resultsrunDao->setResultsFolderId($resultsFolderId);
     $resultsrunDao->setStatus(MIDAS_CHALLENGE_RR_STATUS_CREATED);
+    $resultsrunDao->setSubmissionName($submissionName);
 
     $this->save($resultsrunDao);
 
