@@ -75,6 +75,7 @@ class Challenge_CompetitorController extends Challenge_AppController
       $this->view->configForm = $formArray;
       $this->view->json['challengeResultsFolders'] = $challengeResultsFolders;
       $this->view->challengeResultsFolders = $challengeResultsFolders;
+      $this->view->userName = $userDao->getFirstname() . ' ' . $userDao->getLastname();
       if($this->_request->isPost())
         {
         $submitSelect = $this->_getParam('submitSelect');
@@ -266,8 +267,9 @@ class Challenge_CompetitorController extends Challenge_AppController
     else
       {
       // key of apiResults is user id
-      // change this to be an anonymized id as needed
-      $anonymizedResults = array();
+      $resultData = array();
+      $displayedUserNames = array();
+      $submissionNames = array();
       $userResultsRuns = $apiResults['user_results_runs'];
       $userResultsLinks = array();
       $fc = Zend_Controller_Front::getInstance();
@@ -288,27 +290,38 @@ class Challenge_CompetitorController extends Challenge_AppController
       foreach($apiResults['competitor_scores'] as $userId => $results)
         {
         $competitorDao = $this->User->load($userId);
+        $resultData[$userId] = $results;  
+        if($isModerator)
+          {
+          // display user name in addition to submission name
+          $displayedUserNames[$userId] = $competitorDao->getFirstname() . " " . $competitorDao->getLastname();  
+          }
         if($isModerator || $userId == $competitorId)
           {
-          // no need to anonymize
-          // moderators can see all names and links
-          // users can see their own names and links
-          $anonymizedId = $competitorDao->getEmail();
-          $anonymizedResults[$anonymizedId] = $results;
-          $userResultsLinks[$anonymizedId] = $webRoot  . "/challenge/competitor/showscore?referer=".MIDAS_CHALLENGE_REFERER_SCOREBOARD."&resultsRunId=" . $userResultsRuns[$userId];
+          // provide a link to the scored results
+          $userResultsLinks[$userId] = $webRoot  . "/challenge/competitor/showscore?referer=".MIDAS_CHALLENGE_REFERER_SCOREBOARD."&resultsRunId=" . $userResultsRuns[$userId];
+          }
+        // now determine what to display as the submission name
+        if($challenge->getAnonymize() && $userId != $competitorId && !$isModerator)
+          {
+          $submissionNames[$userId] = $this->getAnonymizedId($competitorDao, $challengeName);
           }
         else
           {
-          $anonymizedId = $this->getAnonymizedId($competitorDao, $challengeName);
-          $anonymizedResults[$anonymizedId] = $results;
+          $resultsRunId = $userResultsRuns[$userId];
+          $resultsRun = $this->Challenge_ResultsRun->load($resultsRunId);
+          $submissionName = $resultsRun->getSubmissionName();
+          $submissionNames[$userId] = $submissionName; 
           }
         }
       $this->view->noResults = false;  
-      $this->view->tableData = $anonymizedResults;
+      $this->view->tableData = $resultData;
       $this->view->resultColumns = array_keys($results);
       list($scoredColumns, $metricIds) = $this->Challenge_Challenge->getScoredColumns($challenge);
       $this->view->metricIds = $metricIds;
       $this->view->userResultsLinks = $userResultsLinks;
+      $this->view->submissionNames = $submissionNames;
+      $this->view->displayedUserNames = $displayedUserNames;
       }
       
     $this->view->challengeInfo = $challengeInfo;

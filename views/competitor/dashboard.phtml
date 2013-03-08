@@ -30,11 +30,12 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
       else
         { 
 ?>
+    
     <table id="challenge_dashboard" style="display:table" class="tablesorter">
         <thead>
           <tr class="header">
           <?php
-          echo "<th>Competitor</th>";
+          echo "<th>Submission Name</th>";
           foreach($this->resultColumns as $header)
             {
             $splitHeader = str_replace(' ', '<br/>', $header);
@@ -52,16 +53,22 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
         </thead>
         <tbody>
           <?php       
-            foreach($this->tableData as $competitorId => $scores)
+            foreach($this->tableData as $competitorUserId => $scores)
               {
-              if(array_key_exists($competitorId, $this->userResultsLinks))
+              echo '<tr><td>';
+              if(array_key_exists($competitorUserId, $this->userResultsLinks))
                 {
-                echo '<tr><td><a href="' . $this->userResultsLinks[$competitorId] .'">'.$competitorId."</td>";
+                echo '<a href="' . $this->userResultsLinks[$competitorUserId] .'">'. $this->submissionNames[$competitorUserId]. '</a>';
                 }
               else
                 {
-                echo "<tr><td>".$competitorId."</td>";
+                echo $this->submissionNames[$competitorUserId];
                 }
+              if(array_key_exists($competitorUserId, $this->displayedUserNames))
+                {
+                echo '<br/>User: '.$this->displayedUserNames[$competitorUserId];
+                }
+              echo "</td>";
               foreach($this->resultColumns as $resultColumn)
                 {
                 $columnData = $scores[$resultColumn];  
