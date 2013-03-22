@@ -95,8 +95,8 @@ midas.challenge.competitor.setupJobDetailsDisplay = function() {
 	    classes: 'ui-tooltip-dark scoreAboutStyle'
 	},				
         position: {
-	    my: 'top left',
-	    at: 'bottom left'
+	    my: 'top right',
+	    at: 'bottom right'
 	},
 	show: {
 	    event: 'click'
