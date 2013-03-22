@@ -17,3 +17,31 @@ a.wikipedia {
     background: url(../../images/wikipedia24.png) center left no-repeat;
     padding: 10px 0px 10px 25px;
 }
+
+a.informationAbout {
+    background: url(../../images/information_16.png) center left no-repeat;/* */
+    padding: 5px 5px 5px 18px;
+    margin: 5px 0px 5px 685px;
+    border: #FFFFFF 1px solid;
+        border-radius: 4 px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    color: #686FCF!important;
+}
+
+a.informationAbout:hover {
+    color: #333BA0!important;
+    background: url(../../images/information_16.png)  #9BA5A2  center left no-repeat;
+    border: #C5D5DD 1px solid;
+    border-radius: 4 px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+}
+
+
+
+div.aboutThisPage {
+    padding: 10px 0px;
+}
