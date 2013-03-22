@@ -25,9 +25,9 @@ midas.challenge.competitor.dashboardSetup = function () {
                 text += "The competitors are reported in descending order of best overall ranking, with the best ranking being 1.  If a competitor has an '*' next to their ranking, ";
                 text += 'they did not submit results for each of the truth cases in this stage.<br/><br/>';
                 text += 'Click on the metric+label column headers for more information about the metric.<br/><br/>';                
-                text += 'Competitor IDs are anonymized.  If you are logged in as a submitting competitor, your ID will display as your email and your email link will take you to your score results page ';
+                text += 'The Submission Name is the Submission Scoreboard Display Name that was entered when submitting the result set for scoring.  If you are logged in as a submitting competitor, your Submission Name will link to your score results page';
                 text += 'used to calculate these values.<br/><br/>';
-                text += 'If you are a moderator of the challenge, then each of the competitor IDs will link to the score results page used for that competitor to calculate these values.';
+                text += 'If you are a moderator of the challenge, then each of the Submission Names will link to the score results page used for that competitor to calculate these values.';
                 return text;
             }
         },
@@ -35,8 +35,8 @@ midas.challenge.competitor.dashboardSetup = function () {
 	    classes: 'ui-tooltip-dark dashboardAboutStyle'
 	},				
         position: {
-	    my: 'top left',
-	    at: 'bottom left'
+	    my: 'top right',
+	    at: 'bottom right'
 	},
 	show: {
 	    event: 'click'
