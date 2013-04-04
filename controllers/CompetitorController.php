@@ -339,12 +339,20 @@ class Challenge_CompetitorController extends Challenge_AppController
     $this->disableLayout();
 
     $userDao = $this->userSession->Dao;
-    $resultsRuns = $this->Challenge_ResultsRun->getAllUsersResultsRuns($userDao->getUserId());
-    $resultsRuns = $resultsRuns['by_user_id'][$userDao->getUserId()];
+    $allResultsRuns = $this->Challenge_ResultsRun->getAllUsersResultsRuns($userDao->getUserId());
     $tableHeaders = array("Challenge", "Dataset", "Run Date", );
     $tableColumns = array("challenge_name", "dataset", "run_date");
     $scorelistingRows = array();
     
+    $runsByUser = $allResultsRuns['by_user_id'];
+    if(empty($runsByUser))
+      {
+      $resultsRuns = array();
+      }
+    else
+      {
+      $resultsRuns = $allResultsRuns['by_user_id'][$userDao->getUserId()];
+      }
     
     $fc = Zend_Controller_Front::getInstance();
     $webRoot = $fc->getBaseUrl();
