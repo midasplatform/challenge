@@ -45,3 +45,21 @@ a.scoreboardDetails:hover {
     -webkit-border-radius: 4px;
     -khtml-border-radius: 4px;
 }
+
+td.firstRank {
+    background-color: #99FF66!important;
+}
+
+td.secondRank {
+    background-color: #FFCC33!important;
+}
+
+td.firstOverallRank {
+    background-color: #33CC00!important;
+}
+
+td.secondOverallRank {
+    background-color: #DD6600!important;
+}
+
+

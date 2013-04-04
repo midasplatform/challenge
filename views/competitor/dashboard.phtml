@@ -78,12 +78,36 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
                   {
                   $metricAverage = round($metricAverage, MIDAS_CHALLENGE_NUM_ROUNDING_DIGITS);  
                   }
+                $cell = "<td";
                 if(is_numeric($rank))
                   {
-                  $rank = round($rank, MIDAS_CHALLENGE_NUM_ROUNDING_DIGITS);  
+                  $rank = round($rank, MIDAS_CHALLENGE_NUM_ROUNDING_DIGITS);
                   }
-                  
-                echo '<td><div class="metricAverage">'.$metricAverage.'</div><div class="metricRank">'.$rank.'</div></td>';
+                if($rank == 1 || $rank == "1*")
+                  {
+                  if($resultColumn == 'Average Rank')
+                    {
+                    $cell .= ' class="firstOverallRank"';   
+                    }
+                  else
+                    {
+                    $cell .= ' class="firstRank"';   
+                    }                    
+                  }
+                elseif($rank == 2 || $rank == "2*")
+                  {
+                  if($resultColumn == 'Average Rank')
+                    {
+                    $cell .= ' class="secondOverallRank"';   
+                    }
+                  else
+                    {
+                    $cell .= ' class="secondRank"';   
+                    }                    
+                  }
+                $cell .= ">";  
+                echo $cell;  
+                echo '<div class="metricAverage">'.$metricAverage.'</div><div class="metricRank">'.$rank.'</div></td>';
                 }
               echo "</tr>";
               }
