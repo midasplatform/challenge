@@ -66,7 +66,7 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
 
   /** Create a ResultsRun
    * @return ResultsRunDao */
-  function createResultsRun($userDao, $challengeId, $resultsType, $batchmakeTaskId, $resultsFolderId, $outputFolderId)
+  function createResultsRun($userDao, $challengeId, $resultsType, $batchmakeTaskId, $resultsFolderId, $outputFolderId, $submissionName)
     {
     $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
     $competitorModel = MidasLoader::loadModel('Competitor', 'challenge');
