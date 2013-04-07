@@ -32,12 +32,6 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
         { 
         foreach($this->results as $scoreboardName => $scoreboardResults)
           {
-          if($this->$results)
-              {
-              echo "There are no posted results for this scoreboard.";
-              }
-            else
-              { 
 ?>
     <div class='testingScoreboard'>
     <div class='testingScoreboardName' style="text-align: center; font-size: 16px;"><?php echo $scoreboardName ?></div>
@@ -128,8 +122,7 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
         </div>
     <br/>
 <?php
-        } // $this->noResults == true
-}// foreach scoreboard
+          }// foreach scoreboard
         } // TODO no scoreboards
 ?>
     

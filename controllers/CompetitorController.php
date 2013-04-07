@@ -275,7 +275,7 @@ class Challenge_CompetitorController extends Challenge_AppController
     
         if(array_key_exists('no_results', $apiResults))
           {
-          $this->view->results[$scoreboardName]->noResults = true;    
+          continue;
           }
         else
           {
@@ -328,7 +328,6 @@ class Challenge_CompetitorController extends Challenge_AppController
               }
             }
 
-          $this->view->results[$scoreboardName]->noResults = false;   
           $this->view->results[$scoreboardName]->tableData = $resultData;
           $this->view->results[$scoreboardName]->resultColumns = array_keys($results);
           list($scoredColumns, $metricIds) = $this->Challenge_Challenge->getScoredColumns($challenge);
