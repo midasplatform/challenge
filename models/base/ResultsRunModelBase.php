@@ -66,7 +66,7 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
 
   /** Create a ResultsRun
    * @return ResultsRunDao */
-  function createResultsRun($userDao, $challengeId, $resultsType, $batchmakeTaskId, $resultsFolderId, $outputFolderId, $submissionName)
+  function createResultsRun($userDao, $challengeId, $resultsType, $batchmakeTaskId, $resultsFolderId, $outputFolderId)
     {
     $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
     $competitorModel = MidasLoader::loadModel('Competitor', 'challenge');
@@ -85,6 +85,8 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
     $resultsrunDao->setResultsFolderId($resultsFolderId);
     $resultsrunDao->setStatus(MIDAS_CHALLENGE_RR_STATUS_CREATED);
     $resultsrunDao->setSubmissionName($submissionName);
+    $challenge = $challengeModel->load($challengeId);
+    $resultsrunDao->setScoreboardName($challenge->getCurrentScoreboardStage());
 
     $this->save($resultsrunDao);
 
@@ -123,7 +125,9 @@ abstract class Challenge_ResultsRunModelBase extends Challenge_AppModel {
     
   abstract function loadLatestResultsRun($userId, $challengeId, $resultsType);
 
-  abstract function getUsersLatestTestingResults($challengeId);
+  abstract function getUsersLatestTestingResults($challengeId, $scoreboardName);
+
+  abstract function getAllScoreboards($challengeId);
 
 
 

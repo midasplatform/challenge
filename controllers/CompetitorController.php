@@ -258,72 +258,87 @@ class Challenge_CompetitorController extends Challenge_AppController
     $apiargs = array();
     $apiargs['useSession'] = true;
     $apiargs['challengeId'] = $challengeId;
-    $apiResults = $this->ModuleComponent->Api->anonymousListDashboard($apiargs);
-
-    if(array_key_exists('no_results', $apiResults))
+    
+    $scoreboards = $this->Challenge_ResultsRun->getAllScoreboards($challengeId);
+    
+    if(empty($scoreboards))
       {
-      $this->view->noResults = true;    
+      $this->view->noScoreboards = true;
       }
     else
       {
-      // key of apiResults is user id
-      $resultData = array();
-      $displayedUserNames = array();
-      $submissionNames = array();
-      $userResultsRuns = $apiResults['user_results_runs'];
-      $userResultsLinks = array();
-      $fc = Zend_Controller_Front::getInstance();
-      $webRoot = $fc->getBaseUrl();
+      $this->view->results = array();  
+      foreach($scoreboards as $scoreboardName)
+        {
+        $apiargs['scoreboardName'] = $scoreboardName;
+        $apiResults = $this->ModuleComponent->Api->anonymousListDashboard($apiargs);
     
-      if($this->logged)
-        {
-        $userDao = $this->userSession->Dao;  
-        $isModerator = $this->Challenge_Challenge->isChallengeModerator($userDao, $challenge);
-        $competitorId = $userDao->getUserId();
-        }
-      else
-        {
-        $isModerator = false;
-        $competitorId = false;
-        }
-    
-      foreach($apiResults['competitor_scores'] as $userId => $results)
-        {
-        $competitorDao = $this->User->load($userId);
-        $resultData[$userId] = $results;  
-        if($isModerator)
+        if(array_key_exists('no_results', $apiResults))
           {
-          // display user name in addition to submission name
-          $displayedUserNames[$userId] = $competitorDao->getFirstname() . " " . $competitorDao->getLastname();  
-          }
-        if($isModerator || $userId == $competitorId)
-          {
-          // provide a link to the scored results
-          $userResultsLinks[$userId] = $webRoot  . "/challenge/competitor/showscore?referer=".MIDAS_CHALLENGE_REFERER_SCOREBOARD."&resultsRunId=" . $userResultsRuns[$userId];
-          }
-        // now determine what to display as the submission name
-        if($challenge->getAnonymize() && $userId != $competitorId && !$isModerator)
-          {
-          $submissionNames[$userId] = $this->getAnonymizedId($competitorDao, $challengeName);
+          $this->view->results[$scoreboardName]->noResults = true;    
           }
         else
           {
-          $resultsRunId = $userResultsRuns[$userId];
-          $resultsRun = $this->Challenge_ResultsRun->load($resultsRunId);
-          $submissionName = $resultsRun->getSubmissionName();
-          $submissionNames[$userId] = $submissionName; 
-          }
-        }
-      $this->view->noResults = false;  
-      $this->view->tableData = $resultData;
-      $this->view->resultColumns = array_keys($results);
-      list($scoredColumns, $metricIds) = $this->Challenge_Challenge->getScoredColumns($challenge);
-      $this->view->metricIds = $metricIds;
-      $this->view->userResultsLinks = $userResultsLinks;
-      $this->view->submissionNames = $submissionNames;
-      $this->view->displayedUserNames = $displayedUserNames;
-      }
-      
+          // key of apiResults is user id
+          $resultData = array();
+          $displayedUserNames = array();
+          $submissionNames = array();
+          $userResultsRuns = $apiResults['user_results_runs'];
+          $userResultsLinks = array();
+          $fc = Zend_Controller_Front::getInstance();
+          $webRoot = $fc->getBaseUrl();
+        
+          if($this->logged)
+            {
+            $userDao = $this->userSession->Dao;  
+            $isModerator = $this->Challenge_Challenge->isChallengeModerator($userDao, $challenge);
+            $competitorId = $userDao->getUserId();
+            }
+          else
+            {
+            $isModerator = false;
+            $competitorId = false;
+            }
+        
+          foreach($apiResults['competitor_scores'] as $userId => $results)
+            {
+            $competitorDao = $this->User->load($userId);
+            $resultData[$userId] = $results;  
+            if($isModerator)
+              {
+              // display user name in addition to submission name
+              $displayedUserNames[$userId] = $competitorDao->getFirstname() . " " . $competitorDao->getLastname();  
+              }
+            if($isModerator || $userId == $competitorId)
+              {
+              // provide a link to the scored results
+              $userResultsLinks[$userId] = $webRoot  . "/challenge/competitor/showscore?referer=".MIDAS_CHALLENGE_REFERER_SCOREBOARD."&resultsRunId=" . $userResultsRuns[$userId];
+              }
+            // now determine what to display as the submission name
+            if($challenge->getAnonymize() && $userId != $competitorId && !$isModerator)
+              {
+              $submissionNames[$userId] = $this->getAnonymizedId($competitorDao, $challengeName);
+              }
+            else
+              {
+              $resultsRunId = $userResultsRuns[$userId];
+              $resultsRun = $this->Challenge_ResultsRun->load($resultsRunId);
+              $submissionName = $resultsRun->getSubmissionName();
+              $submissionNames[$userId] = $submissionName; 
+              }
+            }
+
+          $this->view->results[$scoreboardName]->noResults = false;   
+          $this->view->results[$scoreboardName]->tableData = $resultData;
+          $this->view->results[$scoreboardName]->resultColumns = array_keys($results);
+          list($scoredColumns, $metricIds) = $this->Challenge_Challenge->getScoredColumns($challenge);
+          $this->view->results[$scoreboardName]->metricIds = $metricIds;
+          $this->view->results[$scoreboardName]->userResultsLinks = $userResultsLinks;
+          $this->view->results[$scoreboardName]->submissionNames = $submissionNames;
+          $this->view->results[$scoreboardName]->displayedUserNames = $displayedUserNames;
+          } // else, results exist for this scoreboard
+        } // foreach $scoreboards
+      } // else, scoreboards exist with results
     $this->view->challengeInfo = $challengeInfo;
     }
 

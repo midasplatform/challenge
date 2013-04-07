@@ -1075,6 +1075,17 @@ class Challenge_ApiComponent extends AppComponent
     return $ranks;
     }
     
+  protected function cmpByOverallRank($a, $b)
+    {
+    // trim out any *
+    $overallRankA = (float)(str_replace('*', '', $a['Average Rank']['rank']));  
+    $overallRankB = (float)(str_replace('*', '', $b['Average Rank']['rank']));  
+    if ($overallRankA == $overallRankB)
+      {
+      return 0;
+      }
+    return ($overallRankA < $overallRankB) ? -1 : 1;
+    }  
 
 
   /**
@@ -1087,6 +1098,7 @@ class Challenge_ApiComponent extends AppComponent
    * an overall ranking for each competitor.
    * // TODO return more than one stage, i.e. not just Testing
    * @param challengeId the id of the challenge to get scoring data for
+   * @param scoreboardName the name of the scoreboard to get results for
    * @return array('no_results' => 'true') if there are no results
    * if there are results, two arrays will be returned, 
    * 'competitor_scores' => $metricResultsByUser (mapping user ids to their results)
@@ -1095,9 +1107,10 @@ class Challenge_ApiComponent extends AppComponent
    */
   public function anonymousListDashboard($args)
     {
-    $this->_checkKeys(array('challengeId'), $args);
+    $this->_checkKeys(array('challengeId', 'scoreboardName'), $args);
 
     $challengeId = $args['challengeId'];
+    $scoreboardName = $args['scoreboardName'];
     
     $challengeModel = MidasLoader::loadModel('Challenge', 'challenge');
     $resultsrunModel = MidasLoader::loadModel('ResultsRun', 'challenge');
@@ -1109,7 +1122,7 @@ class Challenge_ApiComponent extends AppComponent
       throw new Zend_Exception('You must enter a valid challenge.');
       }
    
-    $usersTestingResults = $resultsrunModel->getUsersLatestTestingResults($challengeId);
+    $usersTestingResults = $resultsrunModel->getUsersLatestTestingResults($challengeId, $scoreboardName);
     $resultsPerCompetitor = array();
     $usersToScoreByMetric = array();
 
@@ -1243,19 +1256,8 @@ class Challenge_ApiComponent extends AppComponent
       $metricResultsByUser[$userId]['Average Rank']['rank'] = $overallRank;
       }
       
-    function cmpByOverallRank($a, $b)
-      {
-      // trim out any *
-      $overallRankA = (float)(str_replace('*', '', $a['Average Rank']['rank']));  
-      $overallRankB = (float)(str_replace('*', '', $b['Average Rank']['rank']));  
-      if ($overallRankA == $overallRankB)
-        {
-        return 0;
-        }
-      return ($overallRankA < $overallRankB) ? -1 : 1;
-      }  
       
-    uasort($metricResultsByUser, 'cmpByOverallRank');
+    uasort($metricResultsByUser, array($this, 'cmpByOverallRank'));
     $returnVal = array('competitor_scores' => $metricResultsByUser, 'user_results_runs' => $usersTestingResults);
     return $returnVal;
     }

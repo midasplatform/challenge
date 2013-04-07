@@ -23,25 +23,36 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
 <div id="dashboard" >
     <div id="challengeCompetitorScoreboardAbout"><a class="scoreboardDetails">Scoreboard details</a></div><br/>
     
-<?php if($this->noResults)
+    
+<?php if($this->noScoreboards)
         {
-        echo "There are no posted results for this challenge.";
+        echo "There are no scoreboards with results for this challenge.";
         }
       else
         { 
+        foreach($this->results as $scoreboardName => $scoreboardResults)
+          {
+          if($this->$results)
+              {
+              echo "There are no posted results for this scoreboard.";
+              }
+            else
+              { 
 ?>
-    
+    <div class='testingScoreboard'>
+    <div class='testingScoreboardName' style="text-align: center; font-size: 16px;"><?php echo $scoreboardName ?></div>
+            
     <table id="challenge_dashboard" style="display:table" class="tablesorter">
         <thead>
           <tr class="header">
-          <?php
+<?php
           echo "<th>Submission Name</th>";
-          foreach($this->resultColumns as $header)
+          foreach($scoreboardResults->resultColumns as $header)
             {
             $splitHeader = str_replace(' ', '<br/>', $header);
-            if(array_key_exists($header, $this->metricIds))
+            if(array_key_exists($header, $scoreboardResults->metricIds))
               {
-              echo "<th class='midasChallengeMetricCol' id='challengeMetric_".$this->metricIds[$header]."' >".ucfirst($splitHeader)."</th>";
+              echo "<th class='midasChallengeMetricCol' id='challengeMetric_".$scoreboardResults->metricIds[$header]."' >".ucfirst($splitHeader)."</th>";
               }
             else
               {
@@ -53,23 +64,23 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
         </thead>
         <tbody>
           <?php       
-            foreach($this->tableData as $competitorUserId => $scores)
+            foreach($scoreboardResults->tableData as $competitorUserId => $scores)
               {
               echo '<tr><td>';
-              if(array_key_exists($competitorUserId, $this->userResultsLinks))
+              if(array_key_exists($competitorUserId, $scoreboardResults->userResultsLinks))
                 {
-                echo '<a href="' . $this->userResultsLinks[$competitorUserId] .'">'. $this->submissionNames[$competitorUserId]. '</a>';
+                echo '<a href="' . $scoreboardResults->userResultsLinks[$competitorUserId] .'">'. $scoreboardResults->submissionNames[$competitorUserId]. '</a>';
                 }
               else
                 {
-                echo $this->submissionNames[$competitorUserId];
+                echo $scoreboardResults->submissionNames[$competitorUserId];
                 }
-              if(array_key_exists($competitorUserId, $this->displayedUserNames))
+              if(array_key_exists($competitorUserId, $scoreboardResults->displayedUserNames))
                 {
-                echo '<br/>User: '.$this->displayedUserNames[$competitorUserId];
+                echo '<br/>User: '.$scoreboardResults->displayedUserNames[$competitorUserId];
                 }
               echo "</td>";
-              foreach($this->resultColumns as $resultColumn)
+              foreach($scoreboardResults->resultColumns as $resultColumn)
                 {
                 $columnData = $scores[$resultColumn];  
                 $metricAverage = $columnData['metric_average'];
@@ -114,9 +125,12 @@ echo '<script type="text/javascript" src="' . $this->moduleWebroot . '/public/js
           ?> 
         </tbody>
     </table>
+        </div>
     <br/>
 <?php
         } // $this->noResults == true
+}// foreach scoreboard
+        } // TODO no scoreboards
 ?>
     
     </div>

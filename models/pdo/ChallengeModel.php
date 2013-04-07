@@ -81,24 +81,7 @@ class Challenge_ChallengeModel extends Challenge_ChallengeModelBase {
     return $return;
     }
 
-  function getUsersLatestTestingResults($challengeId)
-    {
-    $sql = $this->database->select(array("user_id", "challenge_results_run_id"))->setIntegrityCheck(false);
-    $sql->from(array('crr' => 'challenge_results_run'));
-    $sql->join(array('bt' => 'batchmake_task'), 'crr.batchmake_task_id=bt.batchmake_task_id');
-    $sql->where('crr.challenge_id=?', $challengeId);
-    $sql->where('crr.results_type=?', MIDAS_CHALLENGE_TESTING);
 
-    $sql_out = (string) $sql    ;
     
-    $rowset = $this->database->fetchAll($sql);
-    $rows = array();
-    foreach($rowset as $row)
-      {
-      $rows[$row['user_id']] = $row['latest_results_run_id'];
-      }
-    return $rows;
-    
-    
-    }
+
 }

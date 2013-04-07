@@ -36,6 +36,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
       'testing_status' => array('type' => MIDAS_DATA),
       'number_scored_labels' => array('type' => MIDAS_DATA),
       'anonymize' => array('type' => MIDAS_DATA),
+      'current_scoreboard_stage' => array('type' => MIDAS_DATA),
       'dashboard' =>  array('type' => MIDAS_MANY_TO_ONE,
                         'module' => 'validation',
                         'model' => 'Dashboard',
@@ -58,7 +59,7 @@ abstract class Challenge_ChallengeModelBase extends Challenge_AppModel {
 
   abstract function findAvailableChallenges($userDao, $trainingStatus, $testingStatus);
 
-  abstract function getUsersLatestTestingResults($challengeId);
+
 
 
 
