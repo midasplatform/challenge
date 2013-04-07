@@ -43,12 +43,13 @@ class Challenge_ResultsRunModel extends Challenge_ResultsRunModelBase {
     }
 
     
-  function getUsersLatestTestingResults($challengeId)
+  function getUsersLatestTestingResults($challengeId, $scoreboardName)
     {
     $sql = $this->database->select()->setIntegrityCheck(false);
     $sql->from(array('crr' => 'challenge_results_run'));
     $sql->join(array('bt' => 'batchmake_task'), 'crr.batchmake_task_id=bt.batchmake_task_id');
     $sql->where('crr.challenge_id=?', $challengeId);
+    $sql->where('crr.scoreboard_name=?', $scoreboardName);
     $sql->where('crr.results_type=?', MIDAS_CHALLENGE_TESTING);
     $sql->where('crr.status=?', MIDAS_CHALLENGE_RRI_STATUS_COMPLETE);
 
@@ -101,5 +102,21 @@ class Challenge_ResultsRunModel extends Challenge_ResultsRunModelBase {
     return array('by_user_id' => $byUserId, 'combined' => $combined, 'by_results_run_id' => $resultsRunIdToUserId);
     }
 
+  function getAllScoreboards($challengeId)
+    {
+    $sql = $this->database->select(array("scoreboard_name"))->setIntegrityCheck(false);      
+    $sql->where('challenge_id=?', $challengeId);
+    $sql->where('results_type=?', MIDAS_CHALLENGE_TESTING);
+    $sql->group('scoreboard_name');
+    $sql->order('scoreboard_name DESC');
+    
+    $rowset = $this->database->fetchAll($sql);
+    $scoreboards = array();
+    foreach($rowset as $row)
+      {
+      $scoreboards[] = $row["scoreboard_name"];
+      }
+    return $scoreboards;
+    }
     
 }
