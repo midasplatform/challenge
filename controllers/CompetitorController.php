@@ -307,7 +307,14 @@ class Challenge_CompetitorController extends Challenge_AppController
             if($isModerator)
               {
               // display user name in addition to submission name
-              $displayedUserNames[$userId] = $competitorDao->getFirstname() . " " . $competitorDao->getLastname();  
+              if(empty($competitorDao))
+                {
+                $displayedUserNames[$userId] = 'deleted user';
+                }
+              else
+                {
+                $displayedUserNames[$userId] = $competitorDao->getFirstname() . " " . $competitorDao->getLastname();  
+                }
               }
             if($isModerator || $userId == $competitorId)
               {
@@ -317,7 +324,14 @@ class Challenge_CompetitorController extends Challenge_AppController
             // now determine what to display as the submission name
             if($challenge->getAnonymize() && $userId != $competitorId && !$isModerator)
               {
-              $submissionNames[$userId] = $this->getAnonymizedId($competitorDao, $challengeName);
+              if(empty($competitorDao))
+                {
+                $submissionNames[$userId]  = 'deleted user';
+                }
+              else
+                {
+                $submissionNames[$userId] = $this->getAnonymizedId($competitorDao, $challengeName);
+                }
               }
             else
               {
