@@ -31,6 +31,7 @@ abstract class Challenge_MetricModelBase extends Challenge_AppModel {
       'metric_display_name' => array('type' => MIDAS_DATA),
       'score_per_label' => array('type' => MIDAS_DATA),
       'lowest_score_best' => array('type' => MIDAS_DATA),
+      'include_in_score' => array('type' => MIDAS_DATA),
       'metric_exe_name' => array('type' => MIDAS_DATA),
       'reference_link' => array('type' => MIDAS_DATA),
       'description' => array('type' => MIDAS_DATA),

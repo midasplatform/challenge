@@ -40,15 +40,29 @@ class Challenge_ResultsRunItemModel extends Challenge_ResultsRunItemModelBase {
   function loadLatestResultsRunSummary($resultRunId) 
     {
     $sql = $this->database->select()->setIntegrityCheck(false);
-    $sql->from(array("ccri" => "challenge_results_run_item"), array('result_key', 'result_value'));
+    $sql->from(array("ccri" => "challenge_results_run_item"), array('result_key', 'result_value', 'challenge_selected_metric_id'));
     $sql->where('challenge_results_run_id=?', $resultRunId);
     $sql->where('status=?', MIDAS_CHALLENGE_RR_STATUS_COMPLETE);
-
     $runResults = array();
     
+    $challengeSelectedMetricModel = MidasLoader::loadModel("SelectedMetric", "challenge");
+    $selectedMetrics = array();
+        
     $results = $this->database->fetchAll($sql);
     foreach($results as $row)
       {
+      // skip any metrics that shouldn't be scored
+      $challengeSelectedMetricId = $row['challenge_selected_metric_id'];
+      if(!array_key_exists($challengeSelectedMetricId, $selectedMetrics))
+        {
+        $selectedMetrics[$challengeSelectedMetricId] = $challengeSelectedMetricModel->load($challengeSelectedMetricId);
+        }
+      if(!empty($selectedMetrics[$challengeSelectedMetricId]) && 
+         !$selectedMetrics[$challengeSelectedMetricId]->getMetric()->getIncludeInScore())
+        {
+        continue;  
+        }
+      
       $resultKey = $row['result_key'];
       if(!array_key_exists($resultKey, $runResults))
         {

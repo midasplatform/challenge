@@ -79,7 +79,9 @@ result_key_map = {
 'PositivePredictiveValue(A_2, B_2)' : 'ppv 2',
 'Dice(A_1, B_1)' : 'dice 1',
 'Dice(A_2, B_2)' : 'dice 2',
-'Kappa(A,B)' : 'kapp'}
+'Kappa(A,B)' : 'kapp',
+'Validator(A_1, B_1)' : 'validate'}
+
 
 def add_children(dag, node, children):
     if node not in dag:

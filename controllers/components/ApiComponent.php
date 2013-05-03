@@ -47,7 +47,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('communityId', 'challengeName', 'challengeDescription', 'trainingStatus', 'testingStatus'), $args);
 
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -87,7 +87,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('challengeId', 'resultsType'), $args);
 
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -117,7 +117,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('challengeId', 'resultsType'), $args);
 
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -158,7 +158,7 @@ class Challenge_ApiComponent extends AppComponent
    */
   public function competitorListChallenges($args)
     {
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -201,7 +201,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('challengeId'), $args);
 
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -227,7 +227,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('challengeId'), $args);
 
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -250,7 +250,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('challenge_results_run_id', 'test_item_id', 'results_item_id', 'condor_job_id', 'result_key', 'result_value'), $args);
 
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -287,7 +287,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('result_run_item_id'), $args);
 
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -331,7 +331,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('results_run_id', 'status'), $args);
 
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -466,7 +466,7 @@ class Challenge_ApiComponent extends AppComponent
   public function competitorValidateResults($args)
     {
     $this->_checkKeys(array('challengeId', 'resultsType', 'resultsFolderId'), $args);
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -497,7 +497,7 @@ class Challenge_ApiComponent extends AppComponent
   public function competitorValidateOutput($args)
     {
     $this->_checkKeys(array('challengeId', 'outputFolderId'), $args);
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -621,7 +621,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('challengeId', 'resultsFolderId', 'resultsType'), $args);
 
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)
@@ -863,7 +863,7 @@ class Challenge_ApiComponent extends AppComponent
     {
     $this->_checkKeys(array('resultsRunId'), $args);
     
-    $authComponent = MidasLoader::loadComponent('Authentication', 'api');
+    $authComponent = MidasLoader::loadComponent('Authentication');
     $userDao = $authComponent->getUser($args,
                                        Zend_Registry::get('userSession')->Dao);
     if(!$userDao)

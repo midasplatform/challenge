@@ -13,6 +13,13 @@ ForEach(jobInd ${cfg_jobInds})
   GetParam(truthImage ${cfg_truthItems} ${jobInd})
   GetParam(resultImage ${cfg_resultItems} ${jobInd})
 
+  # Validate
+  If(${ValidateInputImage_selected} == '1')
+    GetParam(resultRunItemIds ${ValidateInputImage_resultRunItemIds} ${jobInd})
+    Set(outputFile validate.${jobInd}.txt)
+    SetApp(ValidatorApp @ValidateInputImage)
+    Include(challenge_validator_app.bms)
+  EndIf()
       
   # Dice
   If(${ValidateImageDice_selected} == '1')
